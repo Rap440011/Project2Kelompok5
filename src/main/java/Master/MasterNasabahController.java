@@ -11,6 +11,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class MasterNasabahController implements Initializable {
@@ -22,16 +23,21 @@ public class MasterNasabahController implements Initializable {
     @FXML private TableColumn<MasterNasabah, String> clmNoRek, clmSaldo;
 
     @FXML private TextField txtID, txtNama, txtHP;
-    @FXML private TextField txtRT, txtRW, txtKelurahan, txtKecamatan;
-    @FXML private TextField txtKabupaten, txtProvinsi;
+    @FXML private TextField txtRT, txtRW;
     @FXML private TextField txtNoRek, txtSaldo;
     @FXML private TextField txtCari;
     @FXML private ComboBox<String> cmbBank;
+
+    // Combobox alamat bertingkat -- data dari WilayahData (murni Java, tanpa SQL)
+    @FXML private ComboBox<String> cmbProvinsi, cmbKabupaten, cmbKecamatan, cmbKelurahan;
 
     private ObservableList<MasterNasabah> dataList = FXCollections.observableArrayList();
     private DBConnect db = new DBConnect();
 
     private static final String DEFAULT_SALDO = "0";
+
+    // Supaya listener tidak saling memicu reset saat form diisi dari baris tabel
+    private boolean isLoadingFromTable = false;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -53,10 +59,6 @@ public class MasterNasabahController implements Initializable {
         addNumericOnly(txtNoRek, 30);
         addNumericOnly(txtSaldo, 18);
         addLetterOnly(txtNama, 50);
-        addLetterOnly(txtKelurahan, 30);
-        addLetterOnly(txtKecamatan, 26);
-        addLetterOnly(txtKabupaten, 33);
-        addLetterOnly(txtProvinsi, 20);
 
         cmbBank.setItems(FXCollections.observableArrayList(
                 "BCA", "BRI", "BNI", "Permata", "CimbNiaga", "BSI"));
@@ -64,24 +66,86 @@ public class MasterNasabahController implements Initializable {
 
         txtSaldo.setText(DEFAULT_SALDO);
 
+        setupComboboxWilayah();
         loadAutoID();
         loadData();
 
         tbNasabah.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
+                isLoadingFromTable = true;
                 txtID.setText(newVal.getIdNasabah());
                 txtNama.setText(newVal.getNamaNasabah());
                 txtHP.setText(newVal.getNoHp());
                 txtRT.setText(newVal.getRt());
                 txtRW.setText(newVal.getRw());
-                txtKelurahan.setText(newVal.getKelurahan());
-                txtKecamatan.setText(newVal.getKecamatan());
-                txtKabupaten.setText(newVal.getKabupaten());
-                txtProvinsi.setText(newVal.getProvinsi());
                 txtNoRek.setText(newVal.getNoRekening());
                 txtSaldo.setText(newVal.getSaldo());
+
+                // Isi bertingkat sesuai data nasabah yang dipilih
+                cmbProvinsi.setValue(newVal.getProvinsi());
+                cmbKabupaten.setItems(FXCollections.observableArrayList(
+                        WilayahData.getKabupatenList(newVal.getProvinsi())));
+                cmbKabupaten.setValue(newVal.getKabupaten());
+
+                cmbKecamatan.setItems(FXCollections.observableArrayList(
+                        WilayahData.getKecamatanList(newVal.getKabupaten())));
+                cmbKecamatan.setValue(newVal.getKecamatan());
+
+                cmbKelurahan.setItems(FXCollections.observableArrayList(
+                        WilayahData.getKelurahanList(newVal.getKecamatan())));
+                cmbKelurahan.setValue(newVal.getKelurahan());
+                isLoadingFromTable = false;
             }
         });
+    }
+
+    /* =====================================================================
+       COMBOBOX ALAMAT BERTINGKAT -- 100% dari WilayahData (Java), tanpa SQL.
+       Sama persis pola/logikanya dengan Master Karyawan.
+       ===================================================================== */
+    private void setupComboboxWilayah() {
+        cmbProvinsi.setItems(FXCollections.observableArrayList(WilayahData.getProvinsiList()));
+        cmbProvinsi.setPromptText("Semua Provinsi");
+
+        refreshKabupaten(null);   // null = tampilkan semua kabupaten
+        refreshKecamatan(null);   // null = tampilkan semua kecamatan
+        refreshKelurahan(null);   // null = tampilkan semua kelurahan
+
+        cmbProvinsi.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (isLoadingFromTable) return;
+            refreshKabupaten(newVal);
+            cmbKabupaten.setValue(null);
+            refreshKecamatan(null);
+            cmbKecamatan.setValue(null);
+            refreshKelurahan(null);
+            cmbKelurahan.setValue(null);
+        });
+
+        cmbKabupaten.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (isLoadingFromTable) return;
+            refreshKecamatan(newVal);
+            cmbKecamatan.setValue(null);
+            refreshKelurahan(null);
+            cmbKelurahan.setValue(null);
+        });
+
+        cmbKecamatan.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (isLoadingFromTable) return;
+            refreshKelurahan(newVal);
+            cmbKelurahan.setValue(null);
+        });
+    }
+
+    private void refreshKabupaten(String provinsi) {
+        cmbKabupaten.setItems(FXCollections.observableArrayList(WilayahData.getKabupatenList(provinsi)));
+    }
+
+    private void refreshKecamatan(String kabupaten) {
+        cmbKecamatan.setItems(FXCollections.observableArrayList(WilayahData.getKecamatanList(kabupaten)));
+    }
+
+    private void refreshKelurahan(String kecamatan) {
+        cmbKelurahan.setItems(FXCollections.observableArrayList(WilayahData.getKelurahanList(kecamatan)));
     }
 
     private void addNumericOnly(TextField field, int maxLen) {
@@ -137,42 +201,42 @@ public class MasterNasabahController implements Initializable {
     }
 
     private void cariData(String keyword) {
-    dataList.clear();
-    try {
-        db.cstat = db.conn.prepareCall("{CALL sp_Search_Nasabah(?)}");
-        db.cstat.setString(1, keyword);
-        db.result = db.cstat.executeQuery();
-        while (db.result.next()) {
-            dataList.add(new MasterNasabah(
-                db.result.getString("ID_Nasabah"),
-                db.result.getString("Nama_Nasabah"),
-                db.result.getString("No_HP"),
-                db.result.getString("RT"),
-                db.result.getString("RW"),
-                db.result.getString("Kelurahan"),
-                db.result.getString("Kecamatan"),
-                db.result.getString("Kabupaten"),
-                db.result.getString("Provinsi"),
-                db.result.getString("No_Rekening"),
-                db.result.getString("Saldo"),
-                db.result.getString("Bank")
-            ));
+        dataList.clear();
+        try {
+            db.cstat = db.conn.prepareCall("{CALL sp_Search_Nasabah(?)}");
+            db.cstat.setString(1, keyword);
+            db.result = db.cstat.executeQuery();
+            while (db.result.next()) {
+                dataList.add(new MasterNasabah(
+                    db.result.getString("ID_Nasabah"),
+                    db.result.getString("Nama_Nasabah"),
+                    db.result.getString("No_HP"),
+                    db.result.getString("RT"),
+                    db.result.getString("RW"),
+                    db.result.getString("Kelurahan"),
+                    db.result.getString("Kecamatan"),
+                    db.result.getString("Kabupaten"),
+                    db.result.getString("Provinsi"),
+                    db.result.getString("No_Rekening"),
+                    db.result.getString("Saldo"),
+                    db.result.getString("Bank")
+                ));
+            }
+            tbNasabah.setItems(dataList);
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Error Cari Data", e.getMessage());
         }
-        tbNasabah.setItems(dataList);
-    } catch (SQLException e) {
-        showAlert(Alert.AlertType.ERROR, "Error Cari Data", e.getMessage());
     }
-}
 
-@FXML
-private void handleCari() {
-    String keyword = txtCari.getText().trim();
-    if (keyword.isEmpty()) {
-        loadData();
-    } else {
-        cariData(keyword);
+    @FXML
+    private void handleCari() {
+        String keyword = txtCari.getText().trim();
+        if (keyword.isEmpty()) {
+            loadData();
+        } else {
+            cariData(keyword);
+        }
     }
-}
 
     @FXML
     private void handleSimpan() {
@@ -189,10 +253,10 @@ private void handleCari() {
             db.cstat.setBigDecimal(6, new BigDecimal(saldoText));
             db.cstat.setString(7,  txtRT.getText());
             db.cstat.setString(8,  txtRW.getText());
-            db.cstat.setString(9,  txtKelurahan.getText());
-            db.cstat.setString(10, txtKecamatan.getText());
-            db.cstat.setString(11, txtKabupaten.getText());
-            db.cstat.setString(12, txtProvinsi.getText());
+            db.cstat.setString(9,  cmbKelurahan.getValue());
+            db.cstat.setString(10, cmbKecamatan.getValue());
+            db.cstat.setString(11, cmbKabupaten.getValue());
+            db.cstat.setString(12, cmbProvinsi.getValue());
             db.cstat.executeUpdate();
             showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data nasabah berhasil disimpan.");
             clearForm();
@@ -219,10 +283,10 @@ private void handleCari() {
             db.cstat.setString(5,  cmbBank.getValue());
             db.cstat.setString(6,  txtRT.getText());
             db.cstat.setString(7,  txtRW.getText());
-            db.cstat.setString(8,  txtKelurahan.getText());
-            db.cstat.setString(9,  txtKecamatan.getText());
-            db.cstat.setString(10, txtKabupaten.getText());
-            db.cstat.setString(11, txtProvinsi.getText());
+            db.cstat.setString(8,  cmbKelurahan.getValue());
+            db.cstat.setString(9,  cmbKecamatan.getValue());
+            db.cstat.setString(10, cmbKabupaten.getValue());
+            db.cstat.setString(11, cmbProvinsi.getValue());
             db.cstat.executeUpdate();
             showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data nasabah berhasil diubah.");
             clearForm();
@@ -262,42 +326,42 @@ private void handleCari() {
 
     @FXML
     private void handleBatal() {
-    boolean adaIsi = !txtNama.getText().trim().isEmpty()      ||
-                      !txtHP.getText().trim().isEmpty()       ||
-                      !txtRT.getText().trim().isEmpty()       ||
-                      !txtRW.getText().trim().isEmpty()       ||
-                      !txtKelurahan.getText().trim().isEmpty()||
-                      !txtKecamatan.getText().trim().isEmpty()||
-                      !txtKabupaten.getText().trim().isEmpty()||
-                      !txtProvinsi.getText().trim().isEmpty() ||
-                      !txtNoRek.getText().trim().isEmpty();
+        boolean adaIsi = !txtNama.getText().trim().isEmpty()      ||
+                          !txtHP.getText().trim().isEmpty()       ||
+                          !txtRT.getText().trim().isEmpty()       ||
+                          !txtRW.getText().trim().isEmpty()       ||
+                          cmbKelurahan.getValue() != null         ||
+                          cmbKecamatan.getValue() != null         ||
+                          cmbKabupaten.getValue() != null         ||
+                          cmbProvinsi.getValue()  != null         ||
+                          !txtNoRek.getText().trim().isEmpty();
 
-    if (!adaIsi) {
-        showAlert(Alert.AlertType.INFORMATION, "Info", "Tidak ada data yang perlu dibatalkan.");
-        return;
-    }
-
-    Alert konfirmasi = new Alert(Alert.AlertType.CONFIRMATION,
-            "Yakin ingin membatalkan dan mengosongkan semua input?",
-            ButtonType.YES, ButtonType.NO);
-    konfirmasi.setTitle("Konfirmasi Batal");
-    konfirmasi.showAndWait().ifPresent(bt -> {
-        if (bt == ButtonType.YES) {
-            clearForm();
-            loadAutoID();
+        if (!adaIsi) {
+            showAlert(Alert.AlertType.INFORMATION, "Info", "Tidak ada data yang perlu dibatalkan.");
+            return;
         }
-    });
-}
+
+        Alert konfirmasi = new Alert(Alert.AlertType.CONFIRMATION,
+                "Yakin ingin membatalkan dan mengosongkan semua input?",
+                ButtonType.YES, ButtonType.NO);
+        konfirmasi.setTitle("Konfirmasi Batal");
+        konfirmasi.showAndWait().ifPresent(bt -> {
+            if (bt == ButtonType.YES) {
+                clearForm();
+                loadAutoID();
+            }
+        });
+    }
 
     private boolean validateForm() {
         if (txtNama.getText().trim().isEmpty()      ||
             txtHP.getText().trim().isEmpty()        ||
             txtRT.getText().trim().isEmpty()        ||
             txtRW.getText().trim().isEmpty()        ||
-            txtKelurahan.getText().trim().isEmpty() ||
-            txtKecamatan.getText().trim().isEmpty() ||
-            txtKabupaten.getText().trim().isEmpty() ||
-            txtProvinsi.getText().trim().isEmpty()  ||
+            cmbKelurahan.getValue() == null         ||
+            cmbKecamatan.getValue() == null         ||
+            cmbKabupaten.getValue() == null         ||
+            cmbProvinsi.getValue()  == null         ||
             txtNoRek.getText().trim().isEmpty()     ||
             cmbBank.getValue() == null) {
             showAlert(Alert.AlertType.WARNING, "Validasi", "Semua data harus diisi!");
@@ -309,11 +373,21 @@ private void handleCari() {
     private void clearForm() {
         txtNama.clear(); txtHP.clear();
         txtRT.clear();   txtRW.clear();
-        txtKelurahan.clear(); txtKecamatan.clear();
-        txtKabupaten.clear(); txtProvinsi.clear();
         txtNoRek.clear();
         txtSaldo.setText(DEFAULT_SALDO);
         cmbBank.getSelectionModel().selectFirst();
+
+        // Reset combobox alamat -> kembali menampilkan semua data
+        isLoadingFromTable = true;
+        cmbProvinsi.setValue(null);
+        refreshKabupaten(null);
+        cmbKabupaten.setValue(null);
+        refreshKecamatan(null);
+        cmbKecamatan.setValue(null);
+        refreshKelurahan(null);
+        cmbKelurahan.setValue(null);
+        isLoadingFromTable = false;
+
         tbNasabah.getSelectionModel().clearSelection();
     }
 

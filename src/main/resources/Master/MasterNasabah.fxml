@@ -58,8 +58,7 @@
         <Label styleClass="field-label" text="ID Nasabah" GridPane.columnIndex="0" GridPane.rowIndex="0" />
         <TextField fx:id="txtID" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-        <Label styleClass="field-label" text="RT" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-        <TextField fx:id="txtRT" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+        <Label styleClass="field-label" text="RT" GridPane.columnIndex="2" GridPane.rowIndex="4" />
 
         <Label styleClass="field-label" text="No. Rekening" GridPane.columnIndex="4" GridPane.rowIndex="0" />
         <TextField fx:id="txtNoRek" GridPane.columnIndex="5" GridPane.rowIndex="0" />
@@ -67,28 +66,25 @@
         <Label styleClass="field-label" text="Nama Nasabah" GridPane.columnIndex="0" GridPane.rowIndex="1" />
         <TextField fx:id="txtNama" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-        <Label styleClass="field-label" text="RW" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-        <TextField fx:id="txtRW" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+        <Label styleClass="field-label" text="RW" GridPane.columnIndex="2" GridPane.rowIndex="5" />
 
         <Label styleClass="field-label" text="Saldo" GridPane.columnIndex="4" GridPane.rowIndex="1" />
         <TextField fx:id="txtSaldo" editable="false" GridPane.columnIndex="5" GridPane.rowIndex="1" />
 
         <Label styleClass="field-label" text="No. HP" GridPane.columnIndex="0" GridPane.rowIndex="2" />
         <TextField fx:id="txtHP" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
-        <Label styleClass="field-label" text="Kelurahan" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-        <TextField fx:id="txtKelurahan" GridPane.columnIndex="3" GridPane.rowIndex="2" />
-
-        <Label styleClass="field-label" text="Kecamatan" GridPane.columnIndex="2" GridPane.rowIndex="3" />
-        <TextField fx:id="txtKecamatan" GridPane.columnIndex="3" GridPane.rowIndex="3" />
-
-        <Label styleClass="field-label" text="Kabupaten" GridPane.columnIndex="2" GridPane.rowIndex="4" />
-        <TextField fx:id="txtKabupaten" GridPane.columnIndex="3" GridPane.rowIndex="4" />
-
-        <Label styleClass="field-label" text="Provinsi" GridPane.columnIndex="2" GridPane.rowIndex="5" />
-        <TextField fx:id="txtProvinsi" GridPane.columnIndex="3" GridPane.rowIndex="5" />
       <Label layoutX="653.0" layoutY="49.0" styleClass="field-label" text="Bank" GridPane.columnIndex="4" GridPane.rowIndex="2" />
-      <ComboBox fx:id="cmbBank" prefHeight="25.0" prefWidth="205.0" GridPane.columnIndex="5" GridPane.rowIndex="2" />
+      <ComboBox fx:id="cmbBank" prefHeight="25.0" prefWidth="350.0" GridPane.columnIndex="5" GridPane.rowIndex="2" />
+      <ComboBox fx:id="cmbProvinsi" prefHeight="25.0" prefWidth="350.0" GridPane.columnIndex="3" />
+      <ComboBox fx:id="cmbKabupaten" prefHeight="25.0" prefWidth="350.0" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+      <ComboBox fx:id="cmbKelurahan" prefHeight="25.0" prefWidth="350.0" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+      <ComboBox fx:id="cmbKecamatan" prefHeight="25.0" prefWidth="350.0" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+      <TextField fx:id="txtRT" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+      <TextField fx:id="txtRW" GridPane.columnIndex="3" GridPane.rowIndex="5" />
+      <Label text="Provinsi" GridPane.columnIndex="2" />
+      <Label text="Kabupaten" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+      <Label text="Kelurahan" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+      <Label text="Kecamatan" GridPane.columnIndex="2" GridPane.rowIndex="3" />
       <rowConstraints>
          <RowConstraints />
          <RowConstraints />
