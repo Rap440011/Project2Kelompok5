@@ -40,6 +40,8 @@ public class MasterNasabahController implements Initializable {
     private boolean isUpdatingNoRek = false;
     private String currentKodeBank = "";
 
+    private static final String RUPIAH_PREFIX = "Rp";
+
     private static final Map<String, String> KODE_BANK = new HashMap<>();
     static {
         KODE_BANK.put("BCA", "014");
@@ -76,7 +78,7 @@ public class MasterNasabahController implements Initializable {
         addNumericOnly(txtHP, 13);
         addNumericOnly(txtRT, 3);
         addNumericOnly(txtRW, 3);
-        addNumericOnly(txtSaldo, 18);
+        setupSaldoRupiah();
         addLetterOnly(txtNama, 50);
         txtSaldo.setText(DEFAULT_SALDO);
     }
@@ -113,7 +115,7 @@ public class MasterNasabahController implements Initializable {
         txtHP.setText(data.getNoHp());
         txtRT.setText(data.getRt());
         txtRW.setText(data.getRw());
-        txtSaldo.setText(data.getSaldo());
+        txtSaldo.setText(RUPIAH_PREFIX + sanitizeRupiahInput(data.getSaldo(), 18).replace(RUPIAH_PREFIX, ""));
         cmbBank.setValue(data.getBank());
 
         currentKodeBank = KODE_BANK.getOrDefault(data.getBank(), "000");
@@ -192,6 +194,41 @@ public class MasterNasabahController implements Initializable {
         }
 
         return onlyDigits;
+    }
+
+    // ===================== SALDO (RUPIAH FORMAT) =====================
+    private void setupSaldoRupiah() {
+        txtSaldo.setText(RUPIAH_PREFIX + DEFAULT_SALDO);
+        addRupiahLockedPrefix(txtSaldo, 18);
+    }
+
+    private void addRupiahLockedPrefix(TextField field, int maxDigitLen) {
+        field.textProperty().addListener((obs, oldVal, newVal) -> {
+            String filtered = sanitizeRupiahInput(newVal, maxDigitLen);
+            if (!filtered.equals(newVal)) {
+                field.setText(filtered);
+                field.positionCaret(filtered.length());
+            }
+        });
+
+        field.caretPositionProperty().addListener((obs, oldPos, newPos) -> {
+            if (newPos.intValue() < RUPIAH_PREFIX.length()) {
+                field.positionCaret(RUPIAH_PREFIX.length());
+            }
+        });
+    }
+
+    private String sanitizeRupiahInput(String rawInput, int maxDigitLen) {
+        String onlyDigits = rawInput.replaceAll("[^0-9]", "");
+        if (onlyDigits.length() > maxDigitLen) {
+            onlyDigits = onlyDigits.substring(0, maxDigitLen);
+        }
+        return RUPIAH_PREFIX + onlyDigits;
+    }
+
+    private String getSaldoRawValue() {
+        String raw = txtSaldo.getText().replace(RUPIAH_PREFIX, "").trim();
+        return raw.isEmpty() ? DEFAULT_SALDO : raw;
     }
 
     // ===================== WILAYAH (PROVINSI/KAB/KEC/KEL) =====================
@@ -328,7 +365,7 @@ public class MasterNasabahController implements Initializable {
     private void handleSimpan() {
         if (!validateForm()) return;
         try {
-            String saldoText = txtSaldo.getText().trim().isEmpty() ? DEFAULT_SALDO : txtSaldo.getText().trim();
+            String saldoText = getSaldoRawValue();
 
             db.cstat = db.conn.prepareCall("{CALL sp_Insert_Nasabah(?,?,?,?,?,?,?,?,?,?,?,?)}");
             db.cstat.setString(1, txtID.getText());
@@ -473,7 +510,7 @@ public class MasterNasabahController implements Initializable {
         txtHP.clear();
         txtRT.clear();
         txtRW.clear();
-        txtSaldo.setText(DEFAULT_SALDO);
+        txtSaldo.setText(RUPIAH_PREFIX + DEFAULT_SALDO);
 
         cmbBank.getSelectionModel().selectFirst();
         generateNoRekening(cmbBank.getValue());
