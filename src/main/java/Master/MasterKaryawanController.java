@@ -16,9 +16,8 @@ import java.util.ResourceBundle;
 public class MasterKaryawanController implements Initializable {
 
     @FXML private TableView<MasterKaryawan> tbKaryawan;
-    @FXML private TableColumn<MasterKaryawan, String> clmID, clmNama, clmUsn, clmPW;
-    @FXML private TableColumn<MasterKaryawan, String> clmRT, clmRW, clmKelurahan, clmKecamatan;
-    @FXML private TableColumn<MasterKaryawan, String> clmKabupaten, clmProvinsi, clmHP;
+    @FXML private TableColumn<MasterKaryawan, String> clmNama, clmUsn;
+    @FXML private TableColumn<MasterKaryawan, String> clmHP;
     @FXML private TableColumn<MasterKaryawan, String> clmJabatan, clmJabatan1, clmJabatan11;
 
     @FXML private TextField txtID, txtNama, txtUsn, txtPW;
@@ -27,7 +26,7 @@ public class MasterKaryawanController implements Initializable {
     @FXML private TextField txtStatus;
 
     @FXML private ComboBox<String> cmbJabatan, cmbJK;
-    // Combobox alamat bertingkat -- datanya dari WilayahData (murni Java, tanpa SQL)
+
     @FXML private ComboBox<String> cmbProvinsi, cmbKabupaten, cmbKecamatan, cmbKelurahan;
 
     private ObservableList<MasterKaryawan> dataList = FXCollections.observableArrayList();
@@ -285,7 +284,7 @@ public class MasterKaryawanController implements Initializable {
             db.cstat.setString(11, cmbKecamatan.getValue());
             db.cstat.setString(12, cmbKabupaten.getValue());
             db.cstat.setString(13, cmbProvinsi.getValue());
-            db.cstat.setString(14, txtStatus.getText()); // ikut nilai yang tampil (bisa Aktif/Tidak Aktif dari data lama)
+            db.cstat.setString(14, txtStatus.getText());
             db.cstat.executeUpdate();
             showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data karyawan berhasil diubah.");
             clearForm();

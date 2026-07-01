@@ -30,17 +30,10 @@
     <!-- TABLE -->
     <TableView fx:id="tbNasabah" prefHeight="220.0" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="clmID" prefWidth="70.0" text="ID" />
-            <TableColumn fx:id="clmNama" prefWidth="140.0" text="Nama Nasabah" />
-            <TableColumn fx:id="clmHP" prefWidth="100.0" text="No. HP" />
-            <TableColumn fx:id="clmRT" prefWidth="50.0" text="RT" />
-            <TableColumn fx:id="clmRW" prefWidth="50.0" text="RW" />
-            <TableColumn fx:id="clmKelurahan" prefWidth="100.0" text="Kelurahan" />
-            <TableColumn fx:id="clmKecamatan" prefWidth="100.0" text="Kecamatan" />
-            <TableColumn fx:id="clmKabupaten" prefWidth="100.0" text="Kabupaten" />
-            <TableColumn fx:id="clmProvinsi" prefWidth="100.0" text="Provinsi" />
-            <TableColumn fx:id="clmNoRek" prefWidth="110.0" text="No. Rekening" />
-            <TableColumn fx:id="clmSaldo" prefWidth="100.0" text="Saldo" />
+            <TableColumn fx:id="clmNama" prefWidth="194.0" text="Nama Nasabah" />
+            <TableColumn fx:id="clmHP" prefWidth="231.0" text="No. HP" />
+            <TableColumn fx:id="clmNoRek" prefWidth="265.0" text="No. Rekening" />
+            <TableColumn fx:id="clmSaldo" prefWidth="269.0" text="Saldo" />
         </columns>
     </TableView>
 

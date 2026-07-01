@@ -11,15 +11,14 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
-import java.util.List;
+
 import java.util.ResourceBundle;
 
 public class MasterNasabahController implements Initializable {
 
     @FXML private TableView<MasterNasabah> tbNasabah;
-    @FXML private TableColumn<MasterNasabah, String> clmID, clmNama, clmHP;
-    @FXML private TableColumn<MasterNasabah, String> clmRT, clmRW, clmKelurahan, clmKecamatan;
-    @FXML private TableColumn<MasterNasabah, String> clmKabupaten, clmProvinsi;
+    @FXML private TableColumn<MasterNasabah, String> clmNama, clmHP;
+
     @FXML private TableColumn<MasterNasabah, String> clmNoRek, clmSaldo;
 
     @FXML private TextField txtID, txtNama, txtHP;
@@ -28,7 +27,6 @@ public class MasterNasabahController implements Initializable {
     @FXML private TextField txtCari;
     @FXML private ComboBox<String> cmbBank;
 
-    // Combobox alamat bertingkat -- data dari WilayahData (murni Java, tanpa SQL)
     @FXML private ComboBox<String> cmbProvinsi, cmbKabupaten, cmbKecamatan, cmbKelurahan;
 
     private ObservableList<MasterNasabah> dataList = FXCollections.observableArrayList();
@@ -36,20 +34,12 @@ public class MasterNasabahController implements Initializable {
 
     private static final String DEFAULT_SALDO = "0";
 
-    // Supaya listener tidak saling memicu reset saat form diisi dari baris tabel
     private boolean isLoadingFromTable = false;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        clmID.setCellValueFactory(new PropertyValueFactory<>("idNasabah"));
         clmNama.setCellValueFactory(new PropertyValueFactory<>("namaNasabah"));
         clmHP.setCellValueFactory(new PropertyValueFactory<>("noHp"));
-        clmRT.setCellValueFactory(new PropertyValueFactory<>("rt"));
-        clmRW.setCellValueFactory(new PropertyValueFactory<>("rw"));
-        clmKelurahan.setCellValueFactory(new PropertyValueFactory<>("kelurahan"));
-        clmKecamatan.setCellValueFactory(new PropertyValueFactory<>("kecamatan"));
-        clmKabupaten.setCellValueFactory(new PropertyValueFactory<>("kabupaten"));
-        clmProvinsi.setCellValueFactory(new PropertyValueFactory<>("provinsi"));
         clmNoRek.setCellValueFactory(new PropertyValueFactory<>("noRekening"));
         clmSaldo.setCellValueFactory(new PropertyValueFactory<>("saldo"));
 
