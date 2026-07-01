@@ -11,11 +11,10 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="rootKaryawan" prefHeight="700.0" prefWidth="1000.0" spacing="14"
-      styleClass="content-card" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="Master.MasterKaryawanController">
+<VBox fx:id="rootKaryawan" prefHeight="700.0" prefWidth="1000.0" spacing="14" styleClass="content-card" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Master.MasterKaryawanController">
     <padding>
         <Insets bottom="18" left="20" right="20" top="18" />
     </padding>
@@ -84,7 +83,6 @@
         <TextField fx:id="txtKelurahan" GridPane.columnIndex="3" GridPane.rowIndex="2" />
 
         <Label styleClass="field-label" text="Status" GridPane.columnIndex="4" GridPane.rowIndex="2" />
-        <ComboBox fx:id="cmbStatus" maxWidth="Infinity" GridPane.columnIndex="5" GridPane.rowIndex="2" />
 
         <Label styleClass="field-label" text="Password" GridPane.columnIndex="0" GridPane.rowIndex="3" />
         <TextField fx:id="txtPW" GridPane.columnIndex="1" GridPane.rowIndex="3" />
@@ -100,6 +98,15 @@
 
         <Label styleClass="field-label" text="Provinsi" GridPane.columnIndex="2" GridPane.rowIndex="5" />
         <TextField fx:id="txtProvinsi" GridPane.columnIndex="3" GridPane.rowIndex="5" />
+      <TextField fx:id="txtStatus" editable="false" layoutX="453.0" layoutY="80.0" GridPane.columnIndex="5" GridPane.rowIndex="2" />
+      <rowConstraints>
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+      </rowConstraints>
     </GridPane>
 
     <!-- ACTION BUTTONS -->

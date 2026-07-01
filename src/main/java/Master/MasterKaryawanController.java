@@ -24,7 +24,8 @@ public class MasterKaryawanController implements Initializable {
     @FXML private TextField txtRT, txtRW, txtKelurahan, txtKecamatan;
     @FXML private TextField txtKabupaten, txtProvinsi, txtHP;
     @FXML private TextField txtCari;
-    @FXML private ComboBox<String> cmbJabatan, cmbStatus, cmbJK;
+    @FXML private ComboBox<String> cmbJabatan, cmbJK;
+    @FXML private TextField txtStatus;
 
     private ObservableList<MasterKaryawan> dataList = FXCollections.observableArrayList();
     private DBConnect db = new DBConnect();
@@ -49,8 +50,9 @@ public class MasterKaryawanController implements Initializable {
         cmbJabatan.setItems(FXCollections.observableArrayList("Kasir", "Manager", "Admin"));
         cmbJabatan.getSelectionModel().selectFirst();
 
-        cmbStatus.setItems(FXCollections.observableArrayList("Aktif", "Tidak Aktif"));
-        cmbStatus.getSelectionModel().selectFirst();
+        // Status default "Aktif" dan tidak bisa diubah oleh user
+        txtStatus.setText("Aktif");
+        txtStatus.setEditable(false);
 
         cmbJK.setItems(FXCollections.observableArrayList("Laki-laki", "Perempuan"));
         cmbJK.getSelectionModel().selectFirst();
@@ -81,8 +83,9 @@ public class MasterKaryawanController implements Initializable {
                 txtProvinsi.setText(newVal.getProvinsi());
                 txtHP.setText(newVal.getNoHp());
                 cmbJabatan.setValue(newVal.getJabatan());
-                cmbStatus.setValue(newVal.getStatus());
                 cmbJK.setValue(newVal.getJenisKelamin());
+                // Status ditampilkan sesuai data tapi tetap tidak bisa diubah
+                txtStatus.setText(newVal.getStatus());
             }
         });
     }
@@ -113,194 +116,204 @@ public class MasterKaryawanController implements Initializable {
     }
 
     private void loadData() {
-    dataList.clear();
-    try {
-        db.cstat = db.conn.prepareCall("{CALL sp_SelectAll_Karyawan}");
-        db.result = db.cstat.executeQuery();
-        while (db.result.next()) {
-            dataList.add(new MasterKaryawan(
-                db.result.getString("ID_Karyawan"),
-                db.result.getString("Nama_Karyawan"),
-                db.result.getString("Username"),
-                db.result.getString("Password"),
-                db.result.getString("RT"),
-                db.result.getString("RW"),
-                db.result.getString("Kelurahan"),
-                db.result.getString("Kecamatan"),
-                db.result.getString("Kabupaten"),
-                db.result.getString("Provinsi"),
-                db.result.getString("No_HP"),
-                db.result.getString("Jabatan"),
-                db.result.getString("Status"),
-                db.result.getString("Jenis_Kelamin")
-            ));
-        }
-        tbKaryawan.setItems(dataList);
-    } catch (SQLException e) {
-        showAlert(Alert.AlertType.ERROR, "Error Load Data", e.getMessage());
-    }
-}
-
-private void cariData(String keyword) {
-    dataList.clear();
-    try {
-        db.cstat = db.conn.prepareCall("{CALL sp_Search_Karyawan(?)}");
-        db.cstat.setString(1, keyword);
-        db.result = db.cstat.executeQuery();
-        while (db.result.next()) {
-            dataList.add(new MasterKaryawan(
-                db.result.getString("ID_Karyawan"),
-                db.result.getString("Nama_Karyawan"),
-                db.result.getString("Username"),
-                db.result.getString("Password"),
-                db.result.getString("RT"),
-                db.result.getString("RW"),
-                db.result.getString("Kelurahan"),
-                db.result.getString("Kecamatan"),
-                db.result.getString("Kabupaten"),
-                db.result.getString("Provinsi"),
-                db.result.getString("No_HP"),
-                db.result.getString("Jabatan"),
-                db.result.getString("Status"),
-                db.result.getString("Jenis_Kelamin")
-            ));
-        }
-        tbKaryawan.setItems(dataList);
-    } catch (SQLException e) {
-        showAlert(Alert.AlertType.ERROR, "Error Cari Data", e.getMessage());
-    }
-}
-
-@FXML
-private void handleCari() {
-    String keyword = txtCari.getText().trim();
-    if (keyword.isEmpty()) {
-        loadData();
-    } else {
-        cariData(keyword);
-    }
-}
-
-@FXML
-private void handleSimpan() {
-    if (!validateForm()) return;
-    try {
-        db.cstat = db.conn.prepareCall("{CALL sp_Insert_Karyawan(?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
-        db.cstat.setString(1,  txtID.getText());
-        db.cstat.setString(2,  txtNama.getText());
-        db.cstat.setString(3,  txtUsn.getText());
-        db.cstat.setString(4,  txtPW.getText());
-        db.cstat.setString(5,  cmbJabatan.getValue());
-        db.cstat.setString(6,  cmbJK.getValue());
-        db.cstat.setString(7,  txtHP.getText());
-        db.cstat.setString(8,  txtRT.getText());
-        db.cstat.setString(9,  txtRW.getText());
-        db.cstat.setString(10, txtKelurahan.getText());
-        db.cstat.setString(11, txtKecamatan.getText());
-        db.cstat.setString(12, txtKabupaten.getText());
-        db.cstat.setString(13, txtProvinsi.getText());
-        db.cstat.setString(14, cmbStatus.getValue());
-        db.cstat.executeUpdate();
-        showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data karyawan berhasil disimpan.");
-        clearForm();
-        loadData();
-        loadAutoID();
-    } catch (SQLException e) {
-        showAlert(Alert.AlertType.ERROR, "Error Simpan", e.getMessage());
-    }
-}
-
-@FXML
-private void handleUbah() {
-    if (txtID.getText().isEmpty()) {
-        showAlert(Alert.AlertType.WARNING, "Peringatan", "Pilih data yang ingin diubah terlebih dahulu.");
-        return;
-    }
-    if (!validateForm()) return;
-    try {
-        db.cstat = db.conn.prepareCall("{CALL sp_Update_Karyawan(?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
-        db.cstat.setString(1,  txtID.getText());
-        db.cstat.setString(2,  txtNama.getText());
-        db.cstat.setString(3,  txtUsn.getText());
-        db.cstat.setString(4,  txtPW.getText());
-        db.cstat.setString(5,  cmbJabatan.getValue());
-        db.cstat.setString(6,  cmbJK.getValue());
-        db.cstat.setString(7,  txtHP.getText());
-        db.cstat.setString(8,  txtRT.getText());
-        db.cstat.setString(9,  txtRW.getText());
-        db.cstat.setString(10, txtKelurahan.getText());
-        db.cstat.setString(11, txtKecamatan.getText());
-        db.cstat.setString(12, txtKabupaten.getText());
-        db.cstat.setString(13, txtProvinsi.getText());
-        db.cstat.setString(14, cmbStatus.getValue());
-        db.cstat.executeUpdate();
-        showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data karyawan berhasil diubah.");
-        clearForm();
-        loadData();
-        loadAutoID();
-    } catch (SQLException e) {
-        showAlert(Alert.AlertType.ERROR, "Error Ubah", e.getMessage());
-    }
-}
-
-@FXML
-private void handleHapus() {
-    if (txtID.getText().isEmpty()) {
-        showAlert(Alert.AlertType.WARNING, "Peringatan", "Pilih data yang ingin dihapus terlebih dahulu.");
-        return;
-    }
-    Alert konfirmasi = new Alert(Alert.AlertType.CONFIRMATION,
-            "Yakin ingin menghapus karyawan ID: " + txtID.getText() + "?",
-            ButtonType.YES, ButtonType.NO);
-    konfirmasi.setTitle("Konfirmasi Hapus");
-    konfirmasi.showAndWait().ifPresent(bt -> {
-        if (bt == ButtonType.YES) {
-            try {
-                db.cstat = db.conn.prepareCall("{CALL sp_Delete_Karyawan(?)}");
-                db.cstat.setString(1, txtID.getText());
-                db.cstat.executeUpdate();
-                showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data karyawan berhasil dihapus.");
-                clearForm();
-                loadData();
-                loadAutoID();
-            } catch (SQLException e) {
-                showAlert(Alert.AlertType.ERROR, "Error Hapus", e.getMessage());
+        dataList.clear();
+        try {
+            db.cstat = db.conn.prepareCall("{CALL sp_SelectAll_Karyawan}");
+            db.result = db.cstat.executeQuery();
+            while (db.result.next()) {
+                dataList.add(new MasterKaryawan(
+                    db.result.getString("ID_Karyawan"),
+                    db.result.getString("Nama_Karyawan"),
+                    db.result.getString("Username"),
+                    db.result.getString("Password"),
+                    db.result.getString("RT"),
+                    db.result.getString("RW"),
+                    db.result.getString("Kelurahan"),
+                    db.result.getString("Kecamatan"),
+                    db.result.getString("Kabupaten"),
+                    db.result.getString("Provinsi"),
+                    db.result.getString("No_HP"),
+                    db.result.getString("Jabatan"),
+                    db.result.getString("Status"),
+                    db.result.getString("Jenis_Kelamin")
+                ));
             }
+            tbKaryawan.setItems(dataList);
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Error Load Data", e.getMessage());
         }
-    });
-}
-
-@FXML
-private void handleBatal() {
-    boolean adaIsi = !txtNama.getText().trim().isEmpty()      ||
-                      !txtUsn.getText().trim().isEmpty()      ||
-                      !txtPW.getText().trim().isEmpty()       ||
-                      !txtRT.getText().trim().isEmpty()       ||
-                      !txtRW.getText().trim().isEmpty()       ||
-                      !txtKelurahan.getText().trim().isEmpty()||
-                      !txtKecamatan.getText().trim().isEmpty()||
-                      !txtKabupaten.getText().trim().isEmpty()||
-                      !txtProvinsi.getText().trim().isEmpty() ||
-                      !txtHP.getText().trim().isEmpty();
-
-    if (!adaIsi) {
-        showAlert(Alert.AlertType.INFORMATION, "Info", "Tidak ada data yang perlu dibatalkan.");
-        return;
     }
 
-    Alert konfirmasi = new Alert(Alert.AlertType.CONFIRMATION,
-            "Yakin ingin membatalkan dan mengosongkan semua input?",
-            ButtonType.YES, ButtonType.NO);
-    konfirmasi.setTitle("Konfirmasi Batal");
-    konfirmasi.showAndWait().ifPresent(bt -> {
-        if (bt == ButtonType.YES) {
-            clearForm();
-            loadAutoID();
+    private void cariData(String keyword) {
+        dataList.clear();
+        try {
+            db.cstat = db.conn.prepareCall("{CALL sp_Search_Karyawan(?)}");
+            db.cstat.setString(1, keyword);
+            db.result = db.cstat.executeQuery();
+            while (db.result.next()) {
+                dataList.add(new MasterKaryawan(
+                    db.result.getString("ID_Karyawan"),
+                    db.result.getString("Nama_Karyawan"),
+                    db.result.getString("Username"),
+                    db.result.getString("Password"),
+                    db.result.getString("RT"),
+                    db.result.getString("RW"),
+                    db.result.getString("Kelurahan"),
+                    db.result.getString("Kecamatan"),
+                    db.result.getString("Kabupaten"),
+                    db.result.getString("Provinsi"),
+                    db.result.getString("No_HP"),
+                    db.result.getString("Jabatan"),
+                    db.result.getString("Status"),
+                    db.result.getString("Jenis_Kelamin")
+                ));
+            }
+            tbKaryawan.setItems(dataList);
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Error Cari Data", e.getMessage());
         }
-    });
-}
+    }
 
+    @FXML
+    private void handleCari() {
+        String keyword = txtCari.getText().trim();
+        if (keyword.isEmpty()) loadData();
+        else cariData(keyword);
+    }
 
+    @FXML
+    private void handleSimpan() {
+        if (!validateForm()) return;
+        try {
+            db.cstat = db.conn.prepareCall("{CALL sp_Insert_Karyawan(?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
+            db.cstat.setString(1,  txtID.getText());
+            db.cstat.setString(2,  txtNama.getText());
+            db.cstat.setString(3,  txtUsn.getText());
+            db.cstat.setString(4,  txtPW.getText());
+            db.cstat.setString(5,  cmbJabatan.getValue());
+            db.cstat.setString(6,  cmbJK.getValue());
+            db.cstat.setString(7,  txtHP.getText());
+            db.cstat.setString(8,  txtRT.getText());
+            db.cstat.setString(9,  txtRW.getText());
+            db.cstat.setString(10, txtKelurahan.getText());
+            db.cstat.setString(11, txtKecamatan.getText());
+            db.cstat.setString(12, txtKabupaten.getText());
+            db.cstat.setString(13, txtProvinsi.getText());
+            db.cstat.setString(14, "Aktif"); // selalu simpan sebagai Aktif
+            db.cstat.executeUpdate();
+            showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data karyawan berhasil disimpan.");
+            clearForm();
+            loadData();
+            loadAutoID();
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Error Simpan", e.getMessage());
+        }
+    }
+
+    @FXML
+    private void handleUbah() {
+        if (txtID.getText().isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Peringatan", "Pilih data yang ingin diubah terlebih dahulu.");
+            return;
+        }
+        if (!validateForm()) return;
+        try {
+            db.cstat = db.conn.prepareCall("{CALL sp_Update_Karyawan(?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
+            db.cstat.setString(1,  txtID.getText());
+            db.cstat.setString(2,  txtNama.getText());
+            db.cstat.setString(3,  txtUsn.getText());
+            db.cstat.setString(4,  txtPW.getText());
+            db.cstat.setString(5,  cmbJabatan.getValue());
+            db.cstat.setString(6,  cmbJK.getValue());
+            db.cstat.setString(7,  txtHP.getText());
+            db.cstat.setString(8,  txtRT.getText());
+            db.cstat.setString(9,  txtRW.getText());
+            db.cstat.setString(10, txtKelurahan.getText());
+            db.cstat.setString(11, txtKecamatan.getText());
+            db.cstat.setString(12, txtKabupaten.getText());
+            db.cstat.setString(13, txtProvinsi.getText());
+            db.cstat.setString(14, txtStatus.getText()); // ikut nilai yang tampil (bisa Aktif/Tidak Aktif dari data lama)
+            db.cstat.executeUpdate();
+            showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data karyawan berhasil diubah.");
+            clearForm();
+            loadData();
+            loadAutoID();
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Error Ubah", e.getMessage());
+        }
+    }
+
+    /**
+     * Soft Delete: tidak menghapus baris dari database,
+     * melainkan mengubah Status karyawan menjadi "Tidak Aktif"
+     * melalui SP sp_SoftDelete_Karyawan.
+     */
+    @FXML
+    private void handleHapus() {
+        if (txtID.getText().isEmpty()) {
+            showAlert(Alert.AlertType.WARNING, "Peringatan", "Pilih data yang ingin dinonaktifkan terlebih dahulu.");
+            return;
+        }
+
+        // Cegah menonaktifkan yang sudah tidak aktif
+        if ("Tidak Aktif".equalsIgnoreCase(txtStatus.getText())) {
+            showAlert(Alert.AlertType.INFORMATION, "Info",
+                    "Karyawan ini sudah berstatus Tidak Aktif.");
+            return;
+        }
+
+        Alert konfirmasi = new Alert(Alert.AlertType.CONFIRMATION,
+                "Karyawan ID: " + txtID.getText() + " akan dinonaktifkan.\n" +
+                "Data tidak akan dihapus, status berubah menjadi 'Tidak Aktif'.\n\nLanjutkan?",
+                ButtonType.YES, ButtonType.NO);
+        konfirmasi.setTitle("Konfirmasi Nonaktifkan");
+        konfirmasi.showAndWait().ifPresent(bt -> {
+            if (bt == ButtonType.YES) {
+                try {
+                    db.cstat = db.conn.prepareCall("{CALL sp_SoftDelete_Karyawan(?)}");
+                    db.cstat.setString(1, txtID.getText());
+                    db.cstat.executeUpdate();
+                    showAlert(Alert.AlertType.INFORMATION, "Berhasil",
+                            "Karyawan berhasil dinonaktifkan.");
+                    clearForm();
+                    loadData();
+                    loadAutoID();
+                } catch (SQLException e) {
+                    showAlert(Alert.AlertType.ERROR, "Error Nonaktifkan", e.getMessage());
+                }
+            }
+        });
+    }
+
+    @FXML
+    private void handleBatal() {
+        boolean adaIsi = !txtNama.getText().trim().isEmpty()       ||
+                          !txtUsn.getText().trim().isEmpty()       ||
+                          !txtPW.getText().trim().isEmpty()        ||
+                          !txtRT.getText().trim().isEmpty()        ||
+                          !txtRW.getText().trim().isEmpty()        ||
+                          !txtKelurahan.getText().trim().isEmpty() ||
+                          !txtKecamatan.getText().trim().isEmpty() ||
+                          !txtKabupaten.getText().trim().isEmpty() ||
+                          !txtProvinsi.getText().trim().isEmpty()  ||
+                          !txtHP.getText().trim().isEmpty();
+
+        if (!adaIsi) {
+            showAlert(Alert.AlertType.INFORMATION, "Info", "Tidak ada data yang perlu dibatalkan.");
+            return;
+        }
+
+        Alert konfirmasi = new Alert(Alert.AlertType.CONFIRMATION,
+                "Yakin ingin membatalkan dan mengosongkan semua input?",
+                ButtonType.YES, ButtonType.NO);
+        konfirmasi.setTitle("Konfirmasi Batal");
+        konfirmasi.showAndWait().ifPresent(bt -> {
+            if (bt == ButtonType.YES) {
+                clearForm();
+                loadAutoID();
+            }
+        });
+    }
 
     private boolean validateForm() {
         if (txtNama.getText().trim().isEmpty()      ||
@@ -314,7 +327,6 @@ private void handleBatal() {
             txtProvinsi.getText().trim().isEmpty()  ||
             txtHP.getText().trim().isEmpty()        ||
             cmbJabatan.getValue() == null           ||
-            cmbStatus.getValue()  == null           ||
             cmbJK.getValue()      == null) {
             showAlert(Alert.AlertType.WARNING, "Validasi", "Semua data harus diisi!");
             return false;
@@ -328,8 +340,9 @@ private void handleBatal() {
         txtKelurahan.clear(); txtKecamatan.clear();
         txtKabupaten.clear(); txtProvinsi.clear(); txtHP.clear();
         cmbJabatan.getSelectionModel().selectFirst();
-        cmbStatus.getSelectionModel().selectFirst();
         cmbJK.getSelectionModel().selectFirst();
+        // Reset status kembali ke default Aktif
+        txtStatus.setText("Aktif");
         tbKaryawan.getSelectionModel().clearSelection();
     }
 
