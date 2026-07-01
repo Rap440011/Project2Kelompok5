@@ -57,7 +57,7 @@ public class MasterKaryawanController implements Initializable {
 
         addNumericOnly(txtRT, 3);
         addNumericOnly(txtRW, 3);
-        addNumericOnly(txtHP, 15);
+        addNumericOnly(txtHP, 13);
         addLetterOnly(txtNama, 50);
         addLetterOnly(txtKelurahan, 30);
         addLetterOnly(txtKecamatan, 26);

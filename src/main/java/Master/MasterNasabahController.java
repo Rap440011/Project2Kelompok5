@@ -47,7 +47,7 @@ public class MasterNasabahController implements Initializable {
         clmNoRek.setCellValueFactory(new PropertyValueFactory<>("noRekening"));
         clmSaldo.setCellValueFactory(new PropertyValueFactory<>("saldo"));
 
-        addNumericOnly(txtHP, 15);
+        addNumericOnly(txtHP, 13);
         addNumericOnly(txtRT, 3);
         addNumericOnly(txtRW, 3);
         addNumericOnly(txtNoRek, 30);
