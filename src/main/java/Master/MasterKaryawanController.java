@@ -10,6 +10,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.net.URL;
 import java.sql.*;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class MasterKaryawanController implements Initializable {
@@ -21,14 +22,19 @@ public class MasterKaryawanController implements Initializable {
     @FXML private TableColumn<MasterKaryawan, String> clmJabatan, clmJabatan1, clmJabatan11;
 
     @FXML private TextField txtID, txtNama, txtUsn, txtPW;
-    @FXML private TextField txtRT, txtRW, txtKelurahan, txtKecamatan;
-    @FXML private TextField txtKabupaten, txtProvinsi, txtHP;
+    @FXML private TextField txtRT, txtRW, txtHP;
     @FXML private TextField txtCari;
-    @FXML private ComboBox<String> cmbJabatan, cmbJK;
     @FXML private TextField txtStatus;
+
+    @FXML private ComboBox<String> cmbJabatan, cmbJK;
+    // Combobox alamat bertingkat -- datanya dari WilayahData (murni Java, tanpa SQL)
+    @FXML private ComboBox<String> cmbProvinsi, cmbKabupaten, cmbKecamatan, cmbKelurahan;
 
     private ObservableList<MasterKaryawan> dataList = FXCollections.observableArrayList();
     private DBConnect db = new DBConnect();
+
+    // Supaya listener tidak saling memicu reset saat form diisi dari baris tabel
+    private boolean isLoadingFromTable = false;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -61,33 +67,90 @@ public class MasterKaryawanController implements Initializable {
         addNumericOnly(txtRW, 3);
         addNumericOnly(txtHP, 13);
         addLetterOnly(txtNama, 50);
-        addLetterOnly(txtKelurahan, 30);
-        addLetterOnly(txtKecamatan, 26);
-        addLetterOnly(txtKabupaten, 33);
-        addLetterOnly(txtProvinsi, 20);
 
+        setupComboboxWilayah();
         loadAutoID();
         loadData();
 
         tbKaryawan.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
+                isLoadingFromTable = true;
                 txtID.setText(newVal.getIdKaryawan());
                 txtNama.setText(newVal.getNamaKaryawan());
                 txtUsn.setText(newVal.getUsername());
                 txtPW.setText(newVal.getPassword());
                 txtRT.setText(newVal.getRt());
                 txtRW.setText(newVal.getRw());
-                txtKelurahan.setText(newVal.getKelurahan());
-                txtKecamatan.setText(newVal.getKecamatan());
-                txtKabupaten.setText(newVal.getKabupaten());
-                txtProvinsi.setText(newVal.getProvinsi());
                 txtHP.setText(newVal.getNoHp());
                 cmbJabatan.setValue(newVal.getJabatan());
                 cmbJK.setValue(newVal.getJenisKelamin());
                 // Status ditampilkan sesuai data tapi tetap tidak bisa diubah
                 txtStatus.setText(newVal.getStatus());
+
+                // Isi bertingkat sesuai data karyawan yang dipilih
+                cmbProvinsi.setValue(newVal.getProvinsi());
+                cmbKabupaten.setItems(FXCollections.observableArrayList(
+                        WilayahData.getKabupatenList(newVal.getProvinsi())));
+                cmbKabupaten.setValue(newVal.getKabupaten());
+
+                cmbKecamatan.setItems(FXCollections.observableArrayList(
+                        WilayahData.getKecamatanList(newVal.getKabupaten())));
+                cmbKecamatan.setValue(newVal.getKecamatan());
+
+                cmbKelurahan.setItems(FXCollections.observableArrayList(
+                        WilayahData.getKelurahanList(newVal.getKecamatan())));
+                cmbKelurahan.setValue(newVal.getKelurahan());
+                isLoadingFromTable = false;
             }
         });
+    }
+
+    private void setupComboboxWilayah() {
+        cmbProvinsi.setItems(FXCollections.observableArrayList(WilayahData.getProvinsiList()));
+        cmbProvinsi.setPromptText("Semua Provinsi");
+
+        refreshKabupaten(null);   // null = tampilkan semua kabupaten
+        refreshKecamatan(null);   // null = tampilkan semua kecamatan
+        refreshKelurahan(null);   // null = tampilkan semua kelurahan
+
+        cmbProvinsi.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (isLoadingFromTable) return;
+            refreshKabupaten(newVal);
+            cmbKabupaten.setValue(null);
+            refreshKecamatan(null);
+            cmbKecamatan.setValue(null);
+            refreshKelurahan(null);
+            cmbKelurahan.setValue(null);
+        });
+
+        cmbKabupaten.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (isLoadingFromTable) return;
+            refreshKecamatan(newVal);
+            cmbKecamatan.setValue(null);
+            refreshKelurahan(null);
+            cmbKelurahan.setValue(null);
+        });
+
+        cmbKecamatan.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (isLoadingFromTable) return;
+            refreshKelurahan(newVal);
+            cmbKelurahan.setValue(null);
+        });
+    }
+
+    private void refreshKabupaten(String provinsi) {
+        List<String> list = WilayahData.getKabupatenList(provinsi);
+        cmbKabupaten.setItems(FXCollections.observableArrayList(list));
+    }
+
+    private void refreshKecamatan(String kabupaten) {
+        List<String> list = WilayahData.getKecamatanList(kabupaten);
+        cmbKecamatan.setItems(FXCollections.observableArrayList(list));
+    }
+
+    private void refreshKelurahan(String kecamatan) {
+        List<String> list = WilayahData.getKelurahanList(kecamatan);
+        cmbKelurahan.setItems(FXCollections.observableArrayList(list));
     }
 
     private void addNumericOnly(TextField field, int maxLen) {
@@ -195,10 +258,10 @@ public class MasterKaryawanController implements Initializable {
             db.cstat.setString(7,  txtHP.getText());
             db.cstat.setString(8,  txtRT.getText());
             db.cstat.setString(9,  txtRW.getText());
-            db.cstat.setString(10, txtKelurahan.getText());
-            db.cstat.setString(11, txtKecamatan.getText());
-            db.cstat.setString(12, txtKabupaten.getText());
-            db.cstat.setString(13, txtProvinsi.getText());
+            db.cstat.setString(10, cmbKelurahan.getValue());
+            db.cstat.setString(11, cmbKecamatan.getValue());
+            db.cstat.setString(12, cmbKabupaten.getValue());
+            db.cstat.setString(13, cmbProvinsi.getValue());
             db.cstat.setString(14, "Aktif"); // selalu simpan sebagai Aktif
             db.cstat.executeUpdate();
             showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data karyawan berhasil disimpan.");
@@ -228,10 +291,10 @@ public class MasterKaryawanController implements Initializable {
             db.cstat.setString(7,  txtHP.getText());
             db.cstat.setString(8,  txtRT.getText());
             db.cstat.setString(9,  txtRW.getText());
-            db.cstat.setString(10, txtKelurahan.getText());
-            db.cstat.setString(11, txtKecamatan.getText());
-            db.cstat.setString(12, txtKabupaten.getText());
-            db.cstat.setString(13, txtProvinsi.getText());
+            db.cstat.setString(10, cmbKelurahan.getValue());
+            db.cstat.setString(11, cmbKecamatan.getValue());
+            db.cstat.setString(12, cmbKabupaten.getValue());
+            db.cstat.setString(13, cmbProvinsi.getValue());
             db.cstat.setString(14, txtStatus.getText()); // ikut nilai yang tampil (bisa Aktif/Tidak Aktif dari data lama)
             db.cstat.executeUpdate();
             showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data karyawan berhasil diubah.");
@@ -243,11 +306,6 @@ public class MasterKaryawanController implements Initializable {
         }
     }
 
-    /**
-     * Soft Delete: tidak menghapus baris dari database,
-     * melainkan mengubah Status karyawan menjadi "Tidak Aktif"
-     * melalui SP sp_SoftDelete_Karyawan.
-     */
     @FXML
     private void handleHapus() {
         if (txtID.getText().isEmpty()) {
@@ -292,10 +350,10 @@ public class MasterKaryawanController implements Initializable {
                           !txtPW.getText().trim().isEmpty()        ||
                           !txtRT.getText().trim().isEmpty()        ||
                           !txtRW.getText().trim().isEmpty()        ||
-                          !txtKelurahan.getText().trim().isEmpty() ||
-                          !txtKecamatan.getText().trim().isEmpty() ||
-                          !txtKabupaten.getText().trim().isEmpty() ||
-                          !txtProvinsi.getText().trim().isEmpty()  ||
+                          cmbKelurahan.getValue() != null          ||
+                          cmbKecamatan.getValue() != null          ||
+                          cmbKabupaten.getValue() != null          ||
+                          cmbProvinsi.getValue()  != null          ||
                           !txtHP.getText().trim().isEmpty();
 
         if (!adaIsi) {
@@ -321,10 +379,10 @@ public class MasterKaryawanController implements Initializable {
             txtPW.getText().trim().isEmpty()        ||
             txtRT.getText().trim().isEmpty()        ||
             txtRW.getText().trim().isEmpty()        ||
-            txtKelurahan.getText().trim().isEmpty() ||
-            txtKecamatan.getText().trim().isEmpty() ||
-            txtKabupaten.getText().trim().isEmpty() ||
-            txtProvinsi.getText().trim().isEmpty()  ||
+            cmbKelurahan.getValue() == null         ||
+            cmbKecamatan.getValue() == null         ||
+            cmbKabupaten.getValue() == null         ||
+            cmbProvinsi.getValue()  == null         ||
             txtHP.getText().trim().isEmpty()        ||
             cmbJabatan.getValue() == null           ||
             cmbJK.getValue()      == null) {
@@ -336,9 +394,19 @@ public class MasterKaryawanController implements Initializable {
 
     private void clearForm() {
         txtNama.clear(); txtUsn.clear(); txtPW.clear();
-        txtRT.clear();   txtRW.clear();
-        txtKelurahan.clear(); txtKecamatan.clear();
-        txtKabupaten.clear(); txtProvinsi.clear(); txtHP.clear();
+        txtRT.clear();   txtRW.clear();  txtHP.clear();
+
+        // Reset combobox alamat -> kembali menampilkan semua data
+        isLoadingFromTable = true;
+        cmbProvinsi.setValue(null);
+        refreshKabupaten(null);
+        cmbKabupaten.setValue(null);
+        refreshKecamatan(null);
+        cmbKecamatan.setValue(null);
+        refreshKelurahan(null);
+        cmbKelurahan.setValue(null);
+        isLoadingFromTable = false;
+
         cmbJabatan.getSelectionModel().selectFirst();
         cmbJK.getSelectionModel().selectFirst();
         // Reset status kembali ke default Aktif

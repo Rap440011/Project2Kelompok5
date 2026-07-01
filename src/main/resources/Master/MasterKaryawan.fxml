@@ -48,7 +48,7 @@
     </TableView>
 
     <!-- FORM -->
-    <GridPane hgap="14" vgap="10">
+    <GridPane hgap="14" prefHeight="182.0" prefWidth="958.0" vgap="10">
         <columnConstraints>
             <ColumnConstraints percentWidth="12" />
             <ColumnConstraints percentWidth="21" />
@@ -57,56 +57,61 @@
             <ColumnConstraints percentWidth="12" />
             <ColumnConstraints percentWidth="22" />
         </columnConstraints>
+        <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+            <RowConstraints />
+         <RowConstraints />
+        </rowConstraints>
 
+        <!-- ROW 0 -->
         <Label styleClass="field-label" text="ID Karyawan" GridPane.columnIndex="0" GridPane.rowIndex="0" />
         <TextField fx:id="txtID" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-        <Label styleClass="field-label" text="RT" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-        <TextField fx:id="txtRT" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+        <Label styleClass="field-label" text="Provinsi" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+        <ComboBox fx:id="cmbProvinsi" maxWidth="Infinity" promptText="Semua Provinsi" GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
         <Label styleClass="field-label" text="No. HP" GridPane.columnIndex="4" GridPane.rowIndex="0" />
         <TextField fx:id="txtHP" GridPane.columnIndex="5" GridPane.rowIndex="0" />
 
+        <!-- ROW 1 -->
         <Label styleClass="field-label" text="Nama Karyawan" GridPane.columnIndex="0" GridPane.rowIndex="1" />
         <TextField fx:id="txtNama" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-        <Label styleClass="field-label" text="RW" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-        <TextField fx:id="txtRW" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+        <Label styleClass="field-label" text="Kabupaten" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+        <ComboBox fx:id="cmbKabupaten" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
         <Label styleClass="field-label" text="Jabatan" GridPane.columnIndex="4" GridPane.rowIndex="1" />
         <ComboBox fx:id="cmbJabatan" maxWidth="Infinity" GridPane.columnIndex="5" GridPane.rowIndex="1" />
 
+        <!-- ROW 2 -->
         <Label styleClass="field-label" text="Username" GridPane.columnIndex="0" GridPane.rowIndex="2" />
         <TextField fx:id="txtUsn" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-        <Label styleClass="field-label" text="Kelurahan" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-        <TextField fx:id="txtKelurahan" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+        <Label styleClass="field-label" text="Kecamatan" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+        <ComboBox fx:id="cmbKecamatan" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="2" />
 
         <Label styleClass="field-label" text="Status" GridPane.columnIndex="4" GridPane.rowIndex="2" />
+        <TextField fx:id="txtStatus" editable="false" GridPane.columnIndex="5" GridPane.rowIndex="2" />
 
+        <!-- ROW 3 -->
         <Label styleClass="field-label" text="Password" GridPane.columnIndex="0" GridPane.rowIndex="3" />
         <TextField fx:id="txtPW" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
-        <Label styleClass="field-label" text="Kecamatan" GridPane.columnIndex="2" GridPane.rowIndex="3" />
-        <TextField fx:id="txtKecamatan" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+        <Label styleClass="field-label" text="Kelurahan" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+        <ComboBox fx:id="cmbKelurahan" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="3" />
 
         <Label styleClass="field-label" text="Jenis Kelamin" GridPane.columnIndex="4" GridPane.rowIndex="3" />
         <ComboBox fx:id="cmbJK" maxWidth="Infinity" GridPane.columnIndex="5" GridPane.rowIndex="3" />
 
-        <Label styleClass="field-label" text="Kabupaten" GridPane.columnIndex="2" GridPane.rowIndex="4" />
-        <TextField fx:id="txtKabupaten" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+        <!-- ROW 4 -->
+        <Label styleClass="field-label" text="RT" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+        <TextField fx:id="txtRT" GridPane.columnIndex="3" GridPane.rowIndex="4" />
 
-        <Label styleClass="field-label" text="Provinsi" GridPane.columnIndex="2" GridPane.rowIndex="5" />
-        <TextField fx:id="txtProvinsi" GridPane.columnIndex="3" GridPane.rowIndex="5" />
-      <TextField fx:id="txtStatus" editable="false" layoutX="453.0" layoutY="80.0" GridPane.columnIndex="5" GridPane.rowIndex="2" />
-      <rowConstraints>
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-         <RowConstraints />
-      </rowConstraints>
+        <Label styleClass="field-label" text="RW" GridPane.columnIndex="2" GridPane.rowIndex="5" />
+        <TextField fx:id="txtRW" GridPane.columnIndex="3" GridPane.rowIndex="5" />
     </GridPane>
 
     <!-- ACTION BUTTONS -->
