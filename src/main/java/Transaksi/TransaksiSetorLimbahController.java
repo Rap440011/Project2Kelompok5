@@ -91,7 +91,6 @@ public class TransaksiSetorLimbahController implements Initializable {
     // ===================== SETUP =====================
 
     private void setupTabelNasabah() {
-        clmNasabahID.setCellValueFactory(new PropertyValueFactory<>("idNasabah"));
         clmNasabahNama.setCellValueFactory(new PropertyValueFactory<>("namaNasabah"));
         clmNasabahHP.setCellValueFactory(new PropertyValueFactory<>("noHp"));
         clmNasabahSaldo.setCellValueFactory(new PropertyValueFactory<>("saldo"));
