@@ -1,0 +1,160 @@
+/* ============ GLOBAL ============ */
+.root {
+    -fx-font-family: "Segoe UI";
+    -fx-font-size: 13px;
+    -fx-background-color: #FFFFFF;
+}
+
+/* ============ SIDEBAR ============ */
+.sidebar {
+    -fx-background-color: #1B5E20;
+}
+
+.sidebar-title {
+    -fx-text-fill: white;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.sidebar-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #E8F5E9;
+    -fx-font-size: 13px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10 16 10 16;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-max-width: Infinity;
+}
+.sidebar-btn:hover {
+    -fx-background-color: #2E7D32;
+    -fx-text-fill: white;
+}
+.sidebar-btn:armed, .sidebar-btn-active {
+    -fx-background-color: #43A047;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.sidebar-separator .line {
+    -fx-border-color: #2E7D32;
+}
+
+.sidebar-logout {
+    -fx-background-color: #B71C1C;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10 16 10 16;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-max-width: Infinity;
+}
+.sidebar-logout:hover {
+    -fx-background-color: #D32F2F;
+}
+
+/* ============ CONTENT AREA ============ */
+.content-area {
+    -fx-background-color: #F1F8F2;
+}
+
+.content-card {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.10), 8, 0, 0, 2);
+}
+
+.page-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1B5E20;
+}
+
+.field-label {
+    -fx-text-fill: #2E2E2E;
+    -fx-font-size: 12.5px;
+}
+
+/* ============ TABLE ============ */
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: #C8E6C9;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+}
+.table-view .column-header-background {
+    -fx-background-color: #2E7D32;
+    -fx-background-radius: 6 6 0 0;
+}
+.table-view .column-header, .table-view .filler {
+    -fx-background-color: transparent;
+    -fx-size: 32px;
+}
+.table-view .column-header .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-alignment: CENTER_LEFT;
+}
+.table-row-cell:odd {
+    -fx-background-color: #F4FBF4;
+}
+.table-row-cell:selected {
+    -fx-background-color: #A5D6A7;
+}
+
+/* ============ INPUTS ============ */
+.text-field, .text-area, .combo-box {
+    -fx-background-color: #FAFFFA;
+    -fx-border-color: #B7D9B8;
+    -fx-border-radius: 5;
+    -fx-background-radius: 5;
+    -fx-padding: 5 8 5 8;
+}
+.text-field:focused, .text-area:focused, .combo-box:focused {
+    -fx-border-color: #2E7D32;
+}
+
+/* ============ BUTTONS (consistent palette) ============ */
+.btn {
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-padding: 8 18 8 18;
+}
+.btn:hover {
+    -fx-opacity: 0.92;
+}
+
+/* Hijau - Simpan & Cari */
+.btn-simpan, .btn-cari {
+    -fx-background-color: #2E7D32;
+}
+.btn-simpan:hover, .btn-cari:hover {
+    -fx-background-color: #388E3C;
+}
+
+/* Biru - Ubah */
+.btn-ubah {
+    -fx-background-color: #1565C0;
+}
+.btn-ubah:hover {
+    -fx-background-color: #1976D2;
+}
+
+/* Merah - Hapus */
+.btn-hapus {
+    -fx-background-color: #C62828;
+}
+.btn-hapus:hover {
+    -fx-background-color: #D32F2F;
+}
+
+/* Kuning - Batal */
+.btn-batal {
+    -fx-background-color: #F9A825;
+    -fx-text-fill: #2E2E2E;
+}
+.btn-batal:hover {
+    -fx-background-color: #FBC02D;
+}

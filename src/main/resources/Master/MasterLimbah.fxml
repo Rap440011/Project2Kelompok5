@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="rootLimbah" prefHeight="700.0" prefWidth="1000.0" spacing="14" styleClass="content-card" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Master.MasterLimbahController">
+    <padding>
+        <Insets bottom="18" left="20" right="20" top="18" />
+    </padding>
+
+    <!-- HEADER + SEARCH -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label styleClass="page-title" text="Master Limbah" />
+        <Region HBox.hgrow="ALWAYS" />
+        <TextField fx:id="txtCari" prefHeight="32.0" prefWidth="200.0" promptText="Cari limbah..." />
+        <Button fx:id="btnCari" mnemonicParsing="false" onAction="#handleCari" styleClass="btn,btn-cari" text="Cari" />
+    </HBox>
+
+    <!-- TABLE -->
+    <TableView fx:id="tbLimbah" prefHeight="220.0" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="clmID" prefWidth="128.66666412353516" text="ID" />
+            <TableColumn fx:id="clmJenis" prefWidth="161.33333587646484" text="Jenis" />
+            <TableColumn fx:id="clmJumlah" prefWidth="164.66665649414062" text="Jumlah" />
+            <TableColumn fx:id="clmHarga" prefWidth="160.33334350585938" text="Harga" />
+            <TableColumn fx:id="clmKeterangan" prefWidth="346.33331298828125" text="Keterangan" />
+        </columns>
+    </TableView>
+
+    <!-- FORM -->
+    <GridPane hgap="14" vgap="10">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="16" />
+            <ColumnConstraints percentWidth="34" />
+            <ColumnConstraints percentWidth="16" />
+            <ColumnConstraints percentWidth="34" />
+        </columnConstraints>
+
+        <Label styleClass="field-label" text="ID Limbah" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <TextField fx:id="txtID" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+        <Label styleClass="field-label" text="Harga" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+        <TextField fx:id="txtHarga" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+
+        <Label styleClass="field-label" text="Jenis Limbah" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <ComboBox fx:id="cmbjenis" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+        <Label styleClass="field-label" text="Jumlah" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+        <TextField fx:id="txtJumlah" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+
+        <Label styleClass="field-label" text="Keterangan" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <TextArea fx:id="txtketerangan" prefRowCount="2" wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2" />
+      <rowConstraints>
+         <RowConstraints />
+         <RowConstraints />
+         <RowConstraints />
+      </rowConstraints>
+    </GridPane>
+
+    <!-- ACTION BUTTONS -->
+    <HBox alignment="CENTER_RIGHT" spacing="10">
+        <Button fx:id="btnBatal" mnemonicParsing="false" onAction="#handleBatal" styleClass="btn,btn-batal" text="Batal" />
+        <Button fx:id="btnHapus" mnemonicParsing="false" onAction="#handleHapus" styleClass="btn,btn-hapus" text="Hapus" />
+        <Button fx:id="btnUbah" mnemonicParsing="false" onAction="#handleUbah" styleClass="btn,btn-ubah" text="Ubah" />
+    </HBox>
+</VBox>

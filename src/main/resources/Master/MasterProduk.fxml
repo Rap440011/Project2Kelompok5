@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="rootProduk" prefHeight="700.0" prefWidth="1000.0" spacing="14"
+      styleClass="content-card" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Master.MasterProdukController">
+    <padding>
+        <Insets bottom="18" left="20" right="20" top="18" />
+    </padding>
+
+    <!-- HEADER + SEARCH -->
+    <HBox alignment="CENTER_LEFT" spacing="10">
+        <Label styleClass="page-title" text="Master Produk" />
+        <Region HBox.hgrow="ALWAYS" />
+        <TextField fx:id="txtCari" prefHeight="32.0" prefWidth="200.0" promptText="Cari produk..." />
+        <Button fx:id="btnSimpan1" mnemonicParsing="false" onAction="#handleCari" styleClass="btn,btn-cari" text="Cari" />
+    </HBox>
+
+    <!-- TABLE -->
+    <TableView fx:id="tbProduk" prefHeight="220.0" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="clmID" prefWidth="80.0" text="ID" />
+            <TableColumn fx:id="clmNama" prefWidth="180.0" text="Nama Produk" />
+            <TableColumn fx:id="clmStock" prefWidth="100.0" text="Stock" />
+            <TableColumn fx:id="clmHrgJual" prefWidth="120.0" text="Harga Jual" />
+            <TableColumn fx:id="clmSatuan" prefWidth="100.0" text="Satuan" />
+            <TableColumn fx:id="clmKeterangan" prefWidth="200.0" text="Keterangan" />
+        </columns>
+    </TableView>
+
+    <!-- FORM -->
+    <GridPane hgap="14" vgap="10">
+        <columnConstraints>
+            <ColumnConstraints percentWidth="16" />
+            <ColumnConstraints percentWidth="34" />
+            <ColumnConstraints percentWidth="16" />
+            <ColumnConstraints percentWidth="34" />
+        </columnConstraints>
+
+        <Label styleClass="field-label" text="ID Produk" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <TextField fx:id="txtID" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+        <Label styleClass="field-label" text="Harga Jual" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+        <TextField fx:id="txtHrgJual" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+
+        <Label styleClass="field-label" text="Nama Produk" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <TextField fx:id="txtNama" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+        <Label styleClass="field-label" text="Satuan" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+        <ComboBox fx:id="cmbSatuan" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+
+        <Label styleClass="field-label" text="Stock" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <TextField fx:id="txtStock" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+        <Label styleClass="field-label" text="Keterangan" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+        <TextArea fx:id="txtKeterangan" prefRowCount="2" wrapText="true" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+    </GridPane>
+
+    <!-- ACTION BUTTONS -->
+    <HBox alignment="CENTER_RIGHT" spacing="10">
+        <Button fx:id="btnBatal" mnemonicParsing="false" onAction="#handleBatal" styleClass="btn,btn-batal" text="Batal" />
+        <Button fx:id="btnHapus" mnemonicParsing="false" onAction="#handleHapus" styleClass="btn,btn-hapus" text="Hapus" />
+        <Button fx:id="btnUbah" mnemonicParsing="false" onAction="#handleUbah" styleClass="btn,btn-ubah" text="Ubah" />
+        <Button fx:id="btnSimpan" mnemonicParsing="false" onAction="#handleSimpan" styleClass="btn,btn-simpan" text="Simpan" />
+    </HBox>
+</VBox>

@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<HBox fx:id="rootTransaksiSetorLimbah" prefHeight="700.0" prefWidth="1200.0" spacing="14" styleClass="content-card" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Transaksi.TransaksiSetorLimbahController">
+    <padding>
+        <Insets bottom="18" left="20" right="20" top="18" />
+    </padding>
+
+    <!-- ====================== PANEL KIRI : DETAIL TRANSAKSI ====================== -->
+    <VBox spacing="12" HBox.hgrow="ALWAYS" prefWidth="560.0">
+
+        <Label styleClass="page-title" text="Detail Setor Limbah" />
+
+        <GridPane hgap="14" vgap="10">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="28" />
+                <ColumnConstraints percentWidth="72" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints /><RowConstraints /><RowConstraints />
+                <RowConstraints /><RowConstraints /><RowConstraints />
+            </rowConstraints>
+
+            <Label styleClass="field-label" text="ID Detail" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <TextField fx:id="txtIDDetail" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+            <Label styleClass="field-label" text="ID Setor Limbah" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+            <TextField fx:id="txtIDSetorLimbahDetail" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+            <Label styleClass="field-label" text="Jenis" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+            <ComboBox fx:id="cmbJenis" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+            <Label styleClass="field-label" text="Jumlah" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+            <HBox spacing="8" alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                <TextField fx:id="txtJumlah" prefWidth="150.0" />
+                <Label fx:id="lblSatuan" styleClass="field-label" text="Kg" />
+            </HBox>
+
+            <Label styleClass="field-label" text="Keterangan" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+            <TextArea fx:id="txtKeteranganDetail" prefHeight="70.0" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+            <Label styleClass="field-label" text="Sub Total" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+            <TextField fx:id="txtSubTotal" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+        </GridPane>
+
+        <HBox alignment="CENTER_RIGHT" spacing="10">
+            <Button fx:id="btnTambahTransaksi" mnemonicParsing="false" onAction="#handleTambahTransaksi" styleClass="btn,btn-simpan" text="Tambah Transaksi" />
+        </HBox>
+
+        <!-- TABEL DETAIL YANG SUDAH DITAMBAHKAN -->
+        <TableView fx:id="tbDetail" prefHeight="260.0" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="clmDetailID" prefWidth="70.0" text="ID Detail" />
+                <TableColumn fx:id="clmDetailJenis" prefWidth="80.0" text="Jenis" />
+                <TableColumn fx:id="clmDetailJumlah" prefWidth="90.0" text="Jumlah" />
+                <TableColumn fx:id="clmDetailSatuan" prefWidth="70.0" text="Satuan" />
+                <TableColumn fx:id="clmDetailKeterangan" prefWidth="160.0" text="Keterangan" />
+                <TableColumn fx:id="clmDetailSubTotal" prefWidth="100.0" text="Sub Total" />
+            </columns>
+        </TableView>
+    </VBox>
+
+    <!-- ====================== PANEL KANAN : HEADER TRANSAKSI + PILIH NASABAH ====================== -->
+    <VBox spacing="12" HBox.hgrow="ALWAYS" prefWidth="560.0">
+
+        <Label styleClass="page-title" text="Transaksi Setor Limbah" />
+
+        <GridPane hgap="14" vgap="10">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="30" />
+                <ColumnConstraints percentWidth="70" />
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints /><RowConstraints /><RowConstraints />
+                <RowConstraints /><RowConstraints />
+            </rowConstraints>
+
+            <Label styleClass="field-label" text="ID Transaksi" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <TextField fx:id="txtIDTransaksi" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+            <Label styleClass="field-label" text="ID Nasabah" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+            <TextField fx:id="txtIDNasabah" editable="false" promptText="Klik nasabah pada tabel di bawah" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+            <Label styleClass="field-label" text="ID Karyawan" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+            <TextField fx:id="txtIDKaryawan" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+            <Label styleClass="field-label" text="Tanggal" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+            <DatePicker fx:id="dpTanggal" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+            <Label styleClass="field-label" text="Total" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+            <TextField fx:id="txtTotal" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+        </GridPane>
+
+        <HBox alignment="CENTER_LEFT" spacing="10">
+            <Label styleClass="field-label" text="Pilih Nasabah:" />
+            <Region HBox.hgrow="ALWAYS" />
+            <TextField fx:id="txtCariNasabah" prefHeight="32.0" prefWidth="180.0" promptText="Cari nasabah..." />
+            <Button fx:id="btnCariNasabah" mnemonicParsing="false" onAction="#handleCariNasabah" styleClass="btn,btn-cari" text="Cari" />
+        </HBox>
+
+        <TableView fx:id="tbNasabah" prefHeight="260.0" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="clmNasabahID" prefWidth="70.0" text="ID" />
+                <TableColumn fx:id="clmNasabahNama" prefWidth="160.0" text="Nama Nasabah" />
+                <TableColumn fx:id="clmNasabahHP" prefWidth="110.0" text="No. HP" />
+                <TableColumn fx:id="clmNasabahSaldo" prefWidth="100.0" text="Saldo" />
+            </columns>
+        </TableView>
+
+        <HBox alignment="CENTER_RIGHT" spacing="10">
+            <Button fx:id="btnBatalTransaksi" mnemonicParsing="false" onAction="#handleBatalTransaksi" styleClass="btn,btn-batal" text="Batal" />
+            <Button fx:id="btnSelesai" mnemonicParsing="false" onAction="#handleSelesai" disable="true" styleClass="btn,btn-ubah" text="Selesai" />
+        </HBox>
+    </VBox>
+
+</HBox>
