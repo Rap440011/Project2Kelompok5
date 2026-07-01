@@ -12,6 +12,8 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 public class MasterNasabahController implements Initializable {
@@ -36,6 +38,16 @@ public class MasterNasabahController implements Initializable {
 
     private boolean isLoadingFromTable = false;
 
+    private static final Map<String, String> KODE_BANK = new HashMap<>();
+    static {
+        KODE_BANK.put("BCA", "014");
+        KODE_BANK.put("BRI", "002");
+        KODE_BANK.put("BNI", "009");
+        KODE_BANK.put("Permata", "013");
+        KODE_BANK.put("CimbNiaga", "022");
+        KODE_BANK.put("BSI", "451");
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         clmNama.setCellValueFactory(new PropertyValueFactory<>("namaNasabah"));
@@ -46,7 +58,6 @@ public class MasterNasabahController implements Initializable {
         addNumericOnly(txtHP, 13);
         addNumericOnly(txtRT, 3);
         addNumericOnly(txtRW, 3);
-        addNumericOnly(txtNoRek, 30);
         addNumericOnly(txtSaldo, 18);
         addLetterOnly(txtNama, 50);
 
@@ -55,11 +66,18 @@ public class MasterNasabahController implements Initializable {
         cmbBank.getSelectionModel().selectFirst();
 
         txtSaldo.setText(DEFAULT_SALDO);
+        txtNoRek.setEditable(false);
+
+        cmbBank.valueProperty().addListener((obs, oldVal, newVal) -> {
+            if (isLoadingFromTable) return;
+            generateNoRekening(newVal);
+        });
 
         setupComboboxWilayah();
         loadAutoID();
         loadData();
 
+        generateNoRekening(cmbBank.getValue());
         tbNasabah.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 isLoadingFromTable = true;
@@ -70,8 +88,8 @@ public class MasterNasabahController implements Initializable {
                 txtRW.setText(newVal.getRw());
                 txtNoRek.setText(newVal.getNoRekening());
                 txtSaldo.setText(newVal.getSaldo());
+                cmbBank.setValue(newVal.getBank());
 
-                // Isi bertingkat sesuai data nasabah yang dipilih
                 cmbProvinsi.setValue(newVal.getProvinsi());
                 cmbKabupaten.setItems(FXCollections.observableArrayList(
                         WilayahData.getKabupatenList(newVal.getProvinsi())));
@@ -89,17 +107,31 @@ public class MasterNasabahController implements Initializable {
         });
     }
 
-    /* =====================================================================
-       COMBOBOX ALAMAT BERTINGKAT -- 100% dari WilayahData (Java), tanpa SQL.
-       Sama persis pola/logikanya dengan Master Karyawan.
-       ===================================================================== */
+    private void generateNoRekening(String bank) {
+        if (bank == null || bank.isEmpty()) {
+            txtNoRek.clear();
+            return;
+        }
+
+        String kodeBank = KODE_BANK.getOrDefault(bank, "000");
+
+        long jumlahExisting = dataList.stream()
+                .filter(n -> bank.equals(n.getBank()))
+                .count();
+
+        long urutan = jumlahExisting + 1;
+        String noRekBaru = kodeBank + String.format("%07d", urutan);
+
+        txtNoRek.setText(noRekBaru);
+    }
+
     private void setupComboboxWilayah() {
         cmbProvinsi.setItems(FXCollections.observableArrayList(WilayahData.getProvinsiList()));
         cmbProvinsi.setPromptText("Semua Provinsi");
 
-        refreshKabupaten(null);   // null = tampilkan semua kabupaten
-        refreshKecamatan(null);   // null = tampilkan semua kecamatan
-        refreshKelurahan(null);   // null = tampilkan semua kelurahan
+        refreshKabupaten(null);
+        refreshKecamatan(null);
+        refreshKelurahan(null);
 
         cmbProvinsi.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (isLoadingFromTable) return;
@@ -323,8 +355,7 @@ public class MasterNasabahController implements Initializable {
                           cmbKelurahan.getValue() != null         ||
                           cmbKecamatan.getValue() != null         ||
                           cmbKabupaten.getValue() != null         ||
-                          cmbProvinsi.getValue()  != null         ||
-                          !txtNoRek.getText().trim().isEmpty();
+                          cmbProvinsi.getValue()  != null;
 
         if (!adaIsi) {
             showAlert(Alert.AlertType.INFORMATION, "Info", "Tidak ada data yang perlu dibatalkan.");
@@ -363,11 +394,10 @@ public class MasterNasabahController implements Initializable {
     private void clearForm() {
         txtNama.clear(); txtHP.clear();
         txtRT.clear();   txtRW.clear();
-        txtNoRek.clear();
         txtSaldo.setText(DEFAULT_SALDO);
         cmbBank.getSelectionModel().selectFirst();
+        generateNoRekening(cmbBank.getValue());
 
-        // Reset combobox alamat -> kembali menampilkan semua data
         isLoadingFromTable = true;
         cmbProvinsi.setValue(null);
         refreshKabupaten(null);
