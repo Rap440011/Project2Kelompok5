@@ -30,20 +30,12 @@
     <!-- TABLE -->
     <TableView fx:id="tbKaryawan" prefHeight="220.0" VBox.vgrow="ALWAYS">
         <columns>
-            <TableColumn fx:id="clmID" prefWidth="70.0" text="ID" />
-            <TableColumn fx:id="clmNama" prefWidth="130.0" text="Nama Karyawan" />
-            <TableColumn fx:id="clmUsn" prefWidth="90.0" text="Username" />
-            <TableColumn fx:id="clmPW" prefWidth="90.0" text="Password" />
-            <TableColumn fx:id="clmRT" prefWidth="50.0" text="RT" />
-            <TableColumn fx:id="clmRW" prefWidth="50.0" text="RW" />
-            <TableColumn fx:id="clmKelurahan" prefWidth="100.0" text="Kelurahan" />
-            <TableColumn fx:id="clmKecamatan" prefWidth="100.0" text="Kecamatan" />
-            <TableColumn fx:id="clmKabupaten" prefWidth="100.0" text="Kabupaten" />
-            <TableColumn fx:id="clmProvinsi" prefWidth="100.0" text="Provinsi" />
-            <TableColumn fx:id="clmHP" prefWidth="100.0" text="No. HP" />
-            <TableColumn fx:id="clmJabatan" prefWidth="80.0" text="Jabatan" />
-            <TableColumn fx:id="clmJabatan1" prefWidth="80.0" text="Status" />
-            <TableColumn fx:id="clmJabatan11" prefWidth="100.0" text="Jenis Kelamin" />
+            <TableColumn fx:id="clmNama" prefWidth="194.0" text="Nama Karyawan" />
+            <TableColumn fx:id="clmUsn" prefWidth="128.0" text="Username" />
+            <TableColumn fx:id="clmHP" prefWidth="145.0" text="No. HP" />
+            <TableColumn fx:id="clmJabatan" prefWidth="177.0" text="Jabatan" />
+            <TableColumn fx:id="clmJabatan1" prefWidth="155.0" text="Status" />
+            <TableColumn fx:id="clmJabatan11" prefWidth="160.0" text="Jenis Kelamin" />
         </columns>
     </TableView>
 

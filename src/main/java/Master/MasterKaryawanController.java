@@ -38,16 +38,8 @@ public class MasterKaryawanController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        clmID.setCellValueFactory(new PropertyValueFactory<>("idKaryawan"));
         clmNama.setCellValueFactory(new PropertyValueFactory<>("namaKaryawan"));
         clmUsn.setCellValueFactory(new PropertyValueFactory<>("username"));
-        clmPW.setCellValueFactory(new PropertyValueFactory<>("password"));
-        clmRT.setCellValueFactory(new PropertyValueFactory<>("rt"));
-        clmRW.setCellValueFactory(new PropertyValueFactory<>("rw"));
-        clmKelurahan.setCellValueFactory(new PropertyValueFactory<>("kelurahan"));
-        clmKecamatan.setCellValueFactory(new PropertyValueFactory<>("kecamatan"));
-        clmKabupaten.setCellValueFactory(new PropertyValueFactory<>("kabupaten"));
-        clmProvinsi.setCellValueFactory(new PropertyValueFactory<>("provinsi"));
         clmHP.setCellValueFactory(new PropertyValueFactory<>("noHp"));
         clmJabatan.setCellValueFactory(new PropertyValueFactory<>("jabatan"));
         clmJabatan1.setCellValueFactory(new PropertyValueFactory<>("status"));
@@ -84,10 +76,8 @@ public class MasterKaryawanController implements Initializable {
                 txtHP.setText(newVal.getNoHp());
                 cmbJabatan.setValue(newVal.getJabatan());
                 cmbJK.setValue(newVal.getJenisKelamin());
-                // Status ditampilkan sesuai data tapi tetap tidak bisa diubah
                 txtStatus.setText(newVal.getStatus());
 
-                // Isi bertingkat sesuai data karyawan yang dipilih
                 cmbProvinsi.setValue(newVal.getProvinsi());
                 cmbKabupaten.setItems(FXCollections.observableArrayList(
                         WilayahData.getKabupatenList(newVal.getProvinsi())));
@@ -109,9 +99,9 @@ public class MasterKaryawanController implements Initializable {
         cmbProvinsi.setItems(FXCollections.observableArrayList(WilayahData.getProvinsiList()));
         cmbProvinsi.setPromptText("Semua Provinsi");
 
-        refreshKabupaten(null);   // null = tampilkan semua kabupaten
-        refreshKecamatan(null);   // null = tampilkan semua kecamatan
-        refreshKelurahan(null);   // null = tampilkan semua kelurahan
+        refreshKabupaten(null);
+        refreshKecamatan(null);
+        refreshKelurahan(null);
 
         cmbProvinsi.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (isLoadingFromTable) return;
