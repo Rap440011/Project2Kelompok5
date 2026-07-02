@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Transaksi.TransaksiPengolahanLimbahController">
+   <children>
+      <VBox layoutX="10.0" layoutY="10.0" prefHeight="720.0" prefWidth="1100.0" spacing="0" styleClass="content-card">
+         <padding>
+            <Insets bottom="20" left="24" right="24" top="20" />
+         </padding>
+         <children>
+            <Label styleClass="page-title" text="Transaksi  Pengolahan Limbah" />
+            <Separator>
+               <VBox.margin>
+                  <Insets bottom="10" top="8" />
+               </VBox.margin>
+            </Separator>
+            <HBox prefHeight="648.0" prefWidth="1052.0" spacing="24" VBox.vgrow="NEVER">
+               <children>
+                  <VBox spacing="10" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label style="-fx-font-weight:bold;-fx-font-size:13px;" styleClass="field-label" text="Header Transaksi" />
+                        <GridPane hgap="12" prefHeight="335.0" prefWidth="147.0" vgap="10">
+                           <columnConstraints>
+                              <ColumnConstraints minWidth="110" prefWidth="120" />
+                              <ColumnConstraints hgrow="ALWAYS" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints minHeight="32.0" />
+                              <RowConstraints minHeight="32.0" />
+                              <RowConstraints minHeight="32.0" />
+                              <RowConstraints minHeight="32.0" />
+                              <RowConstraints minHeight="32.0" />
+                              <RowConstraints minHeight="32.0" />
+                              <RowConstraints minHeight="32.0" />
+                              <RowConstraints minHeight="32.0" />
+                           </rowConstraints>
+                           <children>
+                              <Label styleClass="field-label" text="ID Pengolahan" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                              <TextField fx:id="txtIDPengolahan" editable="false" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                              <Label styleClass="field-label" text="ID Produk" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                              <TextField fx:id="txtIDProduk" editable="false" maxWidth="Infinity" promptText="Klik baris nasabah pada tabel &gt;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <Label styleClass="field-label" text="Tanggal" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                              <Label styleClass="field-label" text="Kuantitas Hasil" GridPane.rowIndex="4" />
+                              <Label styleClass="field-label" text="Jenis Produk" GridPane.rowIndex="3" />
+                              <DatePicker fx:id="jpTanggal" prefHeight="25.0" prefWidth="479.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <ComboBox fx:id="cmbJenisProduk" prefHeight="25.0" prefWidth="524.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <TextField fx:id="txtKuantitas" onAction="#txtKuantitasHasil" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                              <ComboBox fx:id="cmbSatuan" onAction="#cmbSaatuan" prefHeight="25.0" prefWidth="513.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                              <TextArea fx:id="txtKeterangan" prefHeight="60.0" prefWidth="596.0" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                              <Label layoutX="10.0" layoutY="186.0" styleClass="field-label" text="Satuan" GridPane.rowIndex="5" />
+                              <Label layoutX="10.0" layoutY="228.0" styleClass="field-label" text="Keterangan" GridPane.rowIndex="6" />
+                           </children>
+                        </GridPane>
+                     </children>
+                  </VBox>
+                  <Separator orientation="VERTICAL" />
+                  <VBox spacing="8" HBox.hgrow="ALWAYS">
+                     <children>
+                        <HBox alignment="CENTER_LEFT" spacing="8" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <Separator>
+               <VBox.margin>
+                  <Insets bottom="10" top="14" />
+               </VBox.margin>
+            </Separator>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
