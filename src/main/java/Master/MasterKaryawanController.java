@@ -249,7 +249,7 @@ public class MasterKaryawanController implements Initializable {
             db.cstat.setString(11, cmbKecamatan.getValue());
             db.cstat.setString(12, cmbKabupaten.getValue());
             db.cstat.setString(13, cmbProvinsi.getValue());
-            db.cstat.setString(14, "Aktif"); // selalu simpan sebagai Aktif
+            db.cstat.setString(14, "Aktif");
             db.cstat.executeUpdate();
             showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data karyawan berhasil disimpan.");
             clearForm();
