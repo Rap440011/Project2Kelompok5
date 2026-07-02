@@ -80,7 +80,7 @@ public class MasterNasabahController implements Initializable {
         addNumericOnly(txtRW, 3);
         setupSaldoRupiah();
         addLetterOnly(txtNama, 50);
-        txtSaldo.setText(DEFAULT_SALDO);
+        txtSaldo.setText("Rp"+DEFAULT_SALDO);
     }
 
     private void setupBankCombobox() {
@@ -95,7 +95,7 @@ public class MasterNasabahController implements Initializable {
     }
 
     private void setupNoRekening() {
-        // No. Rekening bisa diedit user, tapi kode bank di depannya dikunci
+
         txtNoRek.setEditable(true);
         addNoRekLockedPrefix();
     }
