@@ -5,23 +5,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Sumber data wilayah (Provinsi -> Kabupaten/Kota -> Kecamatan -> Kelurahan/Desa)
- * untuk 3 provinsi: Jawa Timur, Jawa Tengah, Jawa Barat.
- *
- * Semua data disimpan langsung di sini (tidak pakai database/SQL sama sekali).
- *
- * CATATAN: Data di bawah adalah CONTOH/STARTER SET (beberapa kabupaten/kota
- * besar saja per provinsi). Jumlah kelurahan/desa asli di 3 provinsi ini
- * mencapai ribuan, sehingga tidak realistis diketik lengkap secara manual.
- * Untuk melengkapi, tinggal tambahkan baris baru mengikuti pola yang sama
- * pada method addRows() di bawah -- ambil dari data resmi (Kemendagri/BPS)
- * lalu tempel dalam format:
- *      addRow(list, "Provinsi", "Kabupaten/Kota", "Kecamatan", "Kelurahan/Desa");
- */
 public class WilayahData {
 
-    /** Satu baris data wilayah lengkap (level kelurahan). */
     public static class Wilayah {
         public final String provinsi;
         public final String kabupaten;
@@ -113,22 +98,14 @@ public class WilayahData {
         addRow("Jawa Barat", "Kabupaten Bekasi", "Cikarang Barat", "Mekarwangi");
         addRow("Jawa Barat", "Kabupaten Bekasi", "Cikarang Barat", "Jayamukti");
 
-        // Tambahkan baris baru di sini mengikuti pola addRow(...) di atas
-        // untuk melengkapi data kabupaten/kecamatan/kelurahan lainnya.
     }
 
-    /** Daftar semua provinsi (urut sesuai data, tanpa duplikat). */
     public static List<String> getProvinsiList() {
         Set<String> set = new LinkedHashSet<>();
         for (Wilayah w : DATA) set.add(w.provinsi);
         return new ArrayList<>(set);
     }
 
-    /**
-     * Daftar kabupaten/kota.
-     * @param provinsi jika null/kosong -> tampilkan semua kabupaten dari 3 provinsi.
-     *                 jika diisi -> hanya kabupaten milik provinsi tsb.
-     */
     public static List<String> getKabupatenList(String provinsi) {
         Set<String> set = new LinkedHashSet<>();
         for (Wilayah w : DATA) {
@@ -139,11 +116,6 @@ public class WilayahData {
         return new ArrayList<>(set);
     }
 
-    /**
-     * Daftar kecamatan.
-     * @param kabupaten jika null/kosong -> tampilkan semua kecamatan dari 3 provinsi.
-     *                  jika diisi -> hanya kecamatan milik kabupaten tsb.
-     */
     public static List<String> getKecamatanList(String kabupaten) {
         Set<String> set = new LinkedHashSet<>();
         for (Wilayah w : DATA) {
@@ -154,11 +126,6 @@ public class WilayahData {
         return new ArrayList<>(set);
     }
 
-    /**
-     * Daftar kelurahan/desa.
-     * @param kecamatan jika null/kosong -> tampilkan semua kelurahan dari 3 provinsi.
-     *                  jika diisi -> hanya kelurahan milik kecamatan tsb.
-     */
     public static List<String> getKelurahanList(String kecamatan) {
         Set<String> set = new LinkedHashSet<>();
         for (Wilayah w : DATA) {
