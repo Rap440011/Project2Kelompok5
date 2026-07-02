@@ -345,7 +345,7 @@ public class MasterNasabahController implements Initializable {
                 rs.getString("Kabupaten"),
                 rs.getString("Provinsi"),
                 rs.getString("No_Rekening"),
-                rs.getString("Saldo"),
+                RUPIAH_PREFIX + rs.getString("Saldo"),
                 rs.getString("Bank")
         );
     }
