@@ -32,7 +32,6 @@ public class MasterKaryawanController implements Initializable {
     private ObservableList<MasterKaryawan> dataList = FXCollections.observableArrayList();
     private DBConnect db = new DBConnect();
 
-    // Supaya listener tidak saling memicu reset saat form diisi dari baris tabel
     private boolean isLoadingFromTable = false;
 
     @Override
@@ -47,7 +46,6 @@ public class MasterKaryawanController implements Initializable {
         cmbJabatan.setItems(FXCollections.observableArrayList("Kasir", "Manager", "Admin"));
         cmbJabatan.getSelectionModel().selectFirst();
 
-        // Status default "Aktif" dan tidak bisa diubah oleh user
         txtStatus.setText("Aktif");
         txtStatus.setEditable(false);
 
@@ -302,7 +300,6 @@ public class MasterKaryawanController implements Initializable {
             return;
         }
 
-        // Cegah menonaktifkan yang sudah tidak aktif
         if ("Tidak Aktif".equalsIgnoreCase(txtStatus.getText())) {
             showAlert(Alert.AlertType.INFORMATION, "Info",
                     "Karyawan ini sudah berstatus Tidak Aktif.");
@@ -385,7 +382,6 @@ public class MasterKaryawanController implements Initializable {
         txtNama.clear(); txtUsn.clear(); txtPW.clear();
         txtRT.clear();   txtRW.clear();  txtHP.clear();
 
-        // Reset combobox alamat -> kembali menampilkan semua data
         isLoadingFromTable = true;
         cmbProvinsi.setValue(null);
         refreshKabupaten(null);
@@ -398,7 +394,6 @@ public class MasterKaryawanController implements Initializable {
 
         cmbJabatan.getSelectionModel().selectFirst();
         cmbJK.getSelectionModel().selectFirst();
-        // Reset status kembali ke default Aktif
         txtStatus.setText("Aktif");
         tbKaryawan.getSelectionModel().clearSelection();
     }
