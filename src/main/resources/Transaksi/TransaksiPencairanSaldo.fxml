@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Transaksi.TransaksiPencairanSaldo">
+   <children>
+      <VBox layoutX="10.0" layoutY="10.0" prefHeight="720.0" prefWidth="1100.0" spacing="0" styleClass="content-card">
+         <padding>
+            <Insets bottom="20" left="24" right="24" top="20" />
+         </padding>
+         <children>
+            <Label styleClass="page-title" text="Pencairan Saldo" />
+            <Separator>
+               <VBox.margin>
+                  <Insets bottom="10" top="8" />
+               </VBox.margin>
+            </Separator>
+            <HBox prefHeight="648.0" prefWidth="1052.0" spacing="24" VBox.vgrow="NEVER">
+               <children>
+                  <VBox spacing="10" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label style="-fx-font-weight:bold;-fx-font-size:13px;" styleClass="field-label" text="Header Transaksi" />
+                        <GridPane hgap="12" vgap="10">
+                           <columnConstraints>
+                              <ColumnConstraints minWidth="110" prefWidth="120" />
+                              <ColumnConstraints hgrow="ALWAYS" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints minHeight="32" />
+                              <RowConstraints minHeight="32" />
+                              <RowConstraints minHeight="32" />
+                              <RowConstraints minHeight="32" />
+                              <RowConstraints minHeight="32" />
+                           </rowConstraints>
+                           <children>
+                              <Label styleClass="field-label" text="ID Transaksi" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                              <TextField fx:id="txtIDTransaksi" editable="false" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                              <Label styleClass="field-label" text="ID Nasabah" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                              <TextField fx:id="txtIDNasabah" editable="false" maxWidth="Infinity" promptText="Klik baris nasabah pada tabel &gt;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <Label styleClass="field-label" text="ID Karyawan" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                              <TextField fx:id="txtIDKaryawan" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <Label styleClass="field-label" text="Nominal Pencairan" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                              <TextField fx:id="txtTotal" editable="false" maxWidth="Infinity" style="-fx-font-weight:bold;-fx-text-fill:#1B5E20;" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                           </children>
+                        </GridPane>
+                     </children>
+                  </VBox>
+                  <Separator orientation="VERTICAL" />
+                  <VBox spacing="8" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Label style="-fx-font-weight:bold;-fx-font-size:13px;" styleClass="field-label" text="Pilih Nasabah" />
+                        <HBox alignment="CENTER_LEFT" spacing="8">
+                           <children>
+                              <TextField fx:id="txtCariNasabah" prefHeight="32" promptText="Cari nama / ID nasabah..." HBox.hgrow="ALWAYS" />
+                              <Button fx:id="btnCariNasabah" mnemonicParsing="false" onAction="#handleCariNasabah" styleClass="btn,btn-cari" text="Cari" />
+                           </children>
+                        </HBox>
+                        <TableView fx:id="tbNasabah" prefHeight="190" VBox.vgrow="ALWAYS">
+                           <columns>
+                              <TableColumn fx:id="clmNasabahNama" prefWidth="175" text="Nama Nasabah" />
+                              <TableColumn fx:id="clmNasabahHP" prefWidth="115" text="No. HP" />
+                              <TableColumn fx:id="clmNasabahSaldo" prefWidth="110" text="Saldo (Rp)" />
+                           </columns>
+                           <placeholder>
+                              <Label text="Belum ada data nasabah" />
+                           </placeholder>
+                        </TableView>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <Separator>
+               <VBox.margin>
+                  <Insets bottom="10" top="14" />
+               </VBox.margin>
+            </Separator>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>

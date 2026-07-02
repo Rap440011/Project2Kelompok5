@@ -40,7 +40,7 @@ public class MasterNasabahController implements Initializable {
     private boolean isUpdatingNoRek = false;
     private String currentKodeBank = "";
 
-    private static final String RUPIAH_PREFIX = "Rp";
+    private static final String RUPIAH_PREFIX = "Rp ";
 
     private static final Map<String, String> KODE_BANK = new HashMap<>();
     static {
