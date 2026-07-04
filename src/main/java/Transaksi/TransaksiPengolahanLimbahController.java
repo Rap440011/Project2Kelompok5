@@ -211,17 +211,7 @@ public class TransaksiPengolahanLimbahController implements Initializable {
             ToggleButton sel = (ToggleButton) newT;
             sel.setStyle(CARD_SELECTED);
             ProdukTemplate t = (ProdukTemplate) sel.getUserData();
-            try {
-                db.cstat = db.conn.prepareCall("{CALL sp_SelectAll_Produk}");
-                db.result = db.cstat.executeQuery();
-                StringBuilder debug = new StringBuilder("Nama di DB:\n");
-                while (db.result.next()) {
-                    debug.append("'").append(db.result.getString("Nama_Produk")).append("'\n");
-                }
-                debug.append("\nMencari: '").append(t.namaProduk).append("'");
-                showAlert(Alert.AlertType.INFORMATION, "DEBUG", debug.toString());
-            } catch (SQLException e) { e.printStackTrace(); }
-            // Cari ID Produk dari database berdasarkan nama produk
+
             String idProdukDariDB = cariIDProdukDariDB(t.namaProduk);
 
             // Isi form: ID Produk, Jenis Produk, Satuan
