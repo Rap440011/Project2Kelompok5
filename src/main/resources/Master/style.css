@@ -101,6 +101,10 @@
 .table-row-cell:selected {
     -fx-background-color: #A5D6A7;
 }
+.table-view .column-header .label {
+    -fx-alignment: CENTER;
+    -fx-text-alignment: center;
+}
 
 /* ============ INPUTS ============ */
 .text-field, .text-area, .combo-box {
