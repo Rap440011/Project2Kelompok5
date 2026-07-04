@@ -234,7 +234,6 @@ public class MasterNasabahController implements Initializable {
     // ===================== WILAYAH (PROVINSI/KAB/KEC/KEL) =====================
     private void setupComboboxWilayah() {
         cmbProvinsi.setItems(FXCollections.observableArrayList(WilayahData.getProvinsiList()));
-        cmbProvinsi.setPromptText("Semua Provinsi");
 
         refreshKabupaten(null);
         refreshKecamatan(null);
@@ -345,7 +344,7 @@ public class MasterNasabahController implements Initializable {
                 rs.getString("Kabupaten"),
                 rs.getString("Provinsi"),
                 rs.getString("No_Rekening"),
-                RUPIAH_PREFIX + rs.getString("Saldo"),
+                RUPIAH_PREFIX + rs.getBigDecimal("Saldo").stripTrailingZeros().toPlainString(),
                 rs.getString("Bank")
         );
     }

@@ -94,7 +94,6 @@ public class MasterKaryawanController implements Initializable {
 
     private void setupComboboxWilayah() {
         cmbProvinsi.setItems(FXCollections.observableArrayList(WilayahData.getProvinsiList()));
-        cmbProvinsi.setPromptText("Semua Provinsi");
 
         refreshKabupaten(null);
         refreshKecamatan(null);
