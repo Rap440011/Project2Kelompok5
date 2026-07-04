@@ -53,22 +53,23 @@ public class TransaksiSetorLimbahController implements Initializable {
     private final ObservableList<DetailSetorLimbah> detailList = FXCollections.observableArrayList();
     private final DBConnect db = new DBConnect();
 
-    // ── Data Jenis Limbah dari Master Limbah (menggantikan konstanta hardcode) ──
     private final List<LimbahItem> limbahList = new ArrayList<>();
 
-    // ── Daftar Keterangan (komposisi) dari Master Produk, dipakai untuk
-    //    menyaring Jenis Limbah supaya hanya yang benar-benar dipakai
-    //    sebagai bahan baku produk yang muncul di combobox. ──
     private final List<String> keteranganProdukList = new ArrayList<>();
 
     private BigDecimal totalTransaksi = BigDecimal.ZERO;
     private static final String RUPIAH_PREFIX = "Rp ";
 
-    /**
-     * Model ringan untuk satu baris data Master Limbah.
-     * NOTE: sesuaikan nama stored procedure & nama kolom di loadDataLimbah()
-     * dengan yang sebenarnya dipakai pada Master Limbah kamu jika berbeda.
-     */
+    private static final java.util.Map<String, BigDecimal> HARGA_LIMBAH;
+    static {
+        HARGA_LIMBAH = new java.util.HashMap<>();
+        HARGA_LIMBAH.put("Cangkang Udang",    new BigDecimal("10000"));
+        HARGA_LIMBAH.put("Endapan / Lumpur",  new BigDecimal("2000"));
+        HARGA_LIMBAH.put("Kotoran Udang",     new BigDecimal("5000"));
+        HARGA_LIMBAH.put("Bangkai Udang",     new BigDecimal("2500"));
+        HARGA_LIMBAH.put("Air Limbah Tambak", new BigDecimal("2500"));
+    }
+
     private static class LimbahItem {
         final String idLimbah, jenisLimbah, satuan, keterangan;
         final BigDecimal harga;
@@ -86,8 +87,6 @@ public class TransaksiSetorLimbahController implements Initializable {
         setupTabelNasabah();
         setupTabelDetail();
 
-        // Muat data referensi dari database SEBELUM combobox kategori disusun,
-        // supaya updateJenisLimbahCombo() punya data untuk difilter.
         loadDataLimbah();
         loadKeteranganProduk();
 
@@ -97,10 +96,8 @@ public class TransaksiSetorLimbahController implements Initializable {
         loadAutoIDTransaksi();
         loadDataNasabah();
 
-        // Panel detail nonaktif di awal
         setDetailPanelEnabled(false);
 
-        // ── Listener: cek kelengkapan header setiap kali ada perubahan ──
         tbNasabah.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 txtIDNasabah.setText(newVal.getIdNasabah());
@@ -108,13 +105,10 @@ public class TransaksiSetorLimbahController implements Initializable {
             }
         });
 
-        // Saat ID Karyawan diketik
         txtIDKaryawan.textProperty().addListener((obs, oldVal, newVal) -> cekKelengkapanHeader());
 
-        // Saat tanggal dipilih
         dpTanggal.valueProperty().addListener((obs, oldVal, newVal) -> cekKelengkapanHeader());
 
-        // Hitung subtotal otomatis
         txtJumlah.textProperty().addListener((obs, oldVal, newVal) -> hitungSubTotal());
 
         cmbJenis.valueProperty().addListener((obs, oldVal, newVal) -> {
@@ -122,20 +116,12 @@ public class TransaksiSetorLimbahController implements Initializable {
             hitungSubTotal();
         });
 
-        // Saat user (kategori Padat) mengganti pilihan Jenis Limbah,
-        // satuan & harga per unit ikut menyesuaikan data limbah yang dipilih.
         cmbJenisLimbah.valueProperty().addListener((obs, oldVal, newVal) -> {
             updateLabelSatuanDanHarga();
             hitungSubTotal();
         });
     }
 
-    // ===================== CEK KELENGKAPAN HEADER =====================
-
-    /**
-     * Panel detail hanya aktif jika ketiga field header sudah terisi:
-     * ID Nasabah (pilih dari tabel), ID Karyawan (ketik), dan Tanggal (pilih).
-     */
     private void cekKelengkapanHeader() {
         boolean nasabahTerisi   = !txtIDNasabah.getText().trim().isEmpty();
         boolean karyawanTerisi  = !txtIDKaryawan.getText().trim().isEmpty();
@@ -144,9 +130,9 @@ public class TransaksiSetorLimbahController implements Initializable {
         boolean headerLengkap = nasabahTerisi && karyawanTerisi && tanggalTerpilih;
 
         if (headerLengkap) {
-            // Isi ID Setor Limbah di panel detail dan generate ID Detail pertama
+
             txtIDSetorLimbahDetail.setText(txtIDTransaksi.getText());
-            // Load ID Detail hanya jika panel baru saja diaktifkan (detailList kosong)
+
             if (detailList.isEmpty()) {
                 loadAutoIDDetail();
             }
@@ -155,8 +141,6 @@ public class TransaksiSetorLimbahController implements Initializable {
             setDetailPanelEnabled(false);
         }
     }
-
-    // ===================== SETUP =====================
 
     private void setupTabelNasabah() {
         clmNasabahNama.setCellValueFactory(new PropertyValueFactory<>("namaNasabah"));
@@ -180,10 +164,7 @@ public class TransaksiSetorLimbahController implements Initializable {
         updateJenisLimbahCombo();
     }
 
-    /**
-     * Aktif/nonaktifkan seluruh panel Input Detail Limbah.
-     * Saat nonaktif, semua field berwarna abu-abu (JavaFX default disabled style).
-     */
+
     private void setDetailPanelEnabled(boolean enabled) {
         txtIDDetail.setDisable(!enabled);
         txtIDSetorLimbahDetail.setDisable(!enabled);
@@ -194,62 +175,44 @@ public class TransaksiSetorLimbahController implements Initializable {
         btnTambahTransaksi.setDisable(!enabled);
 
         if (enabled) {
-            // Reapply aturan aktif/kunci cmbJenisLimbah sesuai kategori Padat/Cair yang aktif
             updateJenisLimbahCombo();
         } else {
-            // Panel keseluruhan memang nonaktif (belum ada header) -> boleh abu-abu total
             cmbJenisLimbah.setDisable(true);
             cmbJenisLimbah.setMouseTransparent(true);
             cmbJenisLimbah.setFocusTraversable(false);
         }
     }
 
-    /**
-     * Isi ulang combobox Jenis Limbah berdasarkan kategori yang dipilih
-     * (Padat/Cair), diambil dari data Master Limbah dan disaring supaya
-     * hanya menampilkan jenis limbah yang benar-benar dipakai sebagai
-     * komposisi di Master Produk.
-     *
-     * Kategori CAIR  -> combobox terkunci pada satu-satunya pilihan.
-     *                   Sengaja TIDAK memakai setDisable(true) supaya teks
-     *                   tetap terang (tidak abu-abu); dikunci lewat
-     *                   mouseTransparent + focusTraversable agar user tidak
-     *                   bisa membuka dropdown maupun mengetik.
-     * Kategori PADAT -> combobox aktif penuh, user bebas memilih.
-     */
     private void updateJenisLimbahCombo() {
         boolean isPadat = "Padat".equalsIgnoreCase(cmbJenis.getValue());
-        String satuanTarget = isPadat ? "kg" : "liter";
-
-        List<String> namaJenisLimbah = new ArrayList<>();
-        for (LimbahItem li : limbahList) {
-            boolean satuanCocok = li.satuan != null && li.satuan.trim().equalsIgnoreCase(satuanTarget);
-            boolean dipakaiDiProduk = dipakaiDiProduk(li.jenisLimbah);
-            if (satuanCocok && dipakaiDiProduk) {
-                namaJenisLimbah.add(li.jenisLimbah);
-            }
-        }
-
-        cmbJenisLimbah.setItems(FXCollections.observableArrayList(namaJenisLimbah));
-
-        if (!namaJenisLimbah.isEmpty()) {
-            cmbJenisLimbah.getSelectionModel().selectFirst();
-        } else {
-            cmbJenisLimbah.getSelectionModel().clearSelection();
-        }
 
         if (isPadat) {
+            cmbJenisLimbah.setItems(FXCollections.observableArrayList(
+                    "Cangkang Udang",
+                    "Endapan / Lumpur",
+                    "Kotoran Udang",
+                    "Bangkai Udang"
+            ));
+            cmbJenisLimbah.getSelectionModel().selectFirst();
+
             cmbJenisLimbah.setDisable(false);
             cmbJenisLimbah.setMouseTransparent(false);
             cmbJenisLimbah.setFocusTraversable(true);
+
+            lblSatuan.setText("Kg");
+
         } else {
-            // "Nonaktif" secara fungsional, tapi tampilan tetap terang.
+            cmbJenisLimbah.setItems(FXCollections.observableArrayList("Air Limbah Tambak"));
+            cmbJenisLimbah.getSelectionModel().selectFirst();
+
             cmbJenisLimbah.setDisable(false);
             cmbJenisLimbah.setMouseTransparent(true);
             cmbJenisLimbah.setFocusTraversable(false);
+
+            lblSatuan.setText("Liter");
         }
 
-        updateLabelSatuanDanHarga();
+        hitungSubTotal();
     }
 
     /**
@@ -441,10 +404,13 @@ public class TransaksiSetorLimbahController implements Initializable {
         try {
             String jumlahText = txtJumlah.getText().trim();
             if (jumlahText.isEmpty()) { txtSubTotal.setText(""); return; }
+
             BigDecimal jumlah = new BigDecimal(jumlahText);
 
-            LimbahItem terpilih = getLimbahTerpilih();
-            BigDecimal harga = (terpilih != null && terpilih.harga != null) ? terpilih.harga : BigDecimal.ZERO;
+            String jenisTerpilih = cmbJenisLimbah.getValue();
+            BigDecimal harga = (jenisTerpilih != null)
+                    ? HARGA_LIMBAH.getOrDefault(jenisTerpilih, BigDecimal.ZERO)
+                    : BigDecimal.ZERO;
 
             txtSubTotal.setText(jumlah.multiply(harga).toPlainString());
         } catch (NumberFormatException e) {
@@ -468,8 +434,8 @@ public class TransaksiSetorLimbahController implements Initializable {
         if (!validateDetailForm()) return;
         try {
             String idDetail    = txtIDDetail.getText();
-            String idSetor     = txtIDSetorLimbahDetail.getText(); // TIDAK berubah
-            String jenis       = cmbJenisLimbah.getValue(); // simpan JENIS LIMBAH spesifik, bukan hanya kategori
+            String idSetor     = txtIDSetorLimbahDetail.getText();
+            String jenis       = cmbJenisLimbah.getValue();
             String jumlah      = txtJumlah.getText().trim();
             String satuan      = lblSatuan.getText();
             String keterangan  = txtKeteranganDetail.getText().trim();
@@ -485,13 +451,10 @@ public class TransaksiSetorLimbahController implements Initializable {
             db.cstat.setBigDecimal(7, new BigDecimal(subTotal));
             db.cstat.executeUpdate();
 
-            // Tambahkan ke tabel lokal
             detailList.add(new DetailSetorLimbah(idDetail, idSetor, jenis, jumlah, satuan, keterangan, subTotal));
             hitungTotalTransaksi();
             btnSelesai.setDisable(false);
 
-            // Hanya bersihkan input detail & generate ID Detail baru
-            // ID Setor Limbah (txtIDSetorLimbahDetail) TIDAK diubah
             clearInputDetail();
             loadAutoIDDetail();
 
@@ -513,17 +476,11 @@ public class TransaksiSetorLimbahController implements Initializable {
         return true;
     }
 
-    /** Hanya bersihkan field input (Jumlah, Keterangan, SubTotal).
-     *  Kategori & Jenis Limbah tetap mengikuti pilihan terakhir supaya
-     *  user bisa cepat input beberapa limbah dengan kategori yang sama.
-     *  ID Detail dan ID Setor Limbah dibiarkan — ID Detail akan di-refresh oleh loadAutoIDDetail(). */
     private void clearInputDetail() {
         txtJumlah.clear();
         txtKeteranganDetail.clear();
         txtSubTotal.clear();
     }
-
-    // ===================== SELESAI (simpan header transaksi) =====================
 
     @FXML
     private void handleSelesai() {
@@ -548,8 +505,6 @@ public class TransaksiSetorLimbahController implements Initializable {
             showAlert(Alert.AlertType.ERROR, "Error Selesai", e.getMessage());
         }
     }
-
-    // ===================== BATAL =====================
 
     @FXML
     private void handleBatalTransaksi() {
@@ -577,8 +532,6 @@ public class TransaksiSetorLimbahController implements Initializable {
         detailList.clear();
         clearInputDetail();
 
-        // Muat ulang data referensi (siapa tahu Master Limbah / Master Produk
-        // berubah sejak transaksi terakhir dibuka) dan reset kategori ke default.
         loadDataLimbah();
         loadKeteranganProduk();
         cmbJenis.getSelectionModel().selectFirst();
