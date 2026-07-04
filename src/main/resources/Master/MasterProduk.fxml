@@ -4,42 +4,55 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="rootProduk" prefHeight="700.0" prefWidth="1000.0" spacing="14"
+<VBox fx:id="rootProduk" prefHeight="700.0" prefWidth="1040.0" spacing="14"
       styleClass="content-card" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="Master.MasterProdukController">
     <padding>
         <Insets bottom="18" left="20" right="20" top="18" />
     </padding>
 
-    <!-- HEADER + SEARCH -->
-    <HBox alignment="CENTER_LEFT" spacing="10">
-        <Label styleClass="page-title" text="Master Produk" />
-        <Region HBox.hgrow="ALWAYS" />
-        <TextField fx:id="txtCari" prefHeight="32.0" prefWidth="200.0" promptText="Cari produk..." />
-        <Button fx:id="btnSimpan1" mnemonicParsing="false" onAction="#handleCari" styleClass="btn,btn-cari" text="Cari" />
+    <!-- HEADER -->
+    <Label styleClass="page-title" text="Master Produk" />
+
+    <!-- SEARCH BAR (memfilter kartu produk di bawah) -->
+    <HBox alignment="CENTER_RIGHT" spacing="8">
+        <children>
+            <TextField fx:id="txtCari" prefHeight="32.0" prefWidth="280.0" promptText="Cari Produk..." />
+            <Button fx:id="btnCari" mnemonicParsing="false" onAction="#handleCari" styleClass="btn,btn-cari" text="Cari" />
+        </children>
     </HBox>
 
-    <!-- TABLE -->
-    <TableView fx:id="tbProduk" prefHeight="220.0" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="clmID" prefWidth="80.0" text="ID" />
-            <TableColumn fx:id="clmNama" prefWidth="180.0" text="Nama Produk" />
-            <TableColumn fx:id="clmStock" prefWidth="100.0" text="Stock" />
-            <TableColumn fx:id="clmHrgJual" prefWidth="120.0" text="Harga Jual" />
-            <TableColumn fx:id="clmSatuan" prefWidth="100.0" text="Satuan" />
-            <TableColumn fx:id="clmKeterangan" prefWidth="200.0" text="Keterangan" />
-        </columns>
-    </TableView>
+    <fx:define>
+        <ToggleGroup fx:id="tgProdukTemplate" />
+    </fx:define>
+
+    <!-- DAFTAR PRODUK BERUPA KARTU GAMBAR, MENGISI AREA TENGAH (bekas tempat tabel) -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+        <content>
+            <FlowPane fx:id="fpKartuProduk" hgap="14" vgap="14">
+                <children>
+                    <ToggleButton fx:id="cardPupukOrganikPadat" toggleGroup="$tgProdukTemplate" contentDisplay="GRAPHIC_ONLY" />
+                    <ToggleButton fx:id="cardPupukOrganikCair" toggleGroup="$tgProdukTemplate" contentDisplay="GRAPHIC_ONLY" />
+                    <ToggleButton fx:id="cardKompos" toggleGroup="$tgProdukTemplate" contentDisplay="GRAPHIC_ONLY" />
+                    <ToggleButton fx:id="cardBooster" toggleGroup="$tgProdukTemplate" contentDisplay="GRAPHIC_ONLY" />
+                    <ToggleButton fx:id="cardPupukNitrogen" toggleGroup="$tgProdukTemplate" contentDisplay="GRAPHIC_ONLY" />
+                    <ToggleButton fx:id="cardPupukKalsium" toggleGroup="$tgProdukTemplate" contentDisplay="GRAPHIC_ONLY" />
+                </children>
+            </FlowPane>
+        </content>
+    </ScrollPane>
 
     <!-- FORM -->
     <GridPane hgap="14" vgap="10">
@@ -51,7 +64,8 @@
         </columnConstraints>
 
         <Label styleClass="field-label" text="ID Produk" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-        <TextField fx:id="txtID" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <!-- ID Produk otomatis & tidak bisa diisi manual -> tampil abu-abu -->
+        <TextField fx:id="txtID" editable="false" style="-fx-background-color:#E4E4E4; -fx-opacity:1;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
         <Label styleClass="field-label" text="Harga Jual" GridPane.columnIndex="2" GridPane.rowIndex="0" />
         <TextField fx:id="txtHrgJual" GridPane.columnIndex="3" GridPane.rowIndex="0" />

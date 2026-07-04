@@ -2,6 +2,7 @@ module com.example.project2kelompok5 {
     requires javafx.controls;
     requires javafx.fxml;
     requires java.sql;
+    requires com.microsoft.sqlserver.jdbc;
 
     opens com.example.project2kelompok5 to javafx.fxml;
     opens Dashboard to javafx.fxml;

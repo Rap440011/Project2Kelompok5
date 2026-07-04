@@ -12,6 +12,10 @@ public class DBConnect {
 
     public DBConnect() {
         try {
+            // Daftarkan driver secara eksplisit -- jaga-jaga kalau ServiceLoader
+            // otomatis (module path / JPMS) tidak menemukannya sendiri.
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+
             String url = "jdbc:sqlserver://DESKTOP-KMBMNGK:55755;" +
                     "databaseName=BumiMakmur;" +
                     "user=sa;" +
