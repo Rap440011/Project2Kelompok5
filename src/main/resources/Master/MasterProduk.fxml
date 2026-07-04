@@ -10,7 +10,6 @@
 <?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.FlowPane?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
@@ -20,74 +19,117 @@
       styleClass="content-card" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="Master.MasterProdukController">
     <padding>
-        <Insets bottom="18" left="20" right="20" top="18" />
+        <Insets bottom="18" left="24" right="24" top="18" />
     </padding>
 
-    <!-- HEADER -->
-    <Label styleClass="page-title" text="Master Produk" />
-
-    <!-- SEARCH BAR (memfilter kartu produk di bawah) -->
-    <HBox alignment="CENTER_RIGHT" spacing="8">
-        <children>
-            <TextField fx:id="txtCari" prefHeight="32.0" prefWidth="280.0" promptText="Cari Produk..." />
-            <Button fx:id="btnCari" mnemonicParsing="false" onAction="#handleCari" styleClass="btn,btn-cari" text="Cari" />
-        </children>
+    <!-- HEADER ROW -->
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label styleClass="page-title" text="Master Produk" HBox.hgrow="ALWAYS" />
+        <Region HBox.hgrow="ALWAYS" />
+        <TextField fx:id="txtCari" prefHeight="34.0" prefWidth="260.0" promptText="🔍  Cari produk..." />
+        <Button fx:id="btnCari" mnemonicParsing="false" onAction="#handleCari"
+                styleClass="btn,btn-cari" text="Cari" prefHeight="34" prefWidth="80" />
     </HBox>
 
     <fx:define>
         <ToggleGroup fx:id="tgProdukTemplate" />
     </fx:define>
 
-    <!-- DAFTAR PRODUK BERUPA KARTU GAMBAR, MENGISI AREA TENGAH (bekas tempat tabel) -->
-    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" style="-fx-background-color: transparent;">
+    <!-- DAFTAR PRODUK — 2 KARTU PER BARIS via GridPane ──────────────────── -->
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                style="-fx-background-color:transparent; -fx-border-color:transparent;">
         <content>
-            <FlowPane fx:id="fpKartuProduk" hgap="14" vgap="14">
-                <children>
-                    <ToggleButton fx:id="cardPupukOrganikPadat" toggleGroup="$tgProdukTemplate" contentDisplay="GRAPHIC_ONLY" />
-                    <ToggleButton fx:id="cardPupukOrganikCair" toggleGroup="$tgProdukTemplate" contentDisplay="GRAPHIC_ONLY" />
-                    <ToggleButton fx:id="cardKompos" toggleGroup="$tgProdukTemplate" contentDisplay="GRAPHIC_ONLY" />
-                    <ToggleButton fx:id="cardBooster" toggleGroup="$tgProdukTemplate" contentDisplay="GRAPHIC_ONLY" />
-                    <ToggleButton fx:id="cardPupukNitrogen" toggleGroup="$tgProdukTemplate" contentDisplay="GRAPHIC_ONLY" />
-                    <ToggleButton fx:id="cardPupukKalsium" toggleGroup="$tgProdukTemplate" contentDisplay="GRAPHIC_ONLY" />
-                </children>
-            </FlowPane>
+            <!-- GridPane dengan 2 kolom sama lebar = 2 kartu per baris -->
+            <GridPane fx:id="gpKartuProduk" hgap="16" vgap="16">
+                <padding><Insets top="4" bottom="4" /></padding>
+                <columnConstraints>
+                    <ColumnConstraints percentWidth="50" />
+                    <ColumnConstraints percentWidth="50" />
+                </columnConstraints>
+
+                <!-- Baris 0 -->
+                <ToggleButton fx:id="cardPupukOrganikPadat" toggleGroup="$tgProdukTemplate"
+                              contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
+                              GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <ToggleButton fx:id="cardPupukOrganikCair" toggleGroup="$tgProdukTemplate"
+                              contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
+                              GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <!-- Baris 1 -->
+                <ToggleButton fx:id="cardKompos" toggleGroup="$tgProdukTemplate"
+                              contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
+                              GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <ToggleButton fx:id="cardBooster" toggleGroup="$tgProdukTemplate"
+                              contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
+                              GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <!-- Baris 2 -->
+                <ToggleButton fx:id="cardPupukNitrogen" toggleGroup="$tgProdukTemplate"
+                              contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
+                              GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <ToggleButton fx:id="cardPupukKalsium" toggleGroup="$tgProdukTemplate"
+                              contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
+                              GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            </GridPane>
         </content>
     </ScrollPane>
 
-    <!-- FORM -->
-    <GridPane hgap="14" vgap="10">
+    <!-- DIVIDER -->
+    <Region prefHeight="1" style="-fx-background-color:#DDDDDD;" />
+
+    <!-- FORM INPUT -->
+    <GridPane hgap="16" vgap="10">
         <columnConstraints>
-            <ColumnConstraints percentWidth="16" />
-            <ColumnConstraints percentWidth="34" />
-            <ColumnConstraints percentWidth="16" />
-            <ColumnConstraints percentWidth="34" />
+            <ColumnConstraints minWidth="100" prefWidth="120" />
+            <ColumnConstraints hgrow="ALWAYS" />
+            <ColumnConstraints minWidth="100" prefWidth="120" />
+            <ColumnConstraints hgrow="ALWAYS" />
         </columnConstraints>
 
-        <Label styleClass="field-label" text="ID Produk" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-        <!-- ID Produk otomatis & tidak bisa diisi manual -> tampil abu-abu -->
-        <TextField fx:id="txtID" editable="false" style="-fx-background-color:#E4E4E4; -fx-opacity:1;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+        <!-- Row 0 -->
+        <Label styleClass="field-label" text="ID Produk"
+               GridPane.columnIndex="0" GridPane.rowIndex="0" />
+        <TextField fx:id="txtID" editable="false"
+                   style="-fx-background-color:#EEEEEE; -fx-opacity:1;"
+                   GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-        <Label styleClass="field-label" text="Harga Jual" GridPane.columnIndex="2" GridPane.rowIndex="0" />
-        <TextField fx:id="txtHrgJual" GridPane.columnIndex="3" GridPane.rowIndex="0" />
+        <Label styleClass="field-label" text="Harga Jual"
+               GridPane.columnIndex="2" GridPane.rowIndex="0" />
+        <TextField fx:id="txtHrgJual"
+                   GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
-        <Label styleClass="field-label" text="Nama Produk" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-        <TextField fx:id="txtNama" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+        <!-- Row 1 -->
+        <Label styleClass="field-label" text="Nama Produk"
+               GridPane.columnIndex="0" GridPane.rowIndex="1" />
+        <TextField fx:id="txtNama"
+                   GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-        <Label styleClass="field-label" text="Satuan" GridPane.columnIndex="2" GridPane.rowIndex="1" />
-        <ComboBox fx:id="cmbSatuan" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+        <Label styleClass="field-label" text="Satuan"
+               GridPane.columnIndex="2" GridPane.rowIndex="1" />
+        <ComboBox fx:id="cmbSatuan" maxWidth="Infinity"
+                  GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
-        <Label styleClass="field-label" text="Stock" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-        <TextField fx:id="txtStock" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+        <!-- Row 2 -->
+        <Label styleClass="field-label" text="Stock"
+               GridPane.columnIndex="0" GridPane.rowIndex="2" />
+        <TextField fx:id="txtStock"
+                   GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-        <Label styleClass="field-label" text="Keterangan" GridPane.columnIndex="2" GridPane.rowIndex="2" />
-        <TextArea fx:id="txtKeterangan" prefRowCount="2" wrapText="true" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+        <Label styleClass="field-label" text="Keterangan"
+               GridPane.columnIndex="2" GridPane.rowIndex="2" />
+        <TextArea fx:id="txtKeterangan" prefRowCount="2" wrapText="true"
+                  GridPane.columnIndex="3" GridPane.rowIndex="2" />
     </GridPane>
 
     <!-- ACTION BUTTONS -->
     <HBox alignment="CENTER_RIGHT" spacing="10">
-        <Button fx:id="btnBatal" mnemonicParsing="false" onAction="#handleBatal" styleClass="btn,btn-batal" text="Batal" />
-        <Button fx:id="btnHapus" mnemonicParsing="false" onAction="#handleHapus" styleClass="btn,btn-hapus" text="Hapus" />
-        <Button fx:id="btnUbah" mnemonicParsing="false" onAction="#handleUbah" styleClass="btn,btn-ubah" text="Ubah" />
-        <Button fx:id="btnSimpan" mnemonicParsing="false" onAction="#handleSimpan" styleClass="btn,btn-simpan" text="Simpan" />
+        <Button fx:id="btnBatal"  mnemonicParsing="false" onAction="#handleBatal"
+                styleClass="btn,btn-batal"  text="Batal"  prefWidth="100" prefHeight="36" />
+        <Button fx:id="btnHapus"  mnemonicParsing="false" onAction="#handleHapus"
+                styleClass="btn,btn-hapus"  text="Hapus"  prefWidth="100" prefHeight="36" />
+        <Button fx:id="btnUbah"   mnemonicParsing="false" onAction="#handleUbah"
+                styleClass="btn,btn-ubah"   text="Ubah"   prefWidth="100" prefHeight="36" />
+        <Button fx:id="btnSimpan" mnemonicParsing="false" onAction="#handleSimpan"
+                styleClass="btn,btn-simpan" text="Simpan" prefWidth="100" prefHeight="36" />
     </HBox>
 </VBox>
