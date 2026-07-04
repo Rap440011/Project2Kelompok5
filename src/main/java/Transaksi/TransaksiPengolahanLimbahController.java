@@ -396,19 +396,6 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         });
     }
 
-    // ── Detail Transaksi (otomatis) ──────────────────────────────────────────
-    /**
-     * Membentuk ulang seluruh baris Detail Transaksi berdasarkan jenis produk yang
-     * sedang dipilih. Dipanggil setiap kali kartu produk berganti.
-     *
-     * Aturan jumlah baris (sesuai ATURAN):
-     *  - Pupuk Organik Padat        → 2 baris (Lumpur, Kotoran)
-     *  - Pupuk Organik Cair         → 1 baris (Air Limbah Tambak)
-     *  - Kompos                     → 1 baris (Lumpur/Endapan)
-     *  - Pupuk Nitrogen Tinggi      → 2 baris (Kotoran Udang, Bangkai Udang)
-     *  - Pupuk Kalsium              → 1 baris (Cangkang Udang)
-     *  - Booster                    → 1 baris (Cangkang Udang)
-     */
     private void rebuildDetailTransaksi() {
         daftarDetailTransaksi.clear();
 
