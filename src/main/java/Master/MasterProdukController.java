@@ -10,9 +10,6 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 
 import java.math.BigDecimal;
 import java.net.URL;
@@ -35,6 +32,10 @@ public class MasterProdukController implements Initializable {
     @FXML private ToggleButton cardBooster;
     @FXML private ToggleButton cardPupukNitrogen;
     @FXML private ToggleButton cardPupukKalsium;
+
+    // NOTE: TableView "Daftar Produk" sudah dihapus dari FXML atas permintaan.
+    // Data produk dari database tetap disimpan di `dataList` (in-memory),
+    // dipakai untuk mencocokkan kartu template dengan data yang sudah ada.
 
     // ── Style kartu ──────────────────────────────────────────────────────────
     private static final String CARD_NORMAL =
@@ -69,9 +70,17 @@ public class MasterProdukController implements Initializable {
     private static final String RUPIAH_PREFIX = "Rp ";
     private static final String DEFAULT_SALDO = "0";
 
+    private static final int MAX_NAMA_PRODUK_LEN = 30;
+
+    // Pola untuk menghapus angka + satuan (mis. "1Kg", "500 Liter", "2l")
+    // saat menormalisasi nama produk untuk pencocokan kartu ↔ database.
+    private static final String POLA_ANGKA_SATUAN = "\\d+\\s*(kg|liter|l)\\b";
+
     private final List<ToggleButton> daftarKartuProduk = new ArrayList<>();
-    private ObservableList<MasterProduk> dataList = FXCollections.observableArrayList();
-    private DBConnect db = new DBConnect();
+    private final ObservableList<MasterProduk> dataList = FXCollections.observableArrayList();
+    private final DBConnect db = new DBConnect();
+
+    private boolean sedangIsiForm = false;
 
     // ── Inner class template ─────────────────────────────────────────────────
     private static class ProdukTemplate {
@@ -89,11 +98,72 @@ public class MasterProdukController implements Initializable {
 
         addNumericOnly(txtStock, 10);
         setupHargaJualRupiah();
-        addMaxLength(txtNama, 30);
+        addMaxLength(txtNama, MAX_NAMA_PRODUK_LEN);
 
         setupKartuProduk();
+
         loadAutoID();
         loadData();
+    }
+
+    /**
+     * Mengisi seluruh form (ID, Nama, Stok, Harga, Satuan, Keterangan)
+     * berdasarkan satu baris data produk yang SUDAH ADA di database.
+     * Dipakai saat kartu template yang dipilih cocok dengan data di DB.
+     */
+    private void isiFormDariProduk(MasterProduk p) {
+        sedangIsiForm = true;
+        try {
+            txtID.setText(p.getIdProduk());
+            txtNama.setText(p.getNamaProduk());
+            txtStock.setText(p.getStok());
+
+            String hargaRaw = p.getHargaJual().replace(RUPIAH_PREFIX, "").trim();
+            txtHrgJual.setText(RUPIAH_PREFIX + hargaRaw);
+
+            cmbSatuan.setValue(p.getSatuan());
+            txtKeterangan.setText(p.getKeterangan());
+        } finally {
+            sedangIsiForm = false;
+        }
+    }
+
+    /**
+     * Cari produk di dataList (hasil loadData() dari database) berdasarkan nama.
+     *
+     * Nama dinormalisasi dulu (huruf kecil, buang angka + satuan seperti
+     * "1Kg"/"1Liter", rapikan spasi), lalu dicocokkan baik dengan equals
+     * maupun contains dua arah supaya "Booster" bisa mengenali
+     * "Pupuk Booster 1Kg" sebagai produk yang sama.
+     */
+    private MasterProduk findProdukByNama(String namaProduk) {
+        if (namaProduk == null) return null;
+        String target = normalisasiNama(namaProduk);
+        if (target.isEmpty()) return null;
+
+        for (MasterProduk p : dataList) {
+            if (p.getNamaProduk() == null) continue;
+            String namaDb = normalisasiNama(p.getNamaProduk());
+            if (namaDb.isEmpty()) continue;
+
+            if (namaDb.equals(target) || namaDb.contains(target) || target.contains(namaDb)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Menormalisasi nama produk supaya pencocokan kartu template ↔ nama di
+     * database tidak terpengaruh perbedaan angka/satuan atau kapitalisasi.
+     * Contoh: "Pupuk Booster 1Kg" -> "pupuk booster"
+     */
+    private String normalisasiNama(String s) {
+        return s.trim()
+                .toLowerCase(Locale.ROOT)
+                .replaceAll(POLA_ANGKA_SATUAN, "")
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
     // ── Setup kartu ──────────────────────────────────────────────────────────
@@ -118,15 +188,13 @@ public class MasterProdukController implements Initializable {
             card.setUserData(t);
             card.setStyle(CARD_NORMAL);
 
-            // Tinggi fixed, lebar mengikuti kolom GridPane (maxWidth=Infinity sudah di FXML)
             card.setPrefHeight(CARD_HEIGHT);
             card.setMinHeight(CARD_HEIGHT);
             card.setMaxHeight(CARD_HEIGHT);
-            card.setMaxWidth(Double.MAX_VALUE);   // stretch penuh kolom
+            card.setMaxWidth(Double.MAX_VALUE);
 
             card.setGraphic(buildKartuGraphic(t));
 
-            // Hover effect
             card.setOnMouseEntered(e -> {
                 if (!card.isSelected()) card.setStyle(CARD_HOVER);
             });
@@ -138,29 +206,45 @@ public class MasterProdukController implements Initializable {
         daftarKartuProduk.clear();
         daftarKartuProduk.addAll(cards);
 
+        // ── Listener kartu: cek dulu apakah produk ini sudah ada di database ──
         tgProdukTemplate.selectedToggleProperty().addListener((obs, oldT, newT) -> {
             for (ToggleButton c : cards) c.setStyle(CARD_NORMAL);
-            if (newT != null) {
-                ToggleButton sel = (ToggleButton) newT;
-                sel.setStyle(CARD_SELECTED);
-                ProdukTemplate t = (ProdukTemplate) sel.getUserData();
-                txtNama.setText(t.namaProduk);
-                cmbSatuan.setValue(t.satuan);
-                txtKeterangan.setText(t.keterangan);
+            if (newT == null) return;
+
+            ToggleButton sel = (ToggleButton) newT;
+            sel.setStyle(CARD_SELECTED);
+            ProdukTemplate t = (ProdukTemplate) sel.getUserData();
+
+            MasterProduk produkDiDatabase = findProdukByNama(t.namaProduk);
+
+            if (produkDiDatabase != null) {
+                // Produk SUDAH ADA di database -> isi form dengan data sebenarnya
+                isiFormDariProduk(produkDiDatabase);
+            } else {
+                // Produk BELUM ADA di database -> perlakukan sebagai data baru
+                sedangIsiForm = true;
+                try {
+                    loadAutoID();
+                    txtNama.setText(t.namaProduk);
+                    cmbSatuan.setValue(t.satuan);
+                    txtKeterangan.setText(t.keterangan);
+                    txtStock.clear();
+                    txtHrgJual.setText(RUPIAH_PREFIX + DEFAULT_SALDO);
+                } finally {
+                    sedangIsiForm = false;
+                }
             }
         });
     }
 
     /** Bangun graphic satu kartu: aksen hijau | gambar | teks (nama + komposisi) | badge satuan */
     private javafx.scene.Node buildKartuGraphic(ProdukTemplate t) {
-        // Aksen hijau kiri
         Region aksen = new Region();
         aksen.setPrefWidth(5);
         aksen.setMinWidth(5);
         aksen.setMaxHeight(Double.MAX_VALUE);
         aksen.setStyle("-fx-background-color:#2E7D32; -fx-background-radius:10 0 0 10;");
 
-        // Gambar produk
         ImageView iv = new ImageView();
         iv.setFitWidth(IMG_SIZE);
         iv.setFitHeight(IMG_SIZE);
@@ -170,23 +254,19 @@ public class MasterProdukController implements Initializable {
             if (is != null) iv.setImage(new Image(is));
         } catch (Exception ignored) {}
 
-        // Nama produk
         Label lblNama = new Label(t.namaProduk);
         lblNama.setStyle("-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#1B5E20;");
         lblNama.setWrapText(true);
         lblNama.setMaxWidth(Double.MAX_VALUE);
 
-        // Label "Komposisi :"
         Label lblKomTitle = new Label("Komposisi :");
         lblKomTitle.setStyle("-fx-font-size:11px; -fx-text-fill:#9E9E9E;");
 
-        // Isi komposisi
         Label lblKom = new Label("• " + t.keterangan);
         lblKom.setStyle("-fx-font-size:11px; -fx-text-fill:#757575;");
         lblKom.setWrapText(true);
         lblKom.setMaxWidth(Double.MAX_VALUE);
 
-        // Badge satuan (pojok kanan bawah)
         Label lblBadge = new Label(t.satuan);
         lblBadge.setStyle(
                 "-fx-background-color:#E8F5E9;" +
@@ -196,7 +276,6 @@ public class MasterProdukController implements Initializable {
                         "-fx-padding:2 8 2 8;" +
                         "-fx-background-radius:8;");
 
-        // Spacer untuk mendorong badge ke bawah
         Region spacer = new Region();
         VBox.setVgrow(spacer, Priority.ALWAYS);
 
@@ -218,7 +297,7 @@ public class MasterProdukController implements Initializable {
         return root;
     }
 
-    // ── Cari / filter ────────────────────────────────────────────────────────
+    // ── Cari / filter kartu template ───────────────────────────────────────────
     @FXML
     private void handleCari() {
         String keyword = txtCari.getText().trim().toLowerCase(Locale.ROOT);
@@ -254,6 +333,9 @@ public class MasterProdukController implements Initializable {
 
     private void addMaxLength(TextField f, int max) {
         f.textProperty().addListener((o, oldV, newV) -> {
+            // Saat form sedang diisi otomatis (dari database/template),
+            // jangan potong teksnya -- batasan hanya untuk input manual user.
+            if (sedangIsiForm) return;
             if (newV.length() > max) f.setText(newV.substring(0, max));
         });
     }
@@ -290,7 +372,7 @@ public class MasterProdukController implements Initializable {
         }
     }
 
-    // ── Load data ────────────────────────────────────────────────────────────
+    // ── Load data dari database (dipakai untuk pencocokan kartu template) ────
     private void loadData() {
         dataList.clear();
         try {
@@ -409,11 +491,15 @@ public class MasterProdukController implements Initializable {
     }
 
     private void clearForm() {
-        txtNama.clear(); txtStock.clear();
-        txtHrgJual.setText(RUPIAH_PREFIX + DEFAULT_SALDO);
-        txtKeterangan.clear();
-        cmbSatuan.getSelectionModel().selectFirst();
-        if (tgProdukTemplate != null) tgProdukTemplate.selectToggle(null);
+        sedangIsiForm = true;
+        try {
+            txtNama.clear(); txtStock.clear();
+            txtHrgJual.setText(RUPIAH_PREFIX + DEFAULT_SALDO);
+            txtKeterangan.clear();
+            if (tgProdukTemplate != null) tgProdukTemplate.selectToggle(null);
+        } finally {
+            sedangIsiForm = false;
+        }
     }
 
     private void showAlert(Alert.AlertType type, String title, String msg) {

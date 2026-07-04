@@ -91,7 +91,7 @@
     <HBox spacing="24" VBox.vgrow="ALWAYS">
 
         <!-- FORM DETAIL -->
-        <VBox prefWidth="370" spacing="10" HBox.hgrow="NEVER">
+        <VBox prefHeight="386.0" prefWidth="687.0" spacing="10" HBox.hgrow="NEVER">
             <Label style="-fx-font-weight:bold;-fx-font-size:13px;" styleClass="field-label" text="Input Detail Limbah" />
 
             <GridPane hgap="12" vgap="10">
@@ -100,6 +100,7 @@
                     <ColumnConstraints hgrow="ALWAYS" />
                 </columnConstraints>
                 <rowConstraints>
+                    <RowConstraints minHeight="32" />
                     <RowConstraints minHeight="32" />
                     <RowConstraints minHeight="32" />
                     <RowConstraints minHeight="32" />
@@ -114,20 +115,23 @@
                 <Label styleClass="field-label" text="ID Setor Limbah" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                 <TextField fx:id="txtIDSetorLimbahDetail" editable="false" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                <Label styleClass="field-label" text="Jenis" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <Label styleClass="field-label" text="Kategori" GridPane.columnIndex="0" GridPane.rowIndex="2" />
                 <ComboBox fx:id="cmbJenis" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-                <Label styleClass="field-label" text="Jumlah" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="3">
-                    <TextField fx:id="txtJumlah" HBox.hgrow="ALWAYS" />
+                <Label styleClass="field-label" text="Jenis Limbah" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <ComboBox fx:id="cmbJenisLimbah" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                <Label styleClass="field-label" text="Jumlah" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                    <TextField fx:id="txtJumlah" prefWidth="307.0" HBox.hgrow="ALWAYS" />
                     <Label fx:id="lblSatuan" minWidth="36" style="-fx-font-weight:bold;-fx-text-fill:#2E7D32;" styleClass="field-label" text="Kg" />
                 </HBox>
 
-                <Label styleClass="field-label" text="Keterangan" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                <TextArea fx:id="txtKeteranganDetail" maxWidth="Infinity" prefHeight="68" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                <Label styleClass="field-label" text="Keterangan" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                <TextArea fx:id="txtKeteranganDetail" maxWidth="Infinity" prefHeight="68" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
-                <Label styleClass="field-label" text="Sub Total (Rp)" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                <TextField fx:id="txtSubTotal" editable="false" maxWidth="Infinity" style="-fx-font-weight:bold;-fx-text-fill:#1565C0;" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                <Label styleClass="field-label" text="Sub Total (Rp)" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                <TextField fx:id="txtSubTotal" editable="false" maxWidth="Infinity" style="-fx-font-weight:bold;-fx-text-fill:#1565C0;" GridPane.columnIndex="1" GridPane.rowIndex="6" />
             </GridPane>
 
             <Region VBox.vgrow="ALWAYS" />
@@ -135,13 +139,13 @@
             <Button fx:id="btnTambahTransaksi" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleTambahTransaksi" styleClass="btn,btn-simpan" text="+ Tambah ke Transaksi" />
         </VBox>
 
-        <Separator orientation="VERTICAL" />
+        <Separator orientation="VERTICAL" prefHeight="386.0" prefWidth="35.0" />
 
         <!-- TABEL DETAIL + TOMBOL AKSI -->
         <VBox spacing="8" HBox.hgrow="ALWAYS">
             <Label style="-fx-font-weight:bold;-fx-font-size:13px;" styleClass="field-label" text="Daftar Detail Limbah" />
 
-            <TableView fx:id="tbDetail" VBox.vgrow="ALWAYS">
+            <TableView fx:id="tbDetail" prefHeight="312.0" prefWidth="784.0" VBox.vgrow="ALWAYS">
                 <columns>
                     <TableColumn fx:id="clmDetailID" prefWidth="120" text="ID Detail" />
                     <TableColumn fx:id="clmDetailJenis" prefWidth="75" text="Jenis" />
