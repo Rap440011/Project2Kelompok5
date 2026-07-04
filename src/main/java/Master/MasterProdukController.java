@@ -131,8 +131,6 @@ public class MasterProdukController implements Initializable {
                 txtNama.setText(t.namaProduk);
                 cmbSatuan.setValue(t.satuan);
                 txtKeterangan.setText(t.keterangan);
-                // ID Produk, Stock, dan Harga Jual TIDAK diisi otomatis:
-                // ID selalu auto-generate, Stock & Harga Jual diisi manual sesuai kondisi nyata.
             }
         });
     }
@@ -218,7 +216,7 @@ public class MasterProdukController implements Initializable {
     }
 
     private void setupHargaJualRupiah() {
-        txtHrgJual.setText(RUPIAH_PREFIX + DEFAULT_SALDO);
+        txtHrgJual.setText(RUPIAH_PREFIX);
 
         txtHrgJual.textProperty().addListener((obs, oldVal, newVal) -> {
 
