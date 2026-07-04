@@ -178,23 +178,13 @@ public class TransaksiPengolahanLimbahController implements Initializable {
 
     @FXML
     private void cmbSaatuan() {
-        // Validasi ringan: satuan harus sesuai jenis produk yang dipilih
+
         String jenis = cmbSatuan.getValue();
-        // Tidak memaksa, hanya placeholder jika ke depan perlu validasi satuan vs jenis produk.
+
     }
 
     // ===================== SIMPAN TRANSAKSI PENGOLAHAN LIMBAH =====================
 
-    /**
-     * Menyimpan header transaksi pengolahan limbah, lalu mengurangi stok pada master limbah
-     * sesuai jenis produk & kuantitas yang diinput.
-     *
-     * CATATAN: perlu stored procedure berikut disesuaikan dengan struktur DB kamu:
-     *  - sp_Insert_PengolahanLimbah(ID_Pengolahan, ID_Produk, Tanggal, Jenis_Produk, Kuantitas, Satuan, Keterangan)
-     *  - sp_Kurangi_StokLimbah(Nama_Bahan, Jumlah_Kurang)
-     *
-     * Hubungkan method ini ke tombol Simpan pada FXML (tambahkan Button dengan onAction="#handleSimpan").
-     */
     @FXML
     private void handleSimpan() {
         if (!validateForm()) return;
