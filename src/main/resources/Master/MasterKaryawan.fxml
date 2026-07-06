@@ -29,7 +29,6 @@
                  -fx-border-width:0 0 1 0;">
         <padding><Insets top="20" right="24" bottom="16" left="24"/></padding>
 
-        <Label text="" style="-fx-font-size:22px;" />
         <VBox spacing="1">
             <Label text="Master Karyawan"
                    style="-fx-font-size:18px; -fx-font-weight:bold; -fx-text-fill:#1A1A1A;" />
@@ -58,17 +57,17 @@
                       -fx-border-width:0;">
         <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
         <columns>
-            <TableColumn fx:id="clmNama"     text="Nama Karyawan"  prefWidth="200"
+            <TableColumn fx:id="clmNama"      text="Nama Karyawan"  prefWidth="200"
                          style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmUsn"      text="Username"       prefWidth="150"
+            <TableColumn fx:id="clmUsn"       text="Username"       prefWidth="150"
                          style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmHP"       text="No. HP"         prefWidth="150"
+            <TableColumn fx:id="clmHP"        text="No. HP"         prefWidth="150"
                          style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmJabatan"  text="Jabatan"        prefWidth="160"
+            <TableColumn fx:id="clmJabatan"   text="Jabatan"        prefWidth="160"
                          style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmJabatan1" text="Status"         prefWidth="140"
+            <TableColumn fx:id="clmJabatan1"  text="Status"         prefWidth="140"
                          style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmJabatan11" text="Jenis Kelamin" prefWidth="160"
+            <TableColumn fx:id="clmJabatan11" text="Jenis Kelamin"  prefWidth="160"
                          style="-fx-alignment:CENTER;" />
         </columns>
     </TableView>
@@ -92,14 +91,13 @@
         <GridPane hgap="16" vgap="10">
             <columnConstraints>
                 <ColumnConstraints minWidth="90" prefWidth="100" />
-                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" minWidth="180" maxWidth="260" />
                 <ColumnConstraints minWidth="90" prefWidth="100" />
-                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" minWidth="180" maxWidth="260" />
                 <ColumnConstraints minWidth="90" prefWidth="100" />
-                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" minWidth="180" maxWidth="260" />
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints minHeight="32" />
                 <RowConstraints minHeight="32" />
                 <RowConstraints minHeight="32" />
                 <RowConstraints minHeight="32" />
@@ -119,13 +117,13 @@
             <Label text="Provinsi"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="2" GridPane.rowIndex="0" />
-            <ComboBox fx:id="cmbProvinsi" maxWidth="Infinity"
+            <ComboBox fx:id="cmbProvinsi" prefWidth="180" maxWidth="1.7976931348623157E308"
                       GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
             <Label text="No. HP"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="4" GridPane.rowIndex="0" />
-            <TextField fx:id="txtHP"
+            <TextField fx:id="txtHP" promptText="08xxxxxxxxxx..."
                        style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
                        GridPane.columnIndex="5" GridPane.rowIndex="0" />
 
@@ -133,20 +131,20 @@
             <Label text="Nama Karyawan"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <TextField fx:id="txtNama"
+            <TextField fx:id="txtNama" promptText="Nama lengkap..."
                        style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
                        GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
             <Label text="Kabupaten"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <ComboBox fx:id="cmbKabupaten" maxWidth="Infinity"
+            <ComboBox fx:id="cmbKabupaten" prefWidth="180" maxWidth="1.7976931348623157E308"
                       GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
             <Label text="Jabatan"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="4" GridPane.rowIndex="1" />
-            <ComboBox fx:id="cmbJabatan" maxWidth="Infinity"
+            <ComboBox fx:id="cmbJabatan" prefWidth="180" maxWidth="1.7976931348623157E308"
                       GridPane.columnIndex="5" GridPane.rowIndex="1" />
 
             <!-- Baris 2: Username | Kecamatan | Status -->
@@ -160,7 +158,7 @@
             <Label text="Kecamatan"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="2" GridPane.rowIndex="2" />
-            <ComboBox fx:id="cmbKecamatan" maxWidth="Infinity"
+            <ComboBox fx:id="cmbKecamatan" prefWidth="180" maxWidth="1.7976931348623157E308"
                       GridPane.columnIndex="3" GridPane.rowIndex="2" />
 
             <Label text="Status"
@@ -182,30 +180,27 @@
             <Label text="Kelurahan"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="2" GridPane.rowIndex="3" />
-            <ComboBox fx:id="cmbKelurahan" maxWidth="Infinity"
+            <ComboBox fx:id="cmbKelurahan" prefWidth="180" maxWidth="1.7976931348623157E308"
                       GridPane.columnIndex="3" GridPane.rowIndex="3" />
 
             <Label text="Jenis Kelamin"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="4" GridPane.rowIndex="3" />
-            <ComboBox fx:id="cmbJK" maxWidth="Infinity"
+            <ComboBox fx:id="cmbJK" prefWidth="180" maxWidth="1.7976931348623157E308"
                       GridPane.columnIndex="5" GridPane.rowIndex="3" />
 
-            <!-- Baris 4: RT -->
-            <Label text="RT"
+            <!-- Baris 4: RT / RW -->
+            <Label text="RT / RW"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="2" GridPane.rowIndex="4" />
-            <TextField fx:id="txtRT"
-                       style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
-                       GridPane.columnIndex="3" GridPane.rowIndex="4" />
-
-            <!-- Baris 5: RW -->
-            <Label text="RW"
-                   style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                   GridPane.columnIndex="2" GridPane.rowIndex="5" />
-            <TextField fx:id="txtRW"
-                       style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
-                       GridPane.columnIndex="3" GridPane.rowIndex="5" />
+            <HBox spacing="8" GridPane.columnIndex="3" GridPane.rowIndex="4">
+                <TextField fx:id="txtRT" promptText="RT" prefWidth="80"
+                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" />
+                <Label text="/"
+                       style="-fx-font-size:14px; -fx-text-fill:#999; -fx-padding:4 0 0 0;" />
+                <TextField fx:id="txtRW" promptText="RW" prefWidth="80"
+                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" />
+            </HBox>
         </GridPane>
 
         <!-- ACTION BUTTONS -->

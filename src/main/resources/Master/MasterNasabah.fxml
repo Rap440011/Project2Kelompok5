@@ -51,7 +51,7 @@
                 styleClass="btn,btn-cari" />
     </HBox>
 
-    <!-- TABEL — vgrow ALWAYS langsung di TableView, tanpa wrapper VBox -->
+    <!-- TABEL -->
     <TableView fx:id="tbNasabah"
                VBox.vgrow="ALWAYS"
                style="-fx-background-color:white;
@@ -89,11 +89,11 @@
         <GridPane hgap="16" vgap="10">
             <columnConstraints>
                 <ColumnConstraints minWidth="90" prefWidth="100" />
-                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" minWidth="180" maxWidth="260" />
                 <ColumnConstraints minWidth="90" prefWidth="100" />
-                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" minWidth="180" maxWidth="260" />
                 <ColumnConstraints minWidth="90" prefWidth="100" />
-                <ColumnConstraints hgrow="ALWAYS" />
+                <ColumnConstraints hgrow="ALWAYS" minWidth="180" maxWidth="260" />
             </columnConstraints>
             <rowConstraints>
                 <RowConstraints minHeight="32" />
@@ -114,13 +114,13 @@
             <Label text="Provinsi"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="2" GridPane.rowIndex="0" />
-            <ComboBox fx:id="cmbProvinsi" maxWidth="Infinity"
+            <ComboBox fx:id="cmbProvinsi" prefWidth="180" maxWidth="1.7976931348623157E308"
                       GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
             <Label text="Bank"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="4" GridPane.rowIndex="0" />
-            <ComboBox fx:id="cmbBank" maxWidth="Infinity"
+            <ComboBox fx:id="cmbBank" prefWidth="180" maxWidth="1.7976931348623157E308"
                       GridPane.columnIndex="5" GridPane.rowIndex="0" />
 
             <!-- Baris 1: Nama | Kabupaten | No. Rekening -->
@@ -134,7 +134,7 @@
             <Label text="Kabupaten"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <ComboBox fx:id="cmbKabupaten" maxWidth="Infinity"
+            <ComboBox fx:id="cmbKabupaten" prefWidth="180" maxWidth="1.7976931348623157E308"
                       GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
             <Label text="No. Rekening"
@@ -155,7 +155,7 @@
             <Label text="Kecamatan"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="2" GridPane.rowIndex="2" />
-            <ComboBox fx:id="cmbKecamatan" maxWidth="Infinity"
+            <ComboBox fx:id="cmbKecamatan" prefWidth="180" maxWidth="1.7976931348623157E308"
                       GridPane.columnIndex="3" GridPane.rowIndex="2" />
 
             <Label text="Saldo"
@@ -166,11 +166,11 @@
                               -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
                        GridPane.columnIndex="5" GridPane.rowIndex="2" />
 
-            <!-- Baris 3: (kosong kiri) | Kelurahan | RT / RW -->
+            <!-- Baris 3: Kelurahan | RT / RW -->
             <Label text="Kelurahan"
                    style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                    GridPane.columnIndex="2" GridPane.rowIndex="3" />
-            <ComboBox fx:id="cmbKelurahan" maxWidth="Infinity"
+            <ComboBox fx:id="cmbKelurahan" prefWidth="180" maxWidth="1.7976931348623157E308"
                       GridPane.columnIndex="3" GridPane.rowIndex="3" />
 
             <Label text="RT / RW"

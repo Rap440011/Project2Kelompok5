@@ -55,6 +55,7 @@ public class MasterNasabahController implements Initializable {
     // ===================== INITIALIZE =====================
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        tbNasabah.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         setupTableColumns();
         setupInputRestrictions();
         setupBankCombobox();
