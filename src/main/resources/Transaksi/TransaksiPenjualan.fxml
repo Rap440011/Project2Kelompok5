@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefHeight="720.0" prefWidth="1100.0"
+      spacing="0" styleClass="content-card"
+      xmlns="http://javafx.com/javafx/26"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Transaksi.TransaksiPenjualanController">
+
+    <padding><Insets bottom="20" left="24" right="24" top="20"/></padding>
+
+    <!-- JUDUL -->
+    <Label styleClass="page-title" text="Transaksi Penjualan"/>
+    <Separator><VBox.margin><Insets bottom="10" top="8"/></VBox.margin></Separator>
+
+    <!-- ===== BARIS UTAMA: KIRI (form) + KANAN (kartu produk) ===== -->
+    <HBox spacing="24" VBox.vgrow="ALWAYS">
+
+        <!-- ===== PANEL KIRI ===== -->
+        <VBox spacing="16" prefWidth="460" HBox.hgrow="NEVER">
+
+            <!-- ── Transaksi Penjualan ── -->
+            <VBox spacing="10">
+                <Label text="Transaksi Penjualan"
+                       style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#1A1A1A;"/>
+
+                <GridPane hgap="12" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="130" prefWidth="140"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="32"/>
+                        <RowConstraints minHeight="32"/>
+                        <RowConstraints minHeight="32"/>
+                        <RowConstraints minHeight="32"/>
+                        <RowConstraints minHeight="36"/>
+                    </rowConstraints>
+
+                    <Label text="ID Penjualan"     styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtIDPenjualan" editable="false" maxWidth="Infinity"
+                               style="-fx-background-color:#F5F5F5;"
+                               GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                    <Label text="ID Karyawan"      styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="txtIDKaryawan" maxWidth="Infinity"
+                               promptText="Masukkan ID karyawan..."
+                               GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                    <Label text="Tanggal"          styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <DatePicker fx:id="dpTanggal" maxWidth="Infinity"
+                                GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                    <Label text="Total Pembelian"  styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <TextField fx:id="txtTotal" editable="false" maxWidth="Infinity"
+                               style="-fx-font-weight:bold;-fx-text-fill:#1B5E20;-fx-background-color:#F5F5F5;"
+                               GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                    <Button fx:id="btnSimpan" text="Simpan"
+                            onAction="#handleSimpan"
+                            maxWidth="Infinity" prefHeight="36"
+                            style="-fx-background-color:#2E7D32;-fx-text-fill:white;-fx-font-weight:bold;-fx-background-radius:6;"
+                            GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                </GridPane>
+            </VBox>
+
+            <Separator/>
+
+            <!-- ── Detail Penjualan ── -->
+            <VBox spacing="10">
+                <Label text="Detail Penjualan"
+                       style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#1A1A1A;"/>
+
+                <GridPane fx:id="gridDetail" hgap="12" vgap="10">
+                    <columnConstraints>
+                        <ColumnConstraints minWidth="130" prefWidth="140"/>
+                        <ColumnConstraints hgrow="ALWAYS"/>
+                    </columnConstraints>
+                    <rowConstraints>
+                        <RowConstraints minHeight="32"/>
+                        <RowConstraints minHeight="32"/>
+                        <RowConstraints minHeight="32"/>
+                        <RowConstraints minHeight="32"/>
+                        <RowConstraints minHeight="32"/>
+                        <RowConstraints minHeight="32"/>
+                    </rowConstraints>
+
+                    <Label text="ID Detail Transaksi" styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                    <TextField fx:id="txtIDDetail" editable="false" maxWidth="Infinity"
+                               style="-fx-background-color:#F5F5F5;"
+                               GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+
+                    <Label text="ID Penjualan"     styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                    <TextField fx:id="txtIDPenjualanDetail" editable="false" maxWidth="Infinity"
+                               style="-fx-background-color:#F5F5F5;"
+                               GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+
+                    <Label text="ID Produk"        styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                    <TextField fx:id="txtIDProduk" editable="false" maxWidth="Infinity"
+                               promptText="Pilih produk dari daftar kanan >"
+                               style="-fx-background-color:#F5F5F5;"
+                               GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+
+                    <Label text="Jumlah"           styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                    <TextField fx:id="txtJumlah" maxWidth="Infinity"
+                               promptText="Masukkan jumlah..."
+                               GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+
+                    <Label text="Harga Jual"       styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                    <TextField fx:id="txtHargaJual" editable="false" maxWidth="Infinity"
+                               style="-fx-background-color:#F5F5F5;"
+                               GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+
+                    <Label text="Subtotal"         styleClass="field-label" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                    <TextField fx:id="txtSubtotal" editable="false" maxWidth="Infinity"
+                               style="-fx-font-weight:bold;-fx-text-fill:#1565C0;-fx-background-color:#F5F5F5;"
+                               GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                </GridPane>
+
+                <!-- Tombol aksi detail -->
+                <HBox spacing="10" alignment="CENTER_LEFT">
+                    <Button fx:id="btnSelesai" text="Selesai"
+                            onAction="#handleSelesai"
+                            prefWidth="110" prefHeight="34"
+                            style="-fx-background-color:#2E7D32;-fx-text-fill:white;-fx-font-weight:bold;-fx-background-radius:6;"/>
+                    <Button fx:id="btnBatal" text="Batal"
+                            onAction="#handleBatal"
+                            prefWidth="100" prefHeight="34"
+                            style="-fx-background-color:#F9A825;-fx-text-fill:white;-fx-font-weight:bold;-fx-background-radius:6;"/>
+                    <Button fx:id="btnTambahProduk" text="Tambah Produk"
+                            onAction="#handleTambahProduk"
+                            prefWidth="130" prefHeight="34"
+                            style="-fx-background-color:#1565C0;-fx-text-fill:white;-fx-font-weight:bold;-fx-background-radius:6;"/>
+                </HBox>
+            </VBox>
+        </VBox>
+
+        <Separator orientation="VERTICAL"/>
+
+        <!-- ===== PANEL KANAN: DAFTAR PRODUK ===== -->
+        <VBox spacing="10" HBox.hgrow="ALWAYS">
+
+            <HBox alignment="CENTER_LEFT" spacing="10">
+                <Label text="Pilih Produk"
+                       style="-fx-font-weight:bold;-fx-font-size:13px;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <TextField fx:id="txtCariProduk"
+                           prefHeight="32" prefWidth="200"
+                           promptText="🔍  Cari produk..."
+                           style="-fx-background-radius:8;-fx-border-radius:8;
+                                  -fx-border-color:#E0E0E0;-fx-font-size:12px;"/>
+                <Button fx:id="btnCariProduk"
+                        mnemonicParsing="false" onAction="#handleCariProduk"
+                        text="Cari" prefHeight="32" prefWidth="60"
+                        styleClass="btn,btn-cari"/>
+            </HBox>
+
+            <fx:define>
+                <ToggleGroup fx:id="tgProduk"/>
+            </fx:define>
+
+            <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                        style="-fx-background-color:transparent;-fx-border-color:transparent;">
+                <content>
+                    <GridPane fx:id="gpKartuProduk" hgap="14" vgap="14">
+                        <padding><Insets top="2" bottom="2"/></padding>
+                        <columnConstraints>
+                            <ColumnConstraints percentWidth="100"/>
+                        </columnConstraints>
+                        <!-- 6 kartu, 1 kolom (sesuai wireframe gambar 2) -->
+                        <ToggleButton fx:id="cardPupukOrganikPadat" toggleGroup="$tgProduk"
+                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
+                                      GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+                        <ToggleButton fx:id="cardPupukOrganikCair" toggleGroup="$tgProduk"
+                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
+                                      GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+                        <ToggleButton fx:id="cardKompos" toggleGroup="$tgProduk"
+                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
+                                      GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+                        <ToggleButton fx:id="cardBooster" toggleGroup="$tgProduk"
+                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
+                                      GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+                        <ToggleButton fx:id="cardPupukNitrogen" toggleGroup="$tgProduk"
+                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
+                                      GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+                        <ToggleButton fx:id="cardPupukKalsium" toggleGroup="$tgProduk"
+                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
+                                      GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+                    </GridPane>
+                </content>
+            </ScrollPane>
+        </VBox>
+    </HBox>
+</VBox>
