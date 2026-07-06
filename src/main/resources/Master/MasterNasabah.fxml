@@ -59,13 +59,13 @@
                       -fx-border-width:0;">
         <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
         <columns>
-            <TableColumn fx:id="clmNama"  text="Nama Nasabah"  prefWidth="240"
+            <TableColumn fx:id="clmNama"  text="Nama Nasabah"  prefWidth="280"
                          style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmHP"    text="No. HP"        prefWidth="180"
+            <TableColumn fx:id="clmHP"    text="No. HP"        prefWidth="200"
                          style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmNoRek" text="No. Rekening"  prefWidth="220"
+            <TableColumn fx:id="clmNoRek" text="No. Rekening"  prefWidth="240"
                          style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmSaldo" text="Saldo"         prefWidth="200"
+            <TableColumn fx:id="clmSaldo" text="Saldo"         prefWidth="232"
                          style="-fx-alignment:CENTER;" />
         </columns>
     </TableView>
