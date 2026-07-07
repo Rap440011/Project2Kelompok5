@@ -36,6 +36,7 @@ public class MasterKaryawanController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        tbKaryawan.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         clmNama.setCellValueFactory(new PropertyValueFactory<>("namaKaryawan"));
         clmUsn.setCellValueFactory(new PropertyValueFactory<>("username"));
         clmHP.setCellValueFactory(new PropertyValueFactory<>("noHp"));

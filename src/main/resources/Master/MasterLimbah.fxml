@@ -8,11 +8,8 @@
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
 <VBox fx:id="rootLimbah"
@@ -23,24 +20,23 @@
       xmlns:fx="http://javafx.com/fxml/1"
       fx:controller="Master.MasterLimbahController">
 
-    <padding><Insets bottom="0" left="0" right="0" top="0" /></padding>
-
+    <!-- ══════════════════════════════════════════════════════════════════
+         HEADER
+    ═══════════════════════════════════════════════════════════════════ -->
     <HBox alignment="CENTER_LEFT" spacing="12"
           style="-fx-background-color:#FFFFFF; -fx-border-color:transparent transparent #EBEBEB transparent; -fx-border-width:0 0 1 0;">
         <padding><Insets top="20" right="24" bottom="16" left="24" /></padding>
 
-        <!-- Icon + Judul -->
-        <Label text="" style="-fx-font-size:22px;" />
+        <Label text="🗑" style="-fx-font-size:22px;" />
         <VBox spacing="1">
             <Label text="Master Limbah"
-                   style="-fx-font-size:18px; -fx-font-weight:bold; -fx-text-fill:#1A1A1A;" />
+                   style="-fx-font-size:19px; -fx-font-weight:bold; -fx-text-fill:#1A1A1A;" />
             <Label text="Kelola data jenis limbah Bumi Makmur"
                    style="-fx-font-size:11px; -fx-text-fill:#9E9E9E;" />
         </VBox>
 
         <Region HBox.hgrow="ALWAYS" />
 
-        <!-- Search -->
         <TextField fx:id="txtCari"
                    prefHeight="36.0" prefWidth="240.0"
                    promptText="🔍  Cari limbah..."
@@ -48,7 +44,7 @@
         <Button fx:id="btnCari"
                 mnemonicParsing="false" onAction="#handleCari"
                 text="Cari"
-                prefHeight="36" prefWidth="72"
+                prefHeight="36" prefWidth="80"
                 styleClass="btn,btn-cari" />
     </HBox>
 
@@ -57,44 +53,54 @@
     ═══════════════════════════════════════════════════════════════════ -->
     <VBox VBox.vgrow="ALWAYS"
           style="-fx-background-color:#FAFAFA;">
-        <padding><Insets top="16" right="24" bottom="0" left="24" /></padding>
+        <padding><Insets top="16" right="24" bottom="16" left="24" /></padding>
 
         <TableView fx:id="tbLimbah"
                    VBox.vgrow="ALWAYS"
-                   style="-fx-background-color:white; -fx-border-color:#E8E8E8; -fx-border-radius:10; -fx-background-radius:10;">
+                   style="-fx-background-color:white; -fx-border-color:#E8E8E8; -fx-border-radius:10; -fx-background-radius:10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 6, 0, 0, 2);">
             <columns>
                 <TableColumn fx:id="clmID"
                              text="ID Limbah"
-                             prefWidth="130"
+                             prefWidth="100"
                              style="-fx-alignment: CENTER"/>
-                <TableColumn fx:id="clmJenis"
-                             text="Jenis Limbah"
-                             prefWidth="160"
+                <TableColumn fx:id="clmNama"
+                             text="Nama Limbah"
+                             prefWidth="170"
+                             style="-fx-alignment: CENTER"/>
+                <TableColumn fx:id="clmKategori"
+                             text="Kategori"
+                             prefWidth="110"
                              style="-fx-alignment: CENTER"/>
                 <TableColumn fx:id="clmJumlah"
                              text="Satuan"
-                             prefWidth="140"
+                             prefWidth="100"
                              style="-fx-alignment: CENTER"/>
                 <TableColumn fx:id="clmHarga"
                              text="Harga (Rp)"
-                             prefWidth="150"
+                             prefWidth="130"
                              style="-fx-alignment: CENTER"/>
                 <TableColumn fx:id="clmKeterangan"
                              text="Keterangan"
-                             prefWidth="380"
+                             prefWidth="290"
                              style="-fx-alignment: CENTER"/>
             </columns>
         </TableView>
     </VBox>
 
     <!-- ══════════════════════════════════════════════════════════════════
-         PANEL FORM — background putih dengan top border
+         PANEL FORM
+         Catatan: form ini SENGAJA tidak memakai GridPane. Setiap baris
+         adalah HBox berisi beberapa "field group" (VBox) yang lebarnya
+         dikunci penuh (minWidth = prefWidth = maxWidth) baik di FXML
+         maupun di controller (lihat lockWidth() pada initialize()).
+         Ini menghilangkan bug lama: saat dropdown ComboBox dibuka, form
+         ikut melebar/tergeser karena GridPane menghitung ulang lebar
+         kolom berdasarkan konten popup.
     ═══════════════════════════════════════════════════════════════════ -->
-    <VBox spacing="14"
+    <VBox spacing="18"
           style="-fx-background-color:#FFFFFF; -fx-border-color:#EBEBEB transparent transparent transparent; -fx-border-width:1 0 0 0;">
         <padding><Insets top="20" right="24" bottom="20" left="24" /></padding>
 
-        <!-- Sub-judul form -->
         <HBox alignment="CENTER_LEFT" spacing="8">
             <Region prefWidth="3" prefHeight="18"
                     style="-fx-background-color:#2E7D32; -fx-background-radius:2;" />
@@ -102,65 +108,69 @@
                    style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#333333;" />
         </HBox>
 
-        <!-- FORM FIELDS — 4 kolom: label | field | label | field -->
-        <GridPane hgap="20" vgap="12">
-            <columnConstraints>
-                <!-- kolom label kiri -->
-                <ColumnConstraints minWidth="100" prefWidth="110" />
-                <!-- kolom field kiri -->
-                <ColumnConstraints hgrow="ALWAYS" />
-                <!-- kolom label kanan -->
-                <ColumnConstraints minWidth="100" prefWidth="110" />
-                <!-- kolom field kanan -->
-                <ColumnConstraints hgrow="ALWAYS" />
-            </columnConstraints>
-            <rowConstraints>
-                <RowConstraints minHeight="30" />
-                <RowConstraints minHeight="30" />
-                <RowConstraints minHeight="60" />
-            </rowConstraints>
+        <!-- Row 0: ID Limbah | Nama Limbah -->
+        <HBox spacing="24">
+            <VBox spacing="6" minWidth="150" prefWidth="150" maxWidth="150">
+                <Label text="ID Limbah"
+                       style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                <TextField fx:id="txtID" editable="false"
+                           minWidth="150" prefWidth="150" maxWidth="150"
+                           minHeight="34" prefHeight="34"
+                           style="-fx-background-color:#F5F5F5; -fx-opacity:1; -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;" />
+            </VBox>
 
-            <!-- Row 0 -->
-            <Label text="ID Limbah"
-                   style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;"
-                   GridPane.columnIndex="0" GridPane.rowIndex="0" />
-            <TextField fx:id="txtID" editable="false"
-                       style="-fx-background-color:#F5F5F5; -fx-opacity:1; -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
-                       GridPane.columnIndex="1" GridPane.rowIndex="0" />
+            <VBox spacing="6" minWidth="420" prefWidth="420" maxWidth="420">
+                <Label text="Nama Limbah"
+                       style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                <TextField fx:id="txtNama"
+                           promptText="Contoh: Plastik, Kertas, Kaca"
+                           minWidth="420" prefWidth="420" maxWidth="420"
+                           minHeight="34" prefHeight="34"
+                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;" />
+            </VBox>
+        </HBox>
 
-            <Label text="Harga (Rp)"
-                   style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;"
-                   GridPane.columnIndex="2" GridPane.rowIndex="0" />
-            <TextField fx:id="txtHarga"
-                       promptText="Contoh: 5000"
-                       style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
-                       GridPane.columnIndex="3" GridPane.rowIndex="0" />
+        <!-- Row 1: Kategori Limbah | Satuan | Harga -->
+        <HBox spacing="24">
+            <VBox spacing="6" minWidth="150" prefWidth="150" maxWidth="150">
+                <Label text="Kategori Limbah"
+                       style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                <ComboBox fx:id="cmbjenis"
+                          minWidth="150" prefWidth="150" maxWidth="150"
+                          minHeight="34" prefHeight="34"
+                          style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" />
+            </VBox>
 
-            <!-- Row 1 -->
-            <Label text="Jenis Limbah"
-                   style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;"
-                   GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <ComboBox fx:id="cmbjenis" maxWidth="Infinity"
-                      GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <VBox spacing="6" minWidth="150" prefWidth="150" maxWidth="150">
+                <Label text="Satuan"
+                       style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                <TextField fx:id="txtJumlah"
+                           promptText="Contoh: 100"
+                           minWidth="150" prefWidth="150" maxWidth="150"
+                           minHeight="34" prefHeight="34"
+                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;" />
+            </VBox>
 
-            <Label text="Satuan"
-                   style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;"
-                   GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <TextField fx:id="txtJumlah"
-                       promptText="Contoh: 100"
-                       style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
-                       GridPane.columnIndex="3" GridPane.rowIndex="1" />
+            <VBox spacing="6" minWidth="200" prefWidth="200" maxWidth="200">
+                <Label text="Harga (Rp)"
+                       style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                <TextField fx:id="txtHarga"
+                           promptText="Contoh: 5000"
+                           minWidth="200" prefWidth="200" maxWidth="200"
+                           minHeight="34" prefHeight="34"
+                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;" />
+            </VBox>
+        </HBox>
 
-            <!-- Row 2: Keterangan full width -->
+        <!-- Row 2: Keterangan full width -->
+        <VBox spacing="6">
             <Label text="Keterangan"
-                   style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;"
-                   GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                   style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
             <TextArea fx:id="txtketerangan"
                       prefRowCount="2" wrapText="true"
                       promptText="Tambahkan keterangan..."
-                      style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
-                      GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2" />
-        </GridPane>
+                      style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;" />
+        </VBox>
 
         <!-- ACTION BUTTONS -->
         <HBox alignment="CENTER_RIGHT" spacing="10">
@@ -181,5 +191,4 @@
                     prefWidth="100" prefHeight="36" />
         </HBox>
     </VBox>
-
 </VBox>
