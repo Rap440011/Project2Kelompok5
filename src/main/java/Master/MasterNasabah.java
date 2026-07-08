@@ -17,10 +17,11 @@ public class MasterNasabah {
     private StringProperty noRekening;
     private StringProperty saldo;
     private StringProperty bank;
+    private StringProperty status;
 
     public MasterNasabah(String idNasabah, String namaNasabah, String noHp,
                     String rt, String rw, String kelurahan, String kecamatan,
-                    String kabupaten, String provinsi, String noRekening, String saldo, String bank) {
+                    String kabupaten, String provinsi, String noRekening, String saldo, String bank, String status) {
         this.idNasabah   = new SimpleStringProperty(idNasabah);
         this.namaNasabah = new SimpleStringProperty(namaNasabah);
         this.noHp        = new SimpleStringProperty(noHp);
@@ -33,6 +34,7 @@ public class MasterNasabah {
         this.noRekening  = new SimpleStringProperty(noRekening);
         this.saldo       = new SimpleStringProperty(saldo);
         this.bank        = new SimpleStringProperty(bank);
+        this.status        = new SimpleStringProperty(status);
     }
 
     public String getIdNasabah()   { return idNasabah.get(); }
@@ -47,6 +49,7 @@ public class MasterNasabah {
     public String getNoRekening()  { return noRekening.get(); }
     public String getSaldo()       { return saldo.get(); }
     public String getBank()        { return bank.get();}
+    public String getStatus()     { return status.get(); }
 
     public StringProperty idNasabahProperty()   { return idNasabah; }
     public StringProperty namaNasabahProperty() { return namaNasabah; }
@@ -60,4 +63,5 @@ public class MasterNasabah {
     public StringProperty noRekeningProperty()  { return noRekening; }
     public StringProperty saldoProperty()       { return saldo; }
     public StringProperty bankProperty()        { return bank; }
+    public StringProperty statusProperty()       { return status; }
 }

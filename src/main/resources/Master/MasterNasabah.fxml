@@ -10,192 +10,120 @@
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Priority?>
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="rootNasabah"
-      prefHeight="700.0" prefWidth="1000.0"
-      spacing="0"
-      styleClass="content-card"
-      xmlns="http://javafx.com/javafx/26"
-      xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="Master.MasterNasabahController">
+<VBox fx:id="rootNasabah" prefHeight="700.0" prefWidth="1000.0" spacing="0" styleClass="content-card" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Master.MasterNasabahController">
 
     <!-- TOP BAR -->
-    <HBox alignment="CENTER_LEFT" spacing="12"
-          style="-fx-background-color:#FFFFFF;
-                 -fx-border-color:transparent transparent #EBEBEB transparent;
-                 -fx-border-width:0 0 1 0;">
-        <padding><Insets top="20" right="24" bottom="16" left="24"/></padding>
+    <HBox alignment="CENTER_LEFT" spacing="12" style="-fx-background-color:#FFFFFF;                  -fx-border-color:transparent transparent #EBEBEB transparent;                  -fx-border-width:0 0 1 0;">
+        <padding><Insets bottom="16" left="24" right="24" top="20" /></padding>
 
-        <Label text="" style="-fx-font-size:22px;" />
+        <Label style="-fx-font-size:22px;" text="" />
         <VBox spacing="1">
-            <Label text="Master Nasabah"
-                   style="-fx-font-size:18px; -fx-font-weight:bold; -fx-text-fill:#1A1A1A;" />
-            <Label text="Kelola data nasabah Bumi Makmur"
-                   style="-fx-font-size:11px; -fx-text-fill:#9E9E9E;" />
+            <Label style="-fx-font-size:18px; -fx-font-weight:bold; -fx-text-fill:#1A1A1A;" text="Master Nasabah" />
+            <Label style="-fx-font-size:11px; -fx-text-fill:#9E9E9E;" text="Kelola data nasabah Bumi Makmur" />
         </VBox>
 
         <Region HBox.hgrow="ALWAYS" />
 
-        <TextField fx:id="txtCari"
-                   prefHeight="36" prefWidth="240"
-                   promptText="🔍  Cari nasabah..."
-                   style="-fx-background-radius:8; -fx-border-radius:8;
-                          -fx-border-color:#E0E0E0; -fx-font-size:12px;" />
-        <Button fx:id="btnCari"
-                mnemonicParsing="false" onAction="#handleCari"
-                text="Cari" prefHeight="36" prefWidth="72"
-                styleClass="btn,btn-cari" />
+        <TextField fx:id="txtCari" prefHeight="36" prefWidth="240" promptText="🔍  Cari nasabah..." style="-fx-background-radius:8; -fx-border-radius:8;                           -fx-border-color:#E0E0E0; -fx-font-size:12px;" />
+        <Button fx:id="btnCari" mnemonicParsing="false" onAction="#handleCari" prefHeight="36" prefWidth="72" styleClass="btn,btn-cari" text="Cari" />
     </HBox>
 
     <!-- TABEL -->
-    <TableView fx:id="tbNasabah"
-               VBox.vgrow="ALWAYS"
-               style="-fx-background-color:white;
-                      -fx-border-color:#E8E8E8 transparent transparent transparent;
-                      -fx-border-width:0;">
-        <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
+    <TableView fx:id="tbNasabah" prefHeight="308.0" prefWidth="952.0" style="-fx-background-color:white;                       -fx-border-color:#E8E8E8 transparent transparent transparent;                       -fx-border-width:0;" VBox.vgrow="ALWAYS">
+        <padding><Insets bottom="0" left="24" right="24" top="0" /></padding>
         <columns>
-            <TableColumn fx:id="clmNama"  text="Nama Nasabah"  prefWidth="280"
-                         style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmHP"    text="No. HP"        prefWidth="200"
-                         style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmNoRek" text="No. Rekening"  prefWidth="240"
-                         style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmSaldo" text="Saldo"         prefWidth="232"
-                         style="-fx-alignment:CENTER;" />
+            <TableColumn fx:id="clmNama" prefWidth="226.0" style="-fx-alignment:CENTER;" text="Nama Nasabah" />
+            <TableColumn fx:id="clmHP" prefWidth="199.0" style="-fx-alignment:CENTER;" text="No. HP" />
+            <TableColumn fx:id="clmNoRek" prefWidth="166.0" style="-fx-alignment:CENTER;" text="No. Rekening" />
+            <TableColumn fx:id="clmSaldo" prefWidth="213.0" style="-fx-alignment:CENTER;" text="Saldo" />
+         <TableColumn fx:id="clmStatus" prefWidth="172.0" style="-fx-alignment:CENTER;" text="Status" />
         </columns>
     </TableView>
 
     <!-- FORM PANEL -->
-    <VBox spacing="14"
-          style="-fx-background-color:#FFFFFF;
-                 -fx-border-color:#EBEBEB transparent transparent transparent;
-                 -fx-border-width:1 0 0 0;">
-        <padding><Insets top="18" right="24" bottom="20" left="24"/></padding>
+    <VBox spacing="14" style="-fx-background-color:#FFFFFF;                  -fx-border-color:#EBEBEB transparent transparent transparent;                  -fx-border-width:1 0 0 0;">
+        <padding><Insets bottom="20" left="24" right="24" top="18" /></padding>
 
         <!-- Sub-judul -->
         <HBox alignment="CENTER_LEFT" spacing="8">
-            <Region prefWidth="3" prefHeight="18"
-                    style="-fx-background-color:#2E7D32; -fx-background-radius:2;" />
-            <Label text="Detail Nasabah"
-                   style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#333333;" />
+            <Region prefHeight="18" prefWidth="3" style="-fx-background-color:#2E7D32; -fx-background-radius:2;" />
+            <Label style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#333333;" text="Detail Nasabah" />
         </HBox>
 
         <!-- FORM: 6 kolom -->
         <GridPane hgap="16" vgap="10">
             <columnConstraints>
                 <ColumnConstraints minWidth="90" prefWidth="100" />
-                <ColumnConstraints hgrow="ALWAYS" minWidth="180" maxWidth="260" />
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="260" minWidth="180" />
                 <ColumnConstraints minWidth="90" prefWidth="100" />
-                <ColumnConstraints hgrow="ALWAYS" minWidth="180" maxWidth="260" />
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="260" minWidth="180" />
                 <ColumnConstraints minWidth="90" prefWidth="100" />
-                <ColumnConstraints hgrow="ALWAYS" minWidth="180" maxWidth="260" />
+                <ColumnConstraints hgrow="ALWAYS" maxWidth="260" minWidth="180" />
             </columnConstraints>
             <rowConstraints>
-                <RowConstraints minHeight="32" />
-                <RowConstraints minHeight="32" />
-                <RowConstraints minHeight="32" />
-                <RowConstraints minHeight="32" />
+                <RowConstraints minHeight="32.0" />
+                <RowConstraints minHeight="32.0" />
+                <RowConstraints minHeight="32.0" />
+                <RowConstraints minHeight="32.0" />
+                <RowConstraints minHeight="32.0" />
             </rowConstraints>
 
             <!-- Baris 0: ID Nasabah | Provinsi | Bank -->
-            <Label text="ID Nasabah"
-                   style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                   GridPane.columnIndex="0" GridPane.rowIndex="0" />
-            <TextField fx:id="txtID" editable="false"
-                       style="-fx-background-color:#F5F5F5; -fx-opacity:1;
-                              -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
-                       GridPane.columnIndex="1" GridPane.rowIndex="0" />
+            <Label style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" text="ID Nasabah" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+            <TextField fx:id="txtID" editable="false" style="-fx-background-color:#F5F5F5; -fx-opacity:1;                               -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-            <Label text="Provinsi"
-                   style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                   GridPane.columnIndex="2" GridPane.rowIndex="0" />
-            <ComboBox fx:id="cmbProvinsi" prefWidth="180" maxWidth="1.7976931348623157E308"
-                      GridPane.columnIndex="3" GridPane.rowIndex="0" />
+            <Label style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" text="Provinsi" GridPane.columnIndex="2" GridPane.rowIndex="0" />
+            <ComboBox fx:id="cmbProvinsi" maxWidth="1.7976931348623157E308" prefWidth="180" GridPane.columnIndex="3" GridPane.rowIndex="0" />
 
-            <Label text="Bank"
-                   style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                   GridPane.columnIndex="4" GridPane.rowIndex="0" />
-            <ComboBox fx:id="cmbBank" prefWidth="180" maxWidth="1.7976931348623157E308"
-                      GridPane.columnIndex="5" GridPane.rowIndex="0" />
+            <Label style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" text="Bank" GridPane.columnIndex="4" GridPane.rowIndex="0" />
+            <ComboBox fx:id="cmbBank" maxWidth="1.7976931348623157E308" prefWidth="180" GridPane.columnIndex="5" GridPane.rowIndex="0" />
 
             <!-- Baris 1: Nama | Kabupaten | No. Rekening -->
-            <Label text="Nama Nasabah"
-                   style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                   GridPane.columnIndex="0" GridPane.rowIndex="1" />
-            <TextField fx:id="txtNama" promptText="Nama lengkap..."
-                       style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
-                       GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" text="Nama Nasabah" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+            <TextField fx:id="txtNama" promptText="Nama lengkap..." style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-            <Label text="Kabupaten"
-                   style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                   GridPane.columnIndex="2" GridPane.rowIndex="1" />
-            <ComboBox fx:id="cmbKabupaten" prefWidth="180" maxWidth="1.7976931348623157E308"
-                      GridPane.columnIndex="3" GridPane.rowIndex="1" />
+            <Label style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" text="Kabupaten" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+            <ComboBox fx:id="cmbKabupaten" maxWidth="1.7976931348623157E308" prefWidth="180" GridPane.columnIndex="3" GridPane.rowIndex="1" />
 
-            <Label text="No. Rekening"
-                   style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                   GridPane.columnIndex="4" GridPane.rowIndex="1" />
-            <TextField fx:id="txtNoRek" promptText="Nomor rekening..."
-                       style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
-                       GridPane.columnIndex="5" GridPane.rowIndex="1" />
+            <Label style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" text="No. Rekening" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+            <TextField fx:id="txtNoRek" promptText="Nomor rekening..." style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" GridPane.columnIndex="5" GridPane.rowIndex="1" />
 
             <!-- Baris 2: No. HP | Kecamatan | Saldo -->
-            <Label text="No. HP"
-                   style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                   GridPane.columnIndex="0" GridPane.rowIndex="2" />
-            <TextField fx:id="txtHP" promptText="08xxxxxxxxxx..."
-                       style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
-                       GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <Label style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" text="No. HP" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+            <TextField fx:id="txtHP" promptText="08xxxxxxxxxx..." style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-            <Label text="Kecamatan"
-                   style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                   GridPane.columnIndex="2" GridPane.rowIndex="2" />
-            <ComboBox fx:id="cmbKecamatan" prefWidth="180" maxWidth="1.7976931348623157E308"
-                      GridPane.columnIndex="3" GridPane.rowIndex="2" />
+            <Label style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" text="Kecamatan" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+            <ComboBox fx:id="cmbKecamatan" maxWidth="1.7976931348623157E308" prefWidth="180" GridPane.columnIndex="3" GridPane.rowIndex="2" />
 
-            <Label text="Saldo"
-                   style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                   GridPane.columnIndex="4" GridPane.rowIndex="2" />
-            <TextField fx:id="txtSaldo" editable="false"
-                       style="-fx-background-color:#F5F5F5; -fx-opacity:1;
-                              -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
-                       GridPane.columnIndex="5" GridPane.rowIndex="2" />
+            <Label style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" text="Saldo" GridPane.columnIndex="4" GridPane.rowIndex="2" />
+            <TextField fx:id="txtSaldo" editable="false" style="-fx-background-color:#F5F5F5; -fx-opacity:1;                               -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" GridPane.columnIndex="5" GridPane.rowIndex="2" />
 
-            <!-- Baris 3: Kelurahan | RT / RW -->
-            <Label text="Kelurahan"
-                   style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                   GridPane.columnIndex="2" GridPane.rowIndex="3" />
-            <ComboBox fx:id="cmbKelurahan" prefWidth="180" maxWidth="1.7976931348623157E308"
-                      GridPane.columnIndex="3" GridPane.rowIndex="3" />
+            <!-- Baris 3: Kelurahan | Status -->
+            <Label style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" text="Kelurahan" GridPane.columnIndex="2" GridPane.rowIndex="3" />
+            <ComboBox fx:id="cmbKelurahan" maxWidth="1.7976931348623157E308" prefWidth="180" GridPane.columnIndex="3" GridPane.rowIndex="3" />
 
-            <Label text="RT / RW"
-                   style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                   GridPane.columnIndex="4" GridPane.rowIndex="3" />
-            <HBox spacing="8" GridPane.columnIndex="5" GridPane.rowIndex="3">
-                <TextField fx:id="txtRT" promptText="RT" prefWidth="80"
-                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" />
-                <Label text="/"
-                       style="-fx-font-size:14px; -fx-text-fill:#999; -fx-padding:4 0 0 0;" />
-                <TextField fx:id="txtRW" promptText="RW" prefWidth="80"
-                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" />
+            <Label style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" text="Status" GridPane.columnIndex="4" GridPane.rowIndex="3" />
+            <TextField fx:id="txtStatus" editable="false" focusTraversable="false" style="-fx-background-color:#F5F5F5; -fx-opacity:1;                               -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" GridPane.columnIndex="5" GridPane.rowIndex="3" />
+
+            <!-- Baris 4: RT / RW (di bawah Kelurahan) -->
+            <Label style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" text="RT / RW" GridPane.columnIndex="2" GridPane.rowIndex="4" />
+            <HBox spacing="8" GridPane.columnIndex="3" GridPane.rowIndex="4">
+                <TextField fx:id="txtRT" prefWidth="80" promptText="RT" style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" />
+                <Label style="-fx-font-size:14px; -fx-text-fill:#999; -fx-padding:4 0 0 0;" text="/" />
+                <TextField fx:id="txtRW" prefWidth="80.0" promptText="RW" style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;" />
             </HBox>
         </GridPane>
 
         <!-- ACTION BUTTONS -->
         <HBox alignment="CENTER_RIGHT" spacing="10">
-            <Button fx:id="btnBatal"  mnemonicParsing="false" onAction="#handleBatal"
-                    styleClass="btn,btn-batal"  text="Batal"  prefWidth="100" prefHeight="36" />
-            <Button fx:id="btnHapus"  mnemonicParsing="false" onAction="#handleHapus"
-                    styleClass="btn,btn-hapus"  text="Hapus"  prefWidth="100" prefHeight="36" />
-            <Button fx:id="btnUbah"   mnemonicParsing="false" onAction="#handleUbah"
-                    styleClass="btn,btn-ubah"   text="Ubah"   prefWidth="100" prefHeight="36" />
-            <Button fx:id="btnSimpan" mnemonicParsing="false" onAction="#handleSimpan"
-                    styleClass="btn,btn-simpan" text="Simpan" prefWidth="100" prefHeight="36" />
+            <Button fx:id="btnBatal" mnemonicParsing="false" onAction="#handleBatal" prefHeight="36" prefWidth="100" styleClass="btn,btn-batal" text="Batal" />
+            <Button fx:id="btnHapus" mnemonicParsing="false" onAction="#handleHapus" prefHeight="36" prefWidth="100" styleClass="btn,btn-hapus" text="Hapus" />
+            <Button fx:id="btnUbah" mnemonicParsing="false" onAction="#handleUbah" prefHeight="36" prefWidth="100" styleClass="btn,btn-ubah" text="Ubah" />
+            <Button fx:id="btnSimpan" mnemonicParsing="false" onAction="#handleSimpan" prefHeight="36" prefWidth="100" styleClass="btn,btn-simpan" text="Simpan" />
         </HBox>
     </VBox>
 

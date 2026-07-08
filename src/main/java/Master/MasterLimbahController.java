@@ -15,8 +15,8 @@ import java.util.ResourceBundle;
 
 public class MasterLimbahController implements Initializable {
 
-    @FXML private TableView<MasterLimbah>           tbLimbah;
-    @FXML private TableColumn<MasterLimbah, String> clmID, clmNama, clmKategori, clmJumlah, clmHarga, clmKeterangan;
+    @FXML private TableView<MasterLimbah> tbLimbah;
+    @FXML private TableColumn<MasterLimbah, String> clmID, clmNama, clmKategori, clmSatuan, clmJumlah, clmHarga, clmKeterangan;
 
     @FXML private TextField  txtID, txtNama, txtHarga, txtJumlah;
     @FXML private TextField  txtCari;
@@ -32,15 +32,24 @@ public class MasterLimbahController implements Initializable {
         clmID.setCellValueFactory(new PropertyValueFactory<>("idLimbah"));
         clmNama.setCellValueFactory(new PropertyValueFactory<>("namaLimbah"));
         clmKategori.setCellValueFactory(new PropertyValueFactory<>("jenisLimbah"));
-        clmJumlah.setCellValueFactory(new PropertyValueFactory<>("satuan"));
+        clmSatuan.setCellValueFactory(new PropertyValueFactory<>("satuan"));
+        clmJumlah.setCellValueFactory(new PropertyValueFactory<>("jumlah"));
         clmHarga.setCellValueFactory(new PropertyValueFactory<>("harga"));
         clmKeterangan.setCellValueFactory(new PropertyValueFactory<>("keterangan"));
 
         cmbjenis.setItems(FXCollections.observableArrayList("Padat", "Cair"));
         cmbjenis.getSelectionModel().selectFirst();
 
+        // Satuan tidak bisa diedit manual & tampil abu-abu
+        txtJumlah.setEditable(false);
+        txtJumlah.setStyle("-fx-background-color:#F5F5F5; -fx-opacity:1; " +
+                "-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;");
+
+        // Satuan otomatis mengikuti kategori limbah
+        cmbjenis.valueProperty().addListener((obs, oldVal, newVal) -> updateSatuanOtomatis(newVal));
+        updateSatuanOtomatis(cmbjenis.getValue());
+
         addNumericOnly(txtHarga);
-        addNumericOnly(txtJumlah);
         addAlphaOnly(txtNama);
 
         loadAutoID();
@@ -51,11 +60,17 @@ public class MasterLimbahController implements Initializable {
                 txtID.setText(newVal.getIdLimbah());
                 txtNama.setText(newVal.getNamaLimbah());
                 cmbjenis.setValue(newVal.getJenisLimbah());
-                txtJumlah.setText(newVal.getSatuan());
+                txtJumlah.setText(newVal.getSatuan()); // menampilkan satuan (Kilo/Liter)
                 txtHarga.setText(newVal.getHarga());
                 txtketerangan.setText(newVal.getKeterangan());
             }
         });
+    }
+
+    /** Menentukan satuan otomatis: Cair -> Liter, Padat -> Kilo */
+    private void updateSatuanOtomatis(String kategori) {
+        if (kategori == null) return;
+        txtJumlah.setText(kategori.equalsIgnoreCase("Cair") ? "Liter" : "Kilo");
     }
 
     private void addNumericOnly(TextField field) {
@@ -65,7 +80,6 @@ public class MasterLimbahController implements Initializable {
         });
     }
 
-    /** Hanya mengizinkan huruf dan spasi (nama limbah bebas diisi selama huruf). */
     private void addAlphaOnly(TextField field) {
         field.textProperty().addListener((obs, oldVal, newVal) -> {
             String filtered = newVal.replaceAll("[^a-zA-Z ]", "");
@@ -89,12 +103,13 @@ public class MasterLimbahController implements Initializable {
             db.result = db.cstat.executeQuery();
             while (db.result.next()) {
                 dataList.add(new MasterLimbah(
-                    db.result.getString("ID_Limbah"),
-                    db.result.getString("Nama_Limbah"),
-                    db.result.getString("Kategori"),
-                    db.result.getString("Satuan"),
-                    db.result.getString("Harga"),
-                    db.result.getString("Keterangan")
+                        db.result.getString("ID_Limbah"),
+                        db.result.getString("Nama_Limbah"),
+                        db.result.getString("Kategori"),
+                        db.result.getString("Satuan"),
+                        db.result.getString("Harga"),
+                        db.result.getString("Keterangan"),
+                        String.valueOf(db.result.getInt("Jumlah"))
                 ));
             }
             tbLimbah.setItems(dataList);
@@ -111,12 +126,13 @@ public class MasterLimbahController implements Initializable {
             db.result = db.cstat.executeQuery();
             while (db.result.next()) {
                 dataList.add(new MasterLimbah(
-                    db.result.getString("ID_Limbah"),
-                    db.result.getString("Nama_Limbah"),
-                    db.result.getString("Kategori"),
-                    db.result.getString("Satuan"),
-                    db.result.getString("Harga"),
-                    db.result.getString("Keterangan")
+                        db.result.getString("ID_Limbah"),
+                        db.result.getString("Nama_Limbah"),
+                        db.result.getString("Kategori"),
+                        db.result.getString("Satuan"),
+                        db.result.getString("Harga"),
+                        db.result.getString("Keterangan"),
+                        String.valueOf(db.result.getInt("Jumlah"))
                 ));
             }
             tbLimbah.setItems(dataList);
@@ -143,13 +159,15 @@ public class MasterLimbahController implements Initializable {
         }
         if (!validateForm()) return;
         try {
+            // sp_Update_Limbah: ID, Nama, Kategori, Jumlah, Satuan, Harga, Keterangan
             db.cstat = db.conn.prepareCall("{CALL sp_Update_Limbah(?,?,?,?,?,?,?)}");
             db.cstat.setString(1, txtID.getText());
             db.cstat.setString(2, txtNama.getText());
             db.cstat.setString(3, cmbjenis.getValue());
-            db.cstat.setString(4, txtJumlah.getText());
-            db.cstat.setString(5, txtHarga.getText());
-            db.cstat.setString(6, txtketerangan.getText());
+            db.cstat.setInt   (4, 0); // Jumlah default 0
+            db.cstat.setString(5, txtJumlah.getText()); // Satuan otomatis
+            db.cstat.setBigDecimal(6, new java.math.BigDecimal(txtHarga.getText().trim()));
+            db.cstat.setString(7, txtketerangan.getText());
             db.cstat.executeUpdate();
             showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data limbah berhasil diubah.");
             clearForm();
@@ -167,8 +185,8 @@ public class MasterLimbahController implements Initializable {
             return;
         }
         Alert konfirmasi = new Alert(Alert.AlertType.CONFIRMATION,
-            "Yakin ingin menghapus limbah ID: " + txtID.getText() + "?",
-            ButtonType.YES, ButtonType.NO);
+                "Yakin ingin menghapus limbah ID: " + txtID.getText() + "?",
+                ButtonType.YES, ButtonType.NO);
         konfirmasi.setTitle("Konfirmasi Hapus");
         konfirmasi.showAndWait().ifPresent(bt -> {
             if (bt == ButtonType.YES) {
@@ -190,10 +208,9 @@ public class MasterLimbahController implements Initializable {
     @FXML
     private void handleBatal() {
         boolean adaIsi = !txtNama.getText().trim().isEmpty()      ||
-                          cmbjenis.getValue() != null && !cmbjenis.getValue().isEmpty() ||
-                          !txtJumlah.getText().trim().isEmpty()      ||
-                          !txtHarga.getText().trim().isEmpty()       ||
-                          !txtketerangan.getText().trim().isEmpty();
+                cmbjenis.getValue() != null && !cmbjenis.getValue().isEmpty() ||
+                !txtHarga.getText().trim().isEmpty()       ||
+                !txtketerangan.getText().trim().isEmpty();
 
         if (!adaIsi) {
             showAlert(Alert.AlertType.INFORMATION, "Info", "Tidak ada data yang perlu dibatalkan.");
@@ -212,12 +229,38 @@ public class MasterLimbahController implements Initializable {
         });
     }
 
+    @FXML
+    private void handleSimpan() {
+        if (!validateForm()) return;
+        try {
+            // sp_Insert_Limbah: ID, Nama, Kategori, Jumlah, Satuan, Harga, Keterangan
+            db.cstat = db.conn.prepareCall("{CALL sp_Insert_Limbah(?,?,?,?,?,?,?)}");
+            db.cstat.setString(1, txtID.getText());
+            db.cstat.setString(2, txtNama.getText().trim());
+            db.cstat.setString(3, cmbjenis.getValue());
+            db.cstat.setInt   (4, 0);                       // Jumlah default 0
+            db.cstat.setString(5, txtJumlah.getText());      // Satuan otomatis (Liter/Kilo)
+            db.cstat.setBigDecimal(6, new java.math.BigDecimal(txtHarga.getText().trim()));
+            db.cstat.setString(7, txtketerangan.getText().trim().isEmpty()
+                    ? null : txtketerangan.getText().trim());
+            db.cstat.executeUpdate();
+
+            showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data limbah berhasil disimpan.");
+            clearForm();
+            loadData();
+            loadAutoID();
+
+        } catch (NumberFormatException e) {
+            showAlert(Alert.AlertType.ERROR, "Error Format", "Harga harus berupa angka valid.");
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Error Simpan", e.getMessage());
+        }
+    }
+
     private boolean validateForm() {
         if (txtNama.getText().trim().isEmpty()    ||
-            cmbjenis.getValue()              == null  ||
-            txtJumlah.getText().trim().isEmpty()      ||
-            txtHarga.getText().trim().isEmpty()       ||
-            txtketerangan.getText().trim().isEmpty()) {
+                cmbjenis.getValue()              == null  ||
+                txtHarga.getText().trim().isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Validasi", "Semua data harus diisi!");
             return false;
         }
@@ -227,9 +270,9 @@ public class MasterLimbahController implements Initializable {
     private void clearForm() {
         txtNama.clear();
         txtHarga.clear();
-        txtJumlah.clear();
         txtketerangan.clear();
         cmbjenis.getSelectionModel().selectFirst();
+        updateSatuanOtomatis(cmbjenis.getValue());
         tbLimbah.getSelectionModel().clearSelection();
     }
 

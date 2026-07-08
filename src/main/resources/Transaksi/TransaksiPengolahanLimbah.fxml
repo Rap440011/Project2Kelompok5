@@ -2,17 +2,13 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
@@ -47,7 +43,7 @@
     </HBox>
 
     <!-- ══════════════════════════════════════════════════════════════
-         BADAN UTAMA: FORM KIRI + KARTU KANAN
+         BADAN UTAMA: FORM KIRI + DAFTAR PRODUK KANAN
     ═══════════════════════════════════════════════════════════════ -->
     <HBox spacing="0" VBox.vgrow="ALWAYS"
           style="-fx-background-color:#FAFAFA;">
@@ -109,12 +105,15 @@
                             style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
                             GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-                <!-- Jenis Produk -->
-                <Label text="Jenis Produk"
+                <!-- Nama Produk (dulu Jenis Produk) -->
+                <Label text="Nama Produk"
                        style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                        GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                <ComboBox fx:id="cmbJenisProduk" maxWidth="Infinity"
-                          GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                <TextField fx:id="txtNamaProduk" editable="false" maxWidth="Infinity"
+                           promptText="← Klik kartu produk"
+                           style="-fx-background-color:#F5F5F5; -fx-opacity:1;
+                                  -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
+                           GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
                 <!-- Kuantitas Hasil -->
                 <Label text="Kuantitas"
@@ -126,13 +125,15 @@
                            style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
                            GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
-                <!-- Satuan -->
+                <!-- Satuan (otomatis mengikuti Master Produk) -->
                 <Label text="Satuan"
                        style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
                        GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                <ComboBox fx:id="cmbSatuan" maxWidth="Infinity"
-                          onAction="#cmbSaatuan"
-                          GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                <TextField fx:id="txtSatuan" editable="false" maxWidth="Infinity"
+                           promptText="Otomatis mengikuti produk"
+                           style="-fx-background-color:#F5F5F5; -fx-opacity:1;
+                                  -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6;"
+                           GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
                 <!-- Keterangan -->
                 <Label text="Keterangan"
@@ -156,7 +157,7 @@
                     styleClass="btn,btn-simpan" />
         </VBox>
 
-        <!-- ═══ PANEL KANAN: KARTU PRODUK ══════════════════════════ -->
+        <!-- ═══ PANEL KANAN: DAFTAR PRODUK (kartu dinamis, desain sama dengan Master Produk) ═══ -->
         <VBox spacing="14" HBox.hgrow="ALWAYS">
             <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
 
@@ -180,46 +181,13 @@
                         styleClass="btn,btn-cari" />
             </HBox>
 
-            <fx:define>
-                <ToggleGroup fx:id="tgProduk" />
-            </fx:define>
-
-            <!-- Grid kartu 2 kolom -->
+            <!-- Daftar kartu produk: satu kolom, dibangun & diisi otomatis dari Master Produk -->
             <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
                         style="-fx-background-color:transparent; -fx-border-color:transparent;">
                 <content>
-                    <GridPane fx:id="gpKartuProduk" hgap="14" vgap="14">
+                    <VBox fx:id="vbKartuProduk" spacing="12">
                         <padding><Insets top="2" bottom="2"/></padding>
-                        <columnConstraints>
-                            <ColumnConstraints percentWidth="50" />
-                            <ColumnConstraints percentWidth="50" />
-                        </columnConstraints>
-
-                        <ToggleButton fx:id="cardPupukOrganikPadat"
-                                      toggleGroup="$tgProduk"
-                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
-                                      GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                        <ToggleButton fx:id="cardPupukOrganikCair"
-                                      toggleGroup="$tgProduk"
-                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
-                                      GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                        <ToggleButton fx:id="cardKompos"
-                                      toggleGroup="$tgProduk"
-                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
-                                      GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                        <ToggleButton fx:id="cardBooster"
-                                      toggleGroup="$tgProduk"
-                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
-                                      GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                        <ToggleButton fx:id="cardPupukNitrogen"
-                                      toggleGroup="$tgProduk"
-                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
-                                      GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                        <ToggleButton fx:id="cardPupukKalsium"
-                                      toggleGroup="$tgProduk"
-                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
-                                      GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                    </GridPane>
+                    </VBox>
                 </content>
             </ScrollPane>
         </VBox>

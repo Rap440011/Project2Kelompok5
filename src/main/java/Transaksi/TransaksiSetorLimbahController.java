@@ -22,7 +22,7 @@ public class TransaksiSetorLimbahController implements Initializable {
 
     // ---- Header Transaksi ----
     @FXML private TextField txtIDTransaksi;
-    @FXML private TextField txtIDNasabah;
+    @FXML private TextField txtNamaNasabah; // menampilkan Nama Nasabah, bukan ID
     @FXML private TextField txtIDKaryawan;
     @FXML private DatePicker dpTanggal;
     @FXML private TextField txtTotal;
@@ -60,21 +60,28 @@ public class TransaksiSetorLimbahController implements Initializable {
     private BigDecimal totalTransaksi = BigDecimal.ZERO;
     private static final String RUPIAH_PREFIX = "Rp ";
 
-    private static final java.util.Map<String, BigDecimal> HARGA_LIMBAH;
-    static {
-        HARGA_LIMBAH = new java.util.HashMap<>();
-        HARGA_LIMBAH.put("Cangkang Udang",    new BigDecimal("10000"));
-        HARGA_LIMBAH.put("Endapan / Lumpur",  new BigDecimal("2000"));
-        HARGA_LIMBAH.put("Kotoran Udang",     new BigDecimal("5000"));
-        HARGA_LIMBAH.put("Bangkai Udang",     new BigDecimal("2500"));
-        HARGA_LIMBAH.put("Air Limbah Tambak", new BigDecimal("2500"));
-    }
+    /**
+     * ID Nasabah yang sesungguhnya dipilih (dipakai untuk disimpan ke database).
+     * txtNamaNasabah hanya menampilkan nama nasabah untuk kemudahan baca,
+     * jadi ID-nya harus disimpan terpisah di sini.
+     */
+    private String idNasabahTerpilih = null;
+
+    /** Status nasabah yang boleh tampil / dipakai bertransaksi. */
+    private static final String STATUS_AKTIF = "Aktif";
+
+    /** Style abu-abu untuk field yang tidak bisa diedit (readonly), konsisten dengan MasterLimbahController. */
+    private static final String STYLE_READONLY =
+            "-fx-background-color:#F5F5F5; -fx-opacity:1; -fx-border-color:#E0E0E0; " +
+                    "-fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;";
 
     private static class LimbahItem {
-        final String idLimbah, jenisLimbah, satuan, keterangan;
+        final String idLimbah, namaLimbah, jenisLimbah, satuan, keterangan;
         final BigDecimal harga;
-        LimbahItem(String idLimbah, String jenisLimbah, String satuan, BigDecimal harga, String keterangan) {
+        LimbahItem(String idLimbah, String namaLimbah, String jenisLimbah, String satuan,
+                   BigDecimal harga, String keterangan) {
             this.idLimbah = idLimbah;
+            this.namaLimbah = namaLimbah;
             this.jenisLimbah = jenisLimbah;
             this.satuan = satuan;
             this.harga = harga;
@@ -96,11 +103,13 @@ public class TransaksiSetorLimbahController implements Initializable {
         loadAutoIDTransaksi();
         loadDataNasabah();
 
+        applyReadonlyStyles();
         setDetailPanelEnabled(false);
 
         tbNasabah.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
-                txtIDNasabah.setText(newVal.getIdNasabah());
+                idNasabahTerpilih = newVal.getIdNasabah();
+                txtNamaNasabah.setText(newVal.getNamaNasabah());
                 cekKelengkapanHeader();
             }
         });
@@ -111,10 +120,7 @@ public class TransaksiSetorLimbahController implements Initializable {
 
         txtJumlah.textProperty().addListener((obs, oldVal, newVal) -> hitungSubTotal());
 
-        cmbJenis.valueProperty().addListener((obs, oldVal, newVal) -> {
-            updateJenisLimbahCombo();
-            hitungSubTotal();
-        });
+        cmbJenis.valueProperty().addListener((obs, oldVal, newVal) -> updateJenisLimbahCombo());
 
         cmbJenisLimbah.valueProperty().addListener((obs, oldVal, newVal) -> {
             updateLabelSatuanDanHarga();
@@ -122,8 +128,22 @@ public class TransaksiSetorLimbahController implements Initializable {
         });
     }
 
+    /**
+     * Menandai field-field yang bersifat readonly (editable="false") dengan
+     * gaya abu-abu, mengikuti pola styling txtJumlah di MasterLimbahController.
+     * Style emphasis yang sudah ada (bold/warna teks) tetap dipertahankan.
+     */
+    private void applyReadonlyStyles() {
+        txtIDTransaksi.setStyle(STYLE_READONLY);
+        txtNamaNasabah.setStyle(STYLE_READONLY);
+        txtIDDetail.setStyle(STYLE_READONLY);
+        txtIDSetorLimbahDetail.setStyle(STYLE_READONLY);
+        txtTotal.setStyle(STYLE_READONLY + "-fx-font-weight:bold;-fx-text-fill:#1B5E20;");
+        txtSubTotal.setStyle(STYLE_READONLY + "-fx-font-weight:bold;-fx-text-fill:#1565C0;");
+    }
+
     private void cekKelengkapanHeader() {
-        boolean nasabahTerisi   = !txtIDNasabah.getText().trim().isEmpty();
+        boolean nasabahTerisi   = idNasabahTerpilih != null && !idNasabahTerpilih.trim().isEmpty();
         boolean karyawanTerisi  = !txtIDKaryawan.getText().trim().isEmpty();
         boolean tanggalTerpilih = dpTanggal.getValue() != null;
 
@@ -178,40 +198,38 @@ public class TransaksiSetorLimbahController implements Initializable {
             updateJenisLimbahCombo();
         } else {
             cmbJenisLimbah.setDisable(true);
-            cmbJenisLimbah.setMouseTransparent(true);
-            cmbJenisLimbah.setFocusTraversable(false);
         }
     }
 
+    /**
+     * Mengisi combo "Nama Limbah" berdasarkan kategori (Padat/Cair) yang
+     * sedang dipilih di cmbJenis. Data diambil dari Master Limbah (limbahList),
+     * bukan daftar statis, sehingga otomatis mengikuti data di database.
+     */
     private void updateJenisLimbahCombo() {
         boolean isPadat = "Padat".equalsIgnoreCase(cmbJenis.getValue());
+        String kategoriTerpilih = isPadat ? "Padat" : "Cair";
 
-        if (isPadat) {
-            cmbJenisLimbah.setItems(FXCollections.observableArrayList(
-                    "Cangkang Udang",
-                    "Endapan / Lumpur",
-                    "Kotoran Udang",
-                    "Bangkai Udang"
-            ));
-            cmbJenisLimbah.getSelectionModel().selectFirst();
-
-            cmbJenisLimbah.setDisable(false);
-            cmbJenisLimbah.setMouseTransparent(false);
-            cmbJenisLimbah.setFocusTraversable(true);
-
-            lblSatuan.setText("Kg");
-
-        } else {
-            cmbJenisLimbah.setItems(FXCollections.observableArrayList("Air Limbah Tambak"));
-            cmbJenisLimbah.getSelectionModel().selectFirst();
-
-            cmbJenisLimbah.setDisable(false);
-            cmbJenisLimbah.setMouseTransparent(true);
-            cmbJenisLimbah.setFocusTraversable(false);
-
-            lblSatuan.setText("Liter");
+        ObservableList<String> namaLimbahFiltered = FXCollections.observableArrayList();
+        for (LimbahItem li : limbahList) {
+            if (li.jenisLimbah != null && li.jenisLimbah.equalsIgnoreCase(kategoriTerpilih)) {
+                namaLimbahFiltered.add(li.namaLimbah);
+            }
         }
 
+        cmbJenisLimbah.setItems(namaLimbahFiltered);
+
+        if (!namaLimbahFiltered.isEmpty()) {
+            cmbJenisLimbah.getSelectionModel().selectFirst();
+        } else {
+            cmbJenisLimbah.setValue(null);
+        }
+
+        cmbJenisLimbah.setDisable(false);
+        cmbJenisLimbah.setMouseTransparent(false);
+        cmbJenisLimbah.setFocusTraversable(true);
+
+        updateLabelSatuanDanHarga();
         hitungSubTotal();
     }
 
@@ -235,7 +253,7 @@ public class TransaksiSetorLimbahController implements Initializable {
         return false;
     }
 
-    /** Update label satuan dan harga per unit mengikuti Jenis Limbah yang terpilih saat ini. */
+    /** Update label satuan mengikuti Nama Limbah yang terpilih saat ini (data dari Master Limbah). */
     private void updateLabelSatuanDanHarga() {
         LimbahItem terpilih = getLimbahTerpilih();
         if (terpilih != null) {
@@ -246,12 +264,12 @@ public class TransaksiSetorLimbahController implements Initializable {
         }
     }
 
-    /** Ambil data LimbahItem yang sedang dipilih di cmbJenisLimbah, atau null jika tidak ada. */
+    /** Ambil data LimbahItem yang sedang dipilih di cmbJenisLimbah (berdasarkan Nama Limbah), atau null jika tidak ada. */
     private LimbahItem getLimbahTerpilih() {
         String namaTerpilih = cmbJenisLimbah.getValue();
         if (namaTerpilih == null) return null;
         for (LimbahItem li : limbahList) {
-            if (li.jenisLimbah != null && li.jenisLimbah.equalsIgnoreCase(namaTerpilih)) {
+            if (li.namaLimbah != null && li.namaLimbah.equalsIgnoreCase(namaTerpilih)) {
                 return li;
             }
         }
@@ -291,11 +309,9 @@ public class TransaksiSetorLimbahController implements Initializable {
     // ===================== LOAD DATA REFERENSI (Master Limbah & Master Produk) =====================
 
     /**
-     * Memuat data Master Limbah untuk mengisi combobox Jenis Limbah.
-     * ASUMSI nama stored procedure & kolom mengikuti pola Master Produk
-     * (ID_Limbah, Jenis_Limbah, Satuan, Harga, Keterangan). Sesuaikan
-     * nama SP "sp_SelectAll_Limbah" dan nama kolom di bawah ini jika
-     * berbeda dengan yang ada di database kamu.
+     * Memuat data Master Limbah (ID_Limbah, Nama_Limbah, Kategori, Satuan,
+     * Harga, Keterangan) untuk mengisi combobox Nama Limbah, difilter
+     * menurut kategori (Padat/Cair) yang dipilih pengguna.
      */
     private void loadDataLimbah() {
         limbahList.clear();
@@ -305,7 +321,8 @@ public class TransaksiSetorLimbahController implements Initializable {
             while (db.result.next()) {
                 limbahList.add(new LimbahItem(
                         db.result.getString("ID_Limbah"),
-                        db.result.getString("Jenis_Limbah"),
+                        db.result.getString("Nama_Limbah"),
+                        db.result.getString("Kategori"),
                         db.result.getString("Satuan"),
                         db.result.getBigDecimal("Harga"),
                         db.result.getString("Keterangan")
@@ -336,25 +353,33 @@ public class TransaksiSetorLimbahController implements Initializable {
 
     // ===================== LOAD / CARI NASABAH =====================
 
+    /** Hanya menampilkan nasabah dengan status Aktif. */
+    private boolean isNasabahAktif(String status) {
+        return status != null && status.trim().equalsIgnoreCase(STATUS_AKTIF);
+    }
+
     private void loadDataNasabah() {
         nasabahList.clear();
         try {
             db.cstat = db.conn.prepareCall("{CALL sp_SelectAll_Nasabah}");
             db.result = db.cstat.executeQuery();
             while (db.result.next()) {
+                if (!isNasabahAktif(db.result.getString("Status"))) continue;
+
                 nasabahList.add(new MasterNasabah(
-                    db.result.getString("ID_Nasabah"),
-                    db.result.getString("Nama_Nasabah"),
-                    db.result.getString("No_HP"),
-                    db.result.getString("RT"),
-                    db.result.getString("RW"),
-                    db.result.getString("Kelurahan"),
-                    db.result.getString("Kecamatan"),
-                    db.result.getString("Kabupaten"),
-                    db.result.getString("Provinsi"),
-                    db.result.getString("No_Rekening"),
-                    RUPIAH_PREFIX + db.result.getBigDecimal("Saldo").stripTrailingZeros().toPlainString(),
-                    db.result.getString("Bank")
+                        db.result.getString("ID_Nasabah"),
+                        db.result.getString("Nama_Nasabah"),
+                        db.result.getString("No_HP"),
+                        db.result.getString("RT"),
+                        db.result.getString("RW"),
+                        db.result.getString("Kelurahan"),
+                        db.result.getString("Kecamatan"),
+                        db.result.getString("Kabupaten"),
+                        db.result.getString("Provinsi"),
+                        db.result.getString("No_Rekening"),
+                        RUPIAH_PREFIX + db.result.getBigDecimal("Saldo").stripTrailingZeros().toPlainString(),
+                        db.result.getString("Bank"),
+                        db.result.getString("Status")
                 ));
             }
             tbNasabah.setItems(nasabahList);
@@ -370,19 +395,22 @@ public class TransaksiSetorLimbahController implements Initializable {
             db.cstat.setString(1, keyword);
             db.result = db.cstat.executeQuery();
             while (db.result.next()) {
+                if (!isNasabahAktif(db.result.getString("Status"))) continue;
+
                 nasabahList.add(new MasterNasabah(
-                    db.result.getString("ID_Nasabah"),
-                    db.result.getString("Nama_Nasabah"),
-                    db.result.getString("No_HP"),
-                    db.result.getString("RT"),
-                    db.result.getString("RW"),
-                    db.result.getString("Kelurahan"),
-                    db.result.getString("Kecamatan"),
-                    db.result.getString("Kabupaten"),
-                    db.result.getString("Provinsi"),
-                    db.result.getString("No_Rekening"),
-                    db.result.getString("Saldo"),
-                    db.result.getString("Bank")
+                        db.result.getString("ID_Nasabah"),
+                        db.result.getString("Nama_Nasabah"),
+                        db.result.getString("No_HP"),
+                        db.result.getString("RT"),
+                        db.result.getString("RW"),
+                        db.result.getString("Kelurahan"),
+                        db.result.getString("Kecamatan"),
+                        db.result.getString("Kabupaten"),
+                        db.result.getString("Provinsi"),
+                        db.result.getString("No_Rekening"),
+                        RUPIAH_PREFIX + db.result.getBigDecimal("Saldo").stripTrailingZeros().toPlainString(),
+                        db.result.getString("Bank"),
+                        db.result.getString("Status")
                 ));
             }
             tbNasabah.setItems(nasabahList);
@@ -407,10 +435,8 @@ public class TransaksiSetorLimbahController implements Initializable {
 
             BigDecimal jumlah = new BigDecimal(jumlahText);
 
-            String jenisTerpilih = cmbJenisLimbah.getValue();
-            BigDecimal harga = (jenisTerpilih != null)
-                    ? HARGA_LIMBAH.getOrDefault(jenisTerpilih, BigDecimal.ZERO)
-                    : BigDecimal.ZERO;
+            LimbahItem terpilih = getLimbahTerpilih();
+            BigDecimal harga = (terpilih != null && terpilih.harga != null) ? terpilih.harga : BigDecimal.ZERO;
 
             txtSubTotal.setText(jumlah.multiply(harga).toPlainString());
         } catch (NumberFormatException e) {
@@ -435,7 +461,7 @@ public class TransaksiSetorLimbahController implements Initializable {
         try {
             String idDetail    = txtIDDetail.getText();
             String idSetor     = txtIDSetorLimbahDetail.getText();
-            String jenis       = cmbJenisLimbah.getValue();
+            String namaLimbah  = cmbJenisLimbah.getValue();
             String jumlah      = txtJumlah.getText().trim();
             String satuan      = lblSatuan.getText();
             String keterangan  = txtKeteranganDetail.getText().trim();
@@ -444,14 +470,14 @@ public class TransaksiSetorLimbahController implements Initializable {
             db.cstat = db.conn.prepareCall("{CALL sp_Insert_DetailSetorLimbah(?,?,?,?,?,?,?)}");
             db.cstat.setString(1, idDetail);
             db.cstat.setString(2, idSetor);
-            db.cstat.setString(3, jenis);
+            db.cstat.setString(3, namaLimbah);
             db.cstat.setBigDecimal(4, new BigDecimal(jumlah));
             db.cstat.setString(5, satuan);
             db.cstat.setString(6, keterangan);
             db.cstat.setBigDecimal(7, new BigDecimal(subTotal));
             db.cstat.executeUpdate();
 
-            detailList.add(new DetailSetorLimbah(idDetail, idSetor, jenis, jumlah, satuan, keterangan, subTotal));
+            detailList.add(new DetailSetorLimbah(idDetail, idSetor, namaLimbah, jumlah, satuan, keterangan, subTotal));
             hitungTotalTransaksi();
             btnSelesai.setDisable(false);
 
@@ -464,13 +490,13 @@ public class TransaksiSetorLimbahController implements Initializable {
     }
 
     private boolean validateDetailForm() {
-        if (txtIDNasabah.getText().trim().isEmpty()) {
+        if (idNasabahTerpilih == null || idNasabahTerpilih.trim().isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Peringatan", "Pilih nasabah terlebih dahulu.");
             return false;
         }
         if (cmbJenis.getValue() == null || cmbJenisLimbah.getValue() == null
                 || txtJumlah.getText().trim().isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Validasi", "Kategori, Jenis Limbah, dan Jumlah wajib diisi!");
+            showAlert(Alert.AlertType.WARNING, "Validasi", "Kategori, Nama Limbah, dan Jumlah wajib diisi!");
             return false;
         }
         return true;
@@ -493,7 +519,7 @@ public class TransaksiSetorLimbahController implements Initializable {
 
             db.cstat = db.conn.prepareCall("{CALL sp_Insert_SetorLimbah(?,?,?,?,?)}");
             db.cstat.setString(1, txtIDTransaksi.getText());
-            db.cstat.setString(2, txtIDNasabah.getText());
+            db.cstat.setString(2, idNasabahTerpilih);
             db.cstat.setString(3, txtIDKaryawan.getText());
             db.cstat.setString(4, tanggal);
             db.cstat.setBigDecimal(5, totalTransaksi);
@@ -508,7 +534,7 @@ public class TransaksiSetorLimbahController implements Initializable {
 
     @FXML
     private void handleBatalTransaksi() {
-        boolean adaIsi = !txtIDNasabah.getText().trim().isEmpty() || !detailList.isEmpty();
+        boolean adaIsi = (idNasabahTerpilih != null && !idNasabahTerpilih.trim().isEmpty()) || !detailList.isEmpty();
         if (!adaIsi) {
             showAlert(Alert.AlertType.INFORMATION, "Info", "Tidak ada data yang perlu dibatalkan.");
             return;
@@ -521,7 +547,8 @@ public class TransaksiSetorLimbahController implements Initializable {
     }
 
     private void resetSemua() {
-        txtIDNasabah.clear();
+        idNasabahTerpilih = null;
+        txtNamaNasabah.clear();
         txtIDKaryawan.clear();
         dpTanggal.setValue(null);
         txtTotal.clear();

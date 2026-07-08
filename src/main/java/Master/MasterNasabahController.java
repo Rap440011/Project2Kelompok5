@@ -21,11 +21,13 @@ public class MasterNasabahController implements Initializable {
     @FXML private TableView<MasterNasabah> tbNasabah;
     @FXML private TableColumn<MasterNasabah, String> clmNama, clmHP;
     @FXML private TableColumn<MasterNasabah, String> clmNoRek, clmSaldo;
+    @FXML private TableColumn<MasterNasabah, String> clmStatus;
 
     @FXML private TextField txtID, txtNama, txtHP;
     @FXML private TextField txtRT, txtRW;
     @FXML private TextField txtNoRek, txtSaldo;
     @FXML private TextField txtCari;
+    @FXML private TextField txtStatus;
     @FXML private ComboBox<String> cmbBank;
     @FXML private ComboBox<String> cmbProvinsi, cmbKabupaten, cmbKecamatan, cmbKelurahan;
 
@@ -35,6 +37,9 @@ public class MasterNasabahController implements Initializable {
 
     private static final String DEFAULT_SALDO = "0";
     private static final int MAX_NOREK_LEN = 20;
+
+    private static final String STATUS_AKTIF = "Aktif";
+    private static final String STATUS_NONAKTIF = "Tidak Aktif";
 
     private boolean isLoadingFromTable = false;
     private boolean isUpdatingNoRek = false;
@@ -73,6 +78,7 @@ public class MasterNasabahController implements Initializable {
         clmHP.setCellValueFactory(new PropertyValueFactory<>("noHp"));
         clmNoRek.setCellValueFactory(new PropertyValueFactory<>("noRekening"));
         clmSaldo.setCellValueFactory(new PropertyValueFactory<>("saldo"));
+        clmStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
     }
 
     private void setupInputRestrictions() {
@@ -82,6 +88,11 @@ public class MasterNasabahController implements Initializable {
         setupSaldoRupiah();
         addLetterOnly(txtNama, 50);
         txtSaldo.setText("Rp"+DEFAULT_SALDO);
+
+        // Status default "Aktif", terkunci total (tidak bisa diedit / difokus / diklik-ubah)
+        txtStatus.setText(STATUS_AKTIF);
+        txtStatus.setEditable(false);
+        txtStatus.setFocusTraversable(false);
     }
 
     private void setupBankCombobox() {
@@ -96,7 +107,6 @@ public class MasterNasabahController implements Initializable {
     }
 
     private void setupNoRekening() {
-
         txtNoRek.setEditable(true);
         addNoRekLockedPrefix();
     }
@@ -118,6 +128,7 @@ public class MasterNasabahController implements Initializable {
         txtRW.setText(data.getRw());
         txtSaldo.setText(RUPIAH_PREFIX + sanitizeRupiahInput(data.getSaldo(), 18).replace(RUPIAH_PREFIX, ""));
         cmbBank.setValue(data.getBank());
+        txtStatus.setText(data.getStatus());
 
         currentKodeBank = KODE_BANK.getOrDefault(data.getBank(), "000");
         isUpdatingNoRek = true;
@@ -346,7 +357,8 @@ public class MasterNasabahController implements Initializable {
                 rs.getString("Provinsi"),
                 rs.getString("No_Rekening"),
                 RUPIAH_PREFIX + rs.getBigDecimal("Saldo").stripTrailingZeros().toPlainString(),
-                rs.getString("Bank")
+                rs.getString("Bank"),
+                rs.getString("Status")
         );
     }
 
@@ -367,7 +379,7 @@ public class MasterNasabahController implements Initializable {
         try {
             String saldoText = getSaldoRawValue();
 
-            db.cstat = db.conn.prepareCall("{CALL sp_Insert_Nasabah(?,?,?,?,?,?,?,?,?,?,?,?)}");
+            db.cstat = db.conn.prepareCall("{CALL sp_Insert_Nasabah(?,?,?,?,?,?,?,?,?,?,?,?,?)}");
             db.cstat.setString(1, txtID.getText());
             db.cstat.setString(2, txtNama.getText());
             db.cstat.setString(3, txtHP.getText());
@@ -380,6 +392,7 @@ public class MasterNasabahController implements Initializable {
             db.cstat.setString(10, cmbKecamatan.getValue());
             db.cstat.setString(11, cmbKabupaten.getValue());
             db.cstat.setString(12, cmbProvinsi.getValue());
+            db.cstat.setString(13, STATUS_AKTIF);
             db.cstat.executeUpdate();
 
             showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data nasabah berhasil disimpan.");
@@ -425,33 +438,39 @@ public class MasterNasabahController implements Initializable {
     @FXML
     private void handleHapus() {
         if (txtID.getText().isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Peringatan", "Pilih data yang ingin dihapus terlebih dahulu.");
+            showAlert(Alert.AlertType.WARNING, "Peringatan", "Pilih data yang ingin dinonaktifkan terlebih dahulu.");
+            return;
+        }
+
+        if (STATUS_NONAKTIF.equalsIgnoreCase(txtStatus.getText())) {
+            showAlert(Alert.AlertType.INFORMATION, "Info", "Nasabah ini sudah berstatus Tidak Aktif.");
             return;
         }
 
         Alert konfirmasi = new Alert(Alert.AlertType.CONFIRMATION,
-                "Yakin ingin menghapus nasabah ID: " + txtID.getText() + "?",
+                "Nasabah ID: " + txtID.getText() + " akan dinonaktifkan.\n" +
+                        "Data tidak akan dihapus, status berubah menjadi 'Tidak Aktif'.\n\nLanjutkan?",
                 ButtonType.YES, ButtonType.NO);
-        konfirmasi.setTitle("Konfirmasi Hapus");
+        konfirmasi.setTitle("Konfirmasi Nonaktifkan");
         konfirmasi.showAndWait().ifPresent(bt -> {
             if (bt == ButtonType.YES) {
-                deleteNasabah();
+                softDeleteNasabah();
             }
         });
     }
 
-    private void deleteNasabah() {
+    private void softDeleteNasabah() {
         try {
-            db.cstat = db.conn.prepareCall("{CALL sp_Delete_Nasabah(?)}");
+            db.cstat = db.conn.prepareCall("{CALL sp_SoftDelete_Nasabah(?)}");
             db.cstat.setString(1, txtID.getText());
             db.cstat.executeUpdate();
 
-            showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Data nasabah berhasil dihapus.");
+            showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Nasabah berhasil dinonaktifkan.");
             clearForm();
             loadData();
             loadAutoID();
         } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Error Hapus", e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Error Nonaktifkan", e.getMessage());
         }
     }
 
@@ -511,6 +530,7 @@ public class MasterNasabahController implements Initializable {
         txtRT.clear();
         txtRW.clear();
         txtSaldo.setText(RUPIAH_PREFIX + DEFAULT_SALDO);
+        txtStatus.setText(STATUS_AKTIF);
 
         cmbBank.getSelectionModel().selectFirst();
         generateNoRekening(cmbBank.getValue());

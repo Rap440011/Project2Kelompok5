@@ -61,27 +61,31 @@
             <columns>
                 <TableColumn fx:id="clmID"
                              text="ID Limbah"
-                             prefWidth="100"
+                             prefWidth="90"
                              style="-fx-alignment: CENTER"/>
                 <TableColumn fx:id="clmNama"
                              text="Nama Limbah"
-                             prefWidth="170"
+                             prefWidth="160"
                              style="-fx-alignment: CENTER"/>
                 <TableColumn fx:id="clmKategori"
                              text="Kategori"
-                             prefWidth="110"
+                             prefWidth="100"
+                             style="-fx-alignment: CENTER"/>
+                <TableColumn fx:id="clmSatuan"
+                             text="Satuan"
+                             prefWidth="90"
                              style="-fx-alignment: CENTER"/>
                 <TableColumn fx:id="clmJumlah"
-                             text="Satuan"
-                             prefWidth="100"
+                             text="Jumlah"
+                             prefWidth="90"
                              style="-fx-alignment: CENTER"/>
                 <TableColumn fx:id="clmHarga"
                              text="Harga (Rp)"
-                             prefWidth="130"
+                             prefWidth="120"
                              style="-fx-alignment: CENTER"/>
                 <TableColumn fx:id="clmKeterangan"
                              text="Keterangan"
-                             prefWidth="290"
+                             prefWidth="260"
                              style="-fx-alignment: CENTER"/>
             </columns>
         </TableView>
@@ -123,14 +127,13 @@
                 <Label text="Nama Limbah"
                        style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
                 <TextField fx:id="txtNama"
-                           promptText="Contoh: Plastik, Kertas, Kaca"
+                           promptText="Contoh: Kepala Udang, Endapan / Lumpur"
                            minWidth="420" prefWidth="420" maxWidth="420"
                            minHeight="34" prefHeight="34"
                            style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;" />
             </VBox>
         </HBox>
 
-        <!-- Row 1: Kategori Limbah | Satuan | Harga -->
         <HBox spacing="24">
             <VBox spacing="6" minWidth="150" prefWidth="150" maxWidth="150">
                 <Label text="Kategori Limbah"
@@ -144,11 +147,10 @@
             <VBox spacing="6" minWidth="150" prefWidth="150" maxWidth="150">
                 <Label text="Satuan"
                        style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
-                <TextField fx:id="txtJumlah"
-                           promptText="Contoh: 100"
+                <TextField fx:id="txtJumlah" editable="false"
                            minWidth="150" prefWidth="150" maxWidth="150"
                            minHeight="34" prefHeight="34"
-                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;" />
+                           style="-fx-background-color:#F5F5F5; -fx-opacity:1; -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;" />
             </VBox>
 
             <VBox spacing="6" minWidth="200" prefWidth="200" maxWidth="200">
@@ -188,6 +190,11 @@
                     mnemonicParsing="false" onAction="#handleUbah"
                     styleClass="btn,btn-ubah"
                     text="Ubah"
+                    prefWidth="100" prefHeight="36" />
+            <Button fx:id="btnSimpan"
+                    mnemonicParsing="false" onAction="#handleSimpan"
+                    styleClass="btn,btn-simpan"
+                    text="Simpan"
                     prefWidth="100" prefHeight="36" />
         </HBox>
     </VBox>
