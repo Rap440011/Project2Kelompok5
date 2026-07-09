@@ -6,8 +6,9 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -16,7 +17,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="720.0" prefWidth="1100.0"
+<VBox prefHeight="900.0" prefWidth="1100.0"
       spacing="0" styleClass="content-card"
       xmlns="http://javafx.com/javafx/26"
       xmlns:fx="http://javafx.com/fxml/1"
@@ -174,6 +175,9 @@
                 <ToggleGroup fx:id="tgProduk"/>
             </fx:define>
 
+            <!-- Kartu produk TIDAK didefinisikan statis di sini lagi.
+                 Kartu dibangun otomatis oleh controller berdasarkan data Master Produk
+                 (status Aktif), dengan desain (style) yang identik dengan versi sebelumnya. -->
             <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
                         style="-fx-background-color:transparent;-fx-border-color:transparent;">
                 <content>
@@ -182,28 +186,29 @@
                         <columnConstraints>
                             <ColumnConstraints percentWidth="100"/>
                         </columnConstraints>
-                        <!-- 6 kartu, 1 kolom (sesuai wireframe gambar 2) -->
-                        <ToggleButton fx:id="cardPupukOrganikPadat" toggleGroup="$tgProduk"
-                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
-                                      GridPane.columnIndex="0" GridPane.rowIndex="0"/>
-                        <ToggleButton fx:id="cardPupukOrganikCair" toggleGroup="$tgProduk"
-                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
-                                      GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-                        <ToggleButton fx:id="cardKompos" toggleGroup="$tgProduk"
-                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
-                                      GridPane.columnIndex="0" GridPane.rowIndex="2"/>
-                        <ToggleButton fx:id="cardBooster" toggleGroup="$tgProduk"
-                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
-                                      GridPane.columnIndex="0" GridPane.rowIndex="3"/>
-                        <ToggleButton fx:id="cardPupukNitrogen" toggleGroup="$tgProduk"
-                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
-                                      GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-                        <ToggleButton fx:id="cardPupukKalsium" toggleGroup="$tgProduk"
-                                      contentDisplay="GRAPHIC_ONLY" maxWidth="Infinity"
-                                      GridPane.columnIndex="0" GridPane.rowIndex="5"/>
                     </GridPane>
                 </content>
             </ScrollPane>
         </VBox>
     </HBox>
+
+    <!-- ══════════════════════════════════════════════════════════════
+         DAFTAR DETAIL TRANSAKSI (otomatis, read-only)
+         Terisi setiap kali tombol "Selesai" ditekan. Sengaja tidak
+         menampilkan kolom ID — hanya Nama Produk, Jumlah, dan Harga.
+    ═══════════════════════════════════════════════════════════════ -->
+    <Separator><VBox.margin><Insets top="16" bottom="10"/></VBox.margin></Separator>
+
+    <VBox spacing="10" prefHeight="220" VBox.vgrow="NEVER">
+        <Label text="Detail Transaksi"
+               style="-fx-font-size:14px;-fx-font-weight:bold;-fx-text-fill:#1A1A1A;"/>
+
+        <TableView fx:id="tblDetailPenjualan" prefHeight="180" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="colNamaProdukDetail" text="Nama Produk" prefWidth="260"/>
+                <TableColumn fx:id="colJumlahDetail" text="Jumlah" prefWidth="150"/>
+                <TableColumn fx:id="colHargaDetail" text="Harga" prefWidth="180"/>
+            </columns>
+        </TableView>
+    </VBox>
 </VBox>

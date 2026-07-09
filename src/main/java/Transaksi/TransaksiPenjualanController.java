@@ -1,6 +1,10 @@
 package Transaksi;
 
 import Connection.DBConnect;
+import Master.MasterProduk;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
@@ -9,6 +13,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.SQLException;
@@ -36,66 +41,71 @@ public class TransaksiPenjualanController implements Initializable {
     @FXML private Button     btnBatal;
     @FXML private Button     btnTambahProduk;
 
-    // ===================== FXML — PANEL KARTU PRODUK =====================
+    // ===================== FXML — PANEL KARTU PRODUK (dinamis, dari Master Produk) =====================
     @FXML private GridPane    gpKartuProduk;
     @FXML private TextField   txtCariProduk;
     @FXML private ToggleGroup tgProduk;
 
-    @FXML private ToggleButton cardPupukOrganikPadat;
-    @FXML private ToggleButton cardPupukOrganikCair;
-    @FXML private ToggleButton cardKompos;
-    @FXML private ToggleButton cardBooster;
-    @FXML private ToggleButton cardPupukNitrogen;
-    @FXML private ToggleButton cardPupukKalsium;
+    // ===================== FXML — TABEL DETAIL TRANSAKSI (bawah, tanpa kolom ID) =====================
+    @FXML private TableView<Map<String, String>> tblDetailPenjualan;
+    @FXML private TableColumn<Map<String, String>, String> colNamaProdukDetail;
+    @FXML private TableColumn<Map<String, String>, String> colJumlahDetail;
+    @FXML private TableColumn<Map<String, String>, String> colHargaDetail;
 
-    // ===================== STYLE KARTU (sama dengan MasterProdukController) =====================
+    // ===================== STYLE KARTU (dipertahankan persis seperti sebelumnya) =====================
     private static final String CARD_NORMAL =
             "-fx-background-color:white;" +
-            "-fx-border-color:#E0E0E0;" +
-            "-fx-border-radius:12;" +
-            "-fx-background-radius:12;" +
-            "-fx-padding:0;" +
-            "-fx-effect: dropshadow(gaussian,rgba(0,0,0,0.08),8,0,0,2);";
+                    "-fx-border-color:#E0E0E0;" +
+                    "-fx-border-radius:12;" +
+                    "-fx-background-radius:12;" +
+                    "-fx-padding:0;" +
+                    "-fx-effect: dropshadow(gaussian,rgba(0,0,0,0.08),8,0,0,2);";
 
     private static final String CARD_HOVER =
             "-fx-background-color:#F1FAF5;" +
-            "-fx-border-color:#2E7D32;" +
-            "-fx-border-radius:12;" +
-            "-fx-background-radius:12;" +
-            "-fx-padding:0;" +
-            "-fx-effect: dropshadow(gaussian,rgba(46,125,50,0.18),10,0,0,3);";
+                    "-fx-border-color:#2E7D32;" +
+                    "-fx-border-radius:12;" +
+                    "-fx-background-radius:12;" +
+                    "-fx-padding:0;" +
+                    "-fx-effect: dropshadow(gaussian,rgba(46,125,50,0.18),10,0,0,3);";
 
     private static final String CARD_SELECTED =
             "-fx-background-color:#E8F5E9;" +
-            "-fx-border-color:#2E7D32;" +
-            "-fx-border-width:2.5;" +
-            "-fx-border-radius:12;" +
-            "-fx-background-radius:12;" +
-            "-fx-padding:0;" +
-            "-fx-effect: dropshadow(gaussian,rgba(46,125,50,0.25),12,0,0,4);";
+                    "-fx-border-color:#2E7D32;" +
+                    "-fx-border-width:2.5;" +
+                    "-fx-border-radius:12;" +
+                    "-fx-background-radius:12;" +
+                    "-fx-padding:0;" +
+                    "-fx-effect: dropshadow(gaussian,rgba(46,125,50,0.25),12,0,0,4);";
 
     private static final String CARD_DISABLED =
             "-fx-background-color:#F5F5F5;" +
-            "-fx-border-color:#E0E0E0;" +
-            "-fx-border-radius:12;" +
-            "-fx-background-radius:12;" +
-            "-fx-padding:0;" +
-            "-fx-opacity:0.55;";
+                    "-fx-border-color:#E0E0E0;" +
+                    "-fx-border-radius:12;" +
+                    "-fx-background-radius:12;" +
+                    "-fx-padding:0;" +
+                    "-fx-opacity:0.55;";
 
     private static final double CARD_HEIGHT = 100.0;
     private static final double IMG_SIZE    =  72.0;
 
-    // ===================== INNER CLASS: TEMPLATE PRODUK =====================
-    private static class ProdukTemplate {
-        final String namaProduk, satuan, keterangan, namaFile;
-        ProdukTemplate(String n, String s, String k, String f) {
-            namaProduk = n; satuan = s; keterangan = k; namaFile = f;
-        }
-    }
+    private static final String RUPIAH_PREFIX = "Rp ";
+    /** Status produk yang boleh dijual (konsisten dengan Transaksi Pengolahan Limbah / Master Produk). */
+    private static final String STATUS_AKTIF = "Aktif";
 
     // ===================== STATE =====================
     private final DBConnect db = new DBConnect();
     private final List<ToggleButton> daftarKartu = new ArrayList<>();
+    private final List<MasterProduk> daftarProduk = new ArrayList<>();
+
+    /** Data baris untuk tblDetailPenjualan — satu baris per klik "Selesai" (Nama Produk, Jumlah, Harga). */
+    private final ObservableList<Map<String, String>> detailPenjualanData = FXCollections.observableArrayList();
+
+    /** Produk (Master Produk) yang sedang dipilih dari kartu, dipakai untuk mengisi tabel detail. */
+    private MasterProduk produkTerpilih = null;
+
+    /** Referensi Master Limbah (ID_Limbah -> Nama_Limbah), untuk menyusun teks komposisi kartu. */
+    private final LinkedHashMap<String, String> namaLimbahMap = new LinkedHashMap<>();
 
     /** Total yang terakumulasi dari semua detail yang sudah "Selesai". */
     private BigDecimal totalPenjualan = BigDecimal.ZERO;
@@ -116,13 +126,53 @@ public class TransaksiPenjualanController implements Initializable {
         txtIDKaryawan.textProperty().addListener((obs, oldV, newV) -> cekHeader());
         dpTanggal.valueProperty().addListener((obs, oldV, newV) -> cekHeader());
 
-        // Bangun kartu produk
-        setupKartuProduk();
+        // Referensi nama limbah (untuk teks komposisi pada kartu)
+        loadDataLimbahReferensi();
+
+        // Tabel Detail Transaksi (Nama Produk, Jumlah, Harga — tanpa kolom ID)
+        setupTabelDetailPenjualan();
+
+        // Bangun kartu produk secara dinamis dari Master Produk
+        loadDataProduk();
+
+        // Listener pemilihan kartu
+        tgProduk.selectedToggleProperty().addListener((obs, oldT, newT) -> {
+            for (ToggleButton c : daftarKartu) {
+                if (!c.isDisable()) c.setStyle(CARD_NORMAL);
+            }
+            if (newT == null) return;
+
+            ToggleButton sel = (ToggleButton) newT;
+            sel.setStyle(CARD_SELECTED);
+            MasterProduk p = (MasterProduk) sel.getUserData();
+            isikanProdukTerpilih(p);
+        });
 
         // Panel detail & kartu nonaktif di awal
         setPanelDetailEnabled(false);
 
         loadAutoIDPenjualan();
+    }
+
+    // ===================== TABEL DETAIL TRANSAKSI (bawah, tanpa kolom ID) =====================
+    /** Menghubungkan kolom TableView dengan key pada Map setiap baris (tanpa class model baru). */
+    private void setupTabelDetailPenjualan() {
+        colNamaProdukDetail.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getOrDefault("namaProduk", "")));
+        colJumlahDetail.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getOrDefault("jumlah", "")));
+        colHargaDetail.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getOrDefault("harga", "")));
+        tblDetailPenjualan.setItems(detailPenjualanData);
+    }
+
+    /** Helper: bikin satu baris (Map) untuk tblDetailPenjualan. */
+    private Map<String, String> buatBarisDetailPenjualan(String namaProduk, String jumlah, String harga) {
+        Map<String, String> baris = new LinkedHashMap<>();
+        baris.put("namaProduk", namaProduk);
+        baris.put("jumlah", jumlah);
+        baris.put("harga", harga);
+        return baris;
     }
 
     // ===================== CEK HEADER =====================
@@ -160,126 +210,138 @@ public class TransaksiPenjualanController implements Initializable {
         }
     }
 
-    // ===================== SETUP KARTU PRODUK =====================
-    private void setupKartuProduk() {
-        List<ToggleButton> cards = Arrays.asList(
-                cardPupukOrganikPadat, cardPupukOrganikCair,
-                cardKompos, cardBooster,
-                cardPupukNitrogen, cardPupukKalsium
-        );
-
-        ProdukTemplate[] templates = {
-            new ProdukTemplate("Pupuk Organik Padat",        "Kg",    "Lumpur, Kotoran",        "Pupuk_Organik_Padat.png"),
-            new ProdukTemplate("Pupuk Organik Cair",         "Liter", "Air Limbah Tambak",      "Pupuk_Organik_Cair.png"),
-            new ProdukTemplate("Kompos",                     "Kg",    "Lumpur",                 "Pupuk_Kompos.png"),
-            new ProdukTemplate("Booster",                    "Kg",    "Cangkang Udang",         "Pupuk_Booster.png"),
-            new ProdukTemplate("Pupuk Nitrogen Tinggi Udang","Kg",    "Kotoran, Bangkai Udang", "Pupuk_Nitrogen_Padat.png"),
-            new ProdukTemplate("Pupuk Kalsium",              "Kg",    "Cangkang Udang",         "Pupuk_Kalsium.png")
-        };
-
-        for (int i = 0; i < cards.size(); i++) {
-            ToggleButton card = cards.get(i);
-            ProdukTemplate t  = templates[i];
-            card.setUserData(t);
-            card.setStyle(CARD_DISABLED);   // nonaktif di awal
-            card.setDisable(true);
-            card.setMouseTransparent(true);
-
-            card.setPrefHeight(CARD_HEIGHT);
-            card.setMinHeight(CARD_HEIGHT);
-            card.setMaxHeight(CARD_HEIGHT);
-            card.setMaxWidth(Double.MAX_VALUE);
-            card.setGraphic(buildKartuGraphic(t));
-
-            card.setOnMouseEntered(e -> {
-                if (!card.isDisable() && !card.isSelected()) card.setStyle(CARD_HOVER);
-            });
-            card.setOnMouseExited(e -> {
-                if (!card.isDisable() && !card.isSelected()) card.setStyle(CARD_NORMAL);
-            });
-        }
-
-        daftarKartu.clear();
-        daftarKartu.addAll(cards);
-
-        // Listener: saat kartu diklik → auto-fill ID Produk & Harga Jual
-        tgProduk.selectedToggleProperty().addListener((obs, oldT, newT) -> {
-            for (ToggleButton c : cards) {
-                if (!c.isDisable()) c.setStyle(CARD_NORMAL);
+    // ===================== LOAD REFERENSI MASTER LIMBAH (untuk teks komposisi kartu) =====================
+    private void loadDataLimbahReferensi() {
+        namaLimbahMap.clear();
+        try {
+            db.cstat = db.conn.prepareCall("{CALL sp_SelectAll_Limbah}");
+            db.result = db.cstat.executeQuery();
+            while (db.result.next()) {
+                namaLimbahMap.put(db.result.getString("ID_Limbah"), db.result.getString("Nama_Limbah"));
             }
-            if (newT == null) return;
-
-            ToggleButton sel = (ToggleButton) newT;
-            sel.setStyle(CARD_SELECTED);
-            ProdukTemplate t = (ProdukTemplate) sel.getUserData();
-
-            // Ambil ID Produk & Harga Jual dari database
-            isikanProdukDariDB(t.namaProduk);
-        });
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Error Load Data Limbah", e.getMessage());
+        }
     }
 
+    // ===================== LOAD & BANGUN KARTU PRODUK (dinamis dari Master Produk) =====================
     /**
-     * Query sp_SelectAll_Produk, cocokkan nama, lalu isi txtIDProduk & txtHargaJual.
+     * Mengambil daftar produk dari Master Produk (hanya status Aktif) dan membangun
+     * kartu ToggleButton untuk masing-masing, dengan style/layout yang identik dengan
+     * versi sebelumnya (CARD_NORMAL/HOVER/SELECTED/DISABLED, ikon aksen hijau, gambar,
+     * nama, komposisi, badge satuan).
      */
-    private void isikanProdukDariDB(String namaProduk) {
+    private void loadDataProduk() {
+        daftarProduk.clear();
+        daftarKartu.clear();
+        gpKartuProduk.getChildren().clear();
+
         try {
             db.cstat = db.conn.prepareCall("{CALL sp_SelectAll_Produk}");
             db.result = db.cstat.executeQuery();
-
-            String     idFound   = null;
-            BigDecimal hargaFound = BigDecimal.ZERO;
-
-            // Normalisasi nama template: huruf kecil, buang angka+satuan, rapikan spasi
-            String targetNorm = normalisasiNama(namaProduk);
-
             while (db.result.next()) {
-                String namaDB = db.result.getString("Nama_Produk");
-                if (namaDB == null) continue;
+                String status = db.result.getString("Status");
+                if (status != null && !status.trim().equalsIgnoreCase(STATUS_AKTIF)) continue;
 
-                String namaDBNorm = normalisasiNama(namaDB);
+                MasterProduk p = new MasterProduk(
+                        db.result.getString("ID_Produk"),
+                        db.result.getString("Nama_Produk"),
+                        String.valueOf(db.result.getInt("Stok")),
+                        RUPIAH_PREFIX + db.result.getBigDecimal("Harga_Jual")
+                                .stripTrailingZeros().toPlainString(),
+                        db.result.getString("Satuan"),
+                        db.result.getString("Keterangan"),
+                        db.result.getString("ID_Limbah"),
+                        status
+                );
 
-                // Cocok jika salah satu mengandung yang lain (setelah dinormalisasi)
-                if (namaDBNorm.equals(targetNorm)
-                        || namaDBNorm.contains(targetNorm)
-                        || targetNorm.contains(namaDBNorm)) {
-                    idFound    = db.result.getString("ID_Produk");
-                    BigDecimal h = db.result.getBigDecimal("Harga_Jual");
-                    hargaFound = (h != null) ? h : BigDecimal.ZERO;
-                    break;
-                }
+                String pathGambar = "";
+                try {
+                    String hasil = db.result.getString("Path_Gambar");
+                    if (hasil != null) pathGambar = hasil;
+                } catch (SQLException ignored) {}
+                p.setPathGambar(pathGambar);
+
+                daftarProduk.add(p);
             }
-
-            if (idFound != null) {
-                txtIDProduk.setText(idFound);
-                txtHargaJual.setText(hargaFound.toPlainString());
-            } else {
-                txtIDProduk.clear();
-                txtHargaJual.clear();
-                showAlert(Alert.AlertType.WARNING, "Peringatan",
-                        "Produk '" + namaProduk + "' belum terdaftar di Master Produk.");
-            }
-            txtJumlah.clear();
-            txtSubtotal.clear();
-
         } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Error", e.getMessage());
+            showAlert(Alert.AlertType.ERROR, "Error Load Produk", e.getMessage());
         }
+
+        tampilkanSemuaKartu();
     }
 
-    /**
-     * Normalisasi nama: huruf kecil, buang angka + satuan (1Kg, 500Liter, dst),
-     * rapikan spasi — sama persis dengan MasterProdukController.normalisasiNama().
-     */
-    private String normalisasiNama(String s) {
-        return s.trim()
-                .toLowerCase(Locale.ROOT)
-                .replaceAll("\\d+\\s*(kg|liter|l|botol|pcs|ton|gram)\\b", "")
-                .replaceAll("\\s+", " ")
-                .trim();
+    /** Menyusun ulang gpKartuProduk (1 kolom) dari isi daftarProduk saat ini. */
+    private void tampilkanSemuaKartu() {
+        daftarKartu.clear();
+        gpKartuProduk.getChildren().clear();
+
+        int row = 0;
+        for (MasterProduk p : daftarProduk) {
+            ToggleButton card = buildKartuProduk(p);
+            daftarKartu.add(card);
+            GridPane.setColumnIndex(card, 0);
+            GridPane.setRowIndex(card, row);
+            gpKartuProduk.getChildren().add(card);
+            row++;
+        }
+
+        // Ikuti status header saat ini (aktif/nonaktif) untuk kartu yang baru dibangun
+        setPanelDetailEnabled(headerLengkap);
     }
 
-    /** Bangun graphic satu kartu — identik dengan MasterProdukController */
-    private javafx.scene.Node buildKartuGraphic(ProdukTemplate t) {
+    /** Bangun satu kartu ToggleButton untuk sebuah produk Master Produk. */
+    private ToggleButton buildKartuProduk(MasterProduk p) {
+        ToggleButton card = new ToggleButton();
+        card.setToggleGroup(tgProduk);
+        card.setUserData(p);
+        card.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+        card.setMaxWidth(Double.MAX_VALUE);
+        card.setStyle(CARD_DISABLED);   // nonaktif sampai header lengkap
+        card.setDisable(true);
+        card.setMouseTransparent(true);
+
+        card.setPrefHeight(CARD_HEIGHT);
+        card.setMinHeight(CARD_HEIGHT);
+        card.setMaxHeight(CARD_HEIGHT);
+        card.setGraphic(buildKartuGraphic(p));
+
+        card.setOnMouseEntered(e -> {
+            if (!card.isDisable() && !card.isSelected()) card.setStyle(CARD_HOVER);
+        });
+        card.setOnMouseExited(e -> {
+            if (!card.isDisable() && !card.isSelected()) card.setStyle(CARD_NORMAL);
+        });
+
+        return card;
+    }
+
+    /** Isi ID Produk & Harga Jual di form detail begitu kartu produk (Master Produk) dipilih. */
+    private void isikanProdukTerpilih(MasterProduk p) {
+        produkTerpilih = p;
+        txtIDProduk.setText(p.getIdProduk());
+        String hargaRaw = p.getHargaJual().replace(RUPIAH_PREFIX, "").trim();
+        txtHargaJual.setText(hargaRaw);
+        txtJumlah.clear();
+        txtSubtotal.clear();
+    }
+
+    /** Teks komposisi ("• Lumpur, Kotoran") berdasarkan daftar ID_Limbah (dipisah koma) pada produk. */
+    private String buildKomposisiText(String idLimbahCsv) {
+        if (idLimbahCsv == null || idLimbahCsv.trim().isEmpty()) return "-";
+        StringBuilder sb = new StringBuilder();
+        for (String id : idLimbahCsv.split(",")) {
+            String trimmed = id.trim();
+            if (trimmed.isEmpty()) continue;
+            String nama = namaLimbahMap.getOrDefault(trimmed, trimmed);
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(nama);
+        }
+        return sb.length() > 0 ? sb.toString() : "-";
+    }
+
+    /** Bangun graphic satu kartu — layout identik dengan versi sebelumnya, sumber data dari Master Produk. */
+    private javafx.scene.Node buildKartuGraphic(MasterProduk p) {
         Region aksen = new Region();
         aksen.setPrefWidth(5); aksen.setMinWidth(5);
         aksen.setMaxHeight(Double.MAX_VALUE);
@@ -288,26 +350,41 @@ public class TransaksiPenjualanController implements Initializable {
         ImageView iv = new ImageView();
         iv.setFitWidth(IMG_SIZE); iv.setFitHeight(IMG_SIZE);
         iv.setPreserveRatio(true);
-        try {
-            java.io.InputStream is = getClass().getResourceAsStream("/Gambar_Produk/" + t.namaFile);
-            if (is != null) iv.setImage(new Image(is));
-        } catch (Exception ignored) {}
 
-        Label lblNama = new Label(t.namaProduk);
+        boolean gambarLoaded = false;
+        String gambarPath = p.getPathGambar();
+        if (gambarPath != null && !gambarPath.isEmpty()) {
+            try {
+                File f = new File(gambarPath);
+                if (f.exists()) {
+                    iv.setImage(new Image(f.toURI().toString()));
+                    gambarLoaded = true;
+                }
+            } catch (Exception ignored) {}
+        }
+        if (!gambarLoaded) {
+            try {
+                String resName = p.getNamaProduk().replaceAll("\\s+", "_") + ".png";
+                java.io.InputStream is = getClass().getResourceAsStream("/Gambar_Produk/" + resName);
+                if (is != null) iv.setImage(new Image(is));
+            } catch (Exception ignored) {}
+        }
+
+        Label lblNama = new Label(p.getNamaProduk());
         lblNama.setStyle("-fx-font-size:13px;-fx-font-weight:bold;-fx-text-fill:#1B5E20;");
         lblNama.setWrapText(true); lblNama.setMaxWidth(Double.MAX_VALUE);
 
         Label lblKomTitle = new Label("Komposisi :");
         lblKomTitle.setStyle("-fx-font-size:11px;-fx-text-fill:#9E9E9E;");
 
-        Label lblKom = new Label("• " + t.keterangan);
+        Label lblKom = new Label("• " + buildKomposisiText(p.getIdLimbah()));
         lblKom.setStyle("-fx-font-size:11px;-fx-text-fill:#757575;");
         lblKom.setWrapText(true); lblKom.setMaxWidth(Double.MAX_VALUE);
 
-        Label lblBadge = new Label(t.satuan);
+        Label lblBadge = new Label(p.getSatuan());
         lblBadge.setStyle("-fx-background-color:#E8F5E9;-fx-text-fill:#2E7D32;" +
-                          "-fx-font-size:10px;-fx-font-weight:bold;" +
-                          "-fx-padding:2 8 2 8;-fx-background-radius:8;");
+                "-fx-font-size:10px;-fx-font-weight:bold;" +
+                "-fx-padding:2 8 2 8;-fx-background-radius:8;");
 
         Region spacer = new Region(); VBox.setVgrow(spacer, Priority.ALWAYS);
         HBox badgeRow = new HBox(lblBadge); badgeRow.setAlignment(Pos.BOTTOM_RIGHT);
@@ -331,16 +408,17 @@ public class TransaksiPenjualanController implements Initializable {
     private void handleCariProduk() {
         if (!headerLengkap) return;
         String keyword = txtCariProduk.getText().trim().toLowerCase(Locale.ROOT);
-        int col = 0, row = 0;
+
         gpKartuProduk.getChildren().clear();
+        int row = 0;
         for (ToggleButton card : daftarKartu) {
             boolean cocok = true;
-            if (!keyword.isEmpty() && card.getUserData() instanceof ProdukTemplate) {
-                cocok = ((ProdukTemplate) card.getUserData())
-                        .namaProduk.toLowerCase(Locale.ROOT).contains(keyword);
+            if (!keyword.isEmpty() && card.getUserData() instanceof MasterProduk) {
+                cocok = ((MasterProduk) card.getUserData())
+                        .getNamaProduk().toLowerCase(Locale.ROOT).contains(keyword);
             }
             if (cocok) {
-                GridPane.setColumnIndex(card, col);
+                GridPane.setColumnIndex(card, 0);
                 GridPane.setRowIndex(card, row);
                 gpKartuProduk.getChildren().add(card);
                 row++;   // 1 kolom → setiap kartu di baris baru
@@ -412,6 +490,13 @@ public class TransaksiPenjualanController implements Initializable {
             totalPenjualan = totalPenjualan.add(sub);
             txtTotal.setText(totalPenjualan.toPlainString());
 
+            // Tambahkan baris ke tabel Detail Transaksi (tanpa ID — hanya nama produk, jumlah, harga)
+            String namaProduk = produkTerpilih != null ? produkTerpilih.getNamaProduk() : idProduk;
+            String satuan     = produkTerpilih != null ? produkTerpilih.getSatuan() : "";
+            String jumlahStr  = jumlah + (satuan.isEmpty() ? "" : " " + satuan);
+            String hargaStr   = RUPIAH_PREFIX + sub.toPlainString();
+            detailPenjualanData.add(buatBarisDetailPenjualan(namaProduk, jumlahStr, hargaStr));
+
             showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Detail penjualan berhasil ditambahkan.");
             bersihkanFormDetail();
             loadAutoIDDetail();   // ID detail baru, ID penjualan tetap
@@ -436,18 +521,19 @@ public class TransaksiPenjualanController implements Initializable {
         txtJumlah.clear();
         txtHargaJual.clear();
         txtSubtotal.clear();
+        produkTerpilih = null;
         if (tgProduk != null) tgProduk.selectToggle(null);
         for (ToggleButton c : daftarKartu) {
             if (!c.isDisable()) c.setStyle(CARD_NORMAL);
         }
     }
 
-    // ===================== TOMBOL TAMBAH PRODUK (lanjut input detail berikutnya) =====================
+    // ===================== TOMBOL TAMBAH PRODUK (simpan item saat ini, lanjut input berikutnya) =====================
     @FXML
     private void handleTambahProduk() {
-        // ID Penjualan tetap, hanya refresh ID Detail untuk entri berikutnya
-        bersihkanFormDetail();
-        loadAutoIDDetail();
+        // Sama seperti "Selesai": simpan produk yang sedang diisi ke database & tabel,
+        // lalu form otomatis dikosongkan dan ID Detail baru dibuat untuk produk berikutnya.
+        handleSelesai();
     }
 
     // ===================== TOMBOL SIMPAN (simpan header transaksi) =====================
@@ -457,7 +543,7 @@ public class TransaksiPenjualanController implements Initializable {
         if (totalPenjualan.compareTo(BigDecimal.ZERO) == 0) {
             showAlert(Alert.AlertType.WARNING, "Peringatan",
                     "Belum ada detail penjualan yang ditambahkan.\n" +
-                    "Tambahkan produk lalu klik Selesai sebelum Simpan.");
+                            "Tambahkan produk lalu klik Selesai sebelum Simpan.");
             return;
         }
         try {
@@ -522,14 +608,17 @@ public class TransaksiPenjualanController implements Initializable {
         bersihkanFormDetail();
         txtIDDetail.clear();
         txtIDPenjualanDetail.clear();
+        detailPenjualanData.clear();
 
         setPanelDetailEnabled(false);
         headerLengkap = false;
 
         loadAutoIDPenjualan();
+
+        // Muat ulang daftar produk supaya perubahan stok/status di Master Produk ikut terbawa
+        loadDataProduk();
     }
 
-    // ===================== UTIL =====================
     private void addNumericOnly(TextField field, int maxLen) {
         field.textProperty().addListener((obs, oldVal, newVal) -> {
             String filtered = newVal.replaceAll("[^0-9]", "");
