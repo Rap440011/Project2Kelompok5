@@ -118,8 +118,8 @@
                 <HBox spacing="2" alignment="CENTER_LEFT">
                     <Label text="ID Limbah"
                            style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
-<!--                    <Label text="*"-->
-<!--                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />-->
+                    <Label text="*"
+                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />
                 </HBox>
                 <TextField fx:id="txtID" editable="false"
                            minWidth="150" prefWidth="150" maxWidth="150"
@@ -160,8 +160,8 @@
                 <HBox spacing="2" alignment="CENTER_LEFT">
                     <Label text="Satuan"
                            style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
-<!--                    <Label text="*"-->
-<!--                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />-->
+                    <Label text="*"
+                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />
                 </HBox>
                 <TextField fx:id="txtJumlah" editable="false"
                            minWidth="150" prefWidth="150" maxWidth="150"

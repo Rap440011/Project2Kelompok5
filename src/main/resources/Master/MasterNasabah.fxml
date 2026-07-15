@@ -32,18 +32,6 @@
         <Button fx:id="btnCari" mnemonicParsing="false" onAction="#handleCari" prefHeight="36" prefWidth="72" styleClass="btn,btn-cari" text="Cari" />
     </HBox>
 
-    <!-- TABEL -->
-    <TableView fx:id="tbNasabah" prefHeight="308.0" prefWidth="952.0" style="-fx-background-color:white;                       -fx-border-color:#E8E8E8 transparent transparent transparent;                       -fx-border-width:0;" VBox.vgrow="ALWAYS">
-        <padding><Insets bottom="0" left="24" right="24" top="0" /></padding>
-        <columns>
-            <TableColumn fx:id="clmNama" prefWidth="226.0" style="-fx-alignment:CENTER;" text="Nama Nasabah" />
-            <TableColumn fx:id="clmHP" prefWidth="199.0" style="-fx-alignment:CENTER;" text="No. HP" />
-            <TableColumn fx:id="clmNoRek" prefWidth="166.0" style="-fx-alignment:CENTER;" text="No. Rekening" />
-            <TableColumn fx:id="clmSaldo" prefWidth="213.0" style="-fx-alignment:CENTER;" text="Saldo" />
-         <TableColumn fx:id="clmStatus" prefWidth="172.0" style="-fx-alignment:CENTER;" text="Status" />
-        </columns>
-    </TableView>
-
     <!-- FORM PANEL -->
     <VBox spacing="14" style="-fx-background-color:#FFFFFF;                  -fx-border-color:#EBEBEB transparent transparent transparent;                  -fx-border-width:1 0 0 0;">
         <padding><Insets bottom="20" left="24" right="24" top="18" /></padding>
@@ -153,5 +141,17 @@
             <Button fx:id="btnSimpan" mnemonicParsing="false" onAction="#handleSimpan" prefHeight="36" prefWidth="100" styleClass="btn,btn-simpan" text="Simpan" disable="true" />
         </HBox>
     </VBox>
+
+    <!-- TABEL -->
+    <TableView fx:id="tbNasabah" prefHeight="308.0" prefWidth="952.0" style="-fx-background-color:white;                       -fx-border-color:#E8E8E8 transparent transparent transparent;                       -fx-border-width:0;" VBox.vgrow="ALWAYS">
+        <padding><Insets bottom="0" left="24" right="24" top="0" /></padding>
+        <columns>
+            <TableColumn fx:id="clmNama" prefWidth="226.0" style="-fx-alignment:CENTER;" text="Nama Nasabah" />
+            <TableColumn fx:id="clmHP" prefWidth="199.0" style="-fx-alignment:CENTER;" text="No. HP" />
+            <TableColumn fx:id="clmNoRek" prefWidth="166.0" style="-fx-alignment:CENTER;" text="No. Rekening" />
+            <TableColumn fx:id="clmSaldo" prefWidth="213.0" style="-fx-alignment:CENTER;" text="Saldo" />
+         <TableColumn fx:id="clmStatus" prefWidth="172.0" style="-fx-alignment:CENTER;" text="Status" />
+        </columns>
+    </TableView>
 
 </VBox>

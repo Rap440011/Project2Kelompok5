@@ -49,29 +49,6 @@
                 styleClass="btn,btn-cari" />
     </HBox>
 
-    <!-- TABEL -->
-    <TableView fx:id="tbKaryawan"
-               VBox.vgrow="ALWAYS"
-               style="-fx-background-color:white;
-                      -fx-border-color:#E8E8E8 transparent transparent transparent;
-                      -fx-border-width:0;">
-        <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
-        <columns>
-            <TableColumn fx:id="clmNama"      text="Nama Karyawan"  prefWidth="200"
-                         style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmUsn"       text="Username"       prefWidth="150"
-                         style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmHP"        text="No. HP"         prefWidth="150"
-                         style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmJabatan"   text="Jabatan"        prefWidth="160"
-                         style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmJabatan1"  text="Status"         prefWidth="140"
-                         style="-fx-alignment:CENTER;" />
-            <TableColumn fx:id="clmJabatan11" text="Jenis Kelamin"  prefWidth="160"
-                         style="-fx-alignment:CENTER;" />
-        </columns>
-    </TableView>
-
     <!-- FORM PANEL -->
     <VBox spacing="14"
           style="-fx-background-color:#FFFFFF;
@@ -251,5 +228,28 @@
                     disable="true" />
         </HBox>
     </VBox>
+
+    <!-- TABEL -->
+    <TableView fx:id="tbKaryawan"
+               VBox.vgrow="ALWAYS"
+               style="-fx-background-color:white;
+                      -fx-border-color:#E8E8E8 transparent transparent transparent;
+                      -fx-border-width:0;">
+        <padding><Insets top="0" right="24" bottom="0" left="24"/></padding>
+        <columns>
+            <TableColumn fx:id="clmNama"      text="Nama Karyawan"  prefWidth="200"
+                         style="-fx-alignment:CENTER;" />
+            <TableColumn fx:id="clmUsn"       text="Username"       prefWidth="150"
+                         style="-fx-alignment:CENTER;" />
+            <TableColumn fx:id="clmHP"        text="No. HP"         prefWidth="150"
+                         style="-fx-alignment:CENTER;" />
+            <TableColumn fx:id="clmJabatan"   text="Jabatan"        prefWidth="160"
+                         style="-fx-alignment:CENTER;" />
+            <TableColumn fx:id="clmJabatan1"  text="Status"         prefWidth="140"
+                         style="-fx-alignment:CENTER;" />
+            <TableColumn fx:id="clmJabatan11" text="Jenis Kelamin"  prefWidth="160"
+                         style="-fx-alignment:CENTER;" />
+        </columns>
+    </TableView>
 
 </VBox>
