@@ -9,6 +9,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.Region;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
@@ -87,6 +89,16 @@ public class MasterLimbahController implements Initializable {
         });
     }
 
+    /**
+     * Mengubah nilai Jumlah (FLOAT) menjadi String tanpa notasi ilmiah dan tanpa
+     * angka nol berlebih di belakang koma, mis. 12.50 -> "12.5", 10.00 -> "10".
+     */
+    private String formatJumlah(double jumlah) {
+        BigDecimal bd = BigDecimal.valueOf(jumlah).stripTrailingZeros();
+        if (bd.scale() < 0) bd = bd.setScale(0, RoundingMode.HALF_UP);
+        return bd.toPlainString();
+    }
+
     private void loadAutoID() {
         try {
             db.result = db.stmt.executeQuery("{CALL sp_AutoID_Limbah}");
@@ -109,7 +121,7 @@ public class MasterLimbahController implements Initializable {
                         db.result.getString("Satuan"),
                         db.result.getString("Harga"),
                         db.result.getString("Keterangan"),
-                        String.valueOf(db.result.getInt("Jumlah"))
+                        formatJumlah(db.result.getDouble("Jumlah"))
                 ));
             }
             tbLimbah.setItems(dataList);
@@ -132,7 +144,7 @@ public class MasterLimbahController implements Initializable {
                         db.result.getString("Satuan"),
                         db.result.getString("Harga"),
                         db.result.getString("Keterangan"),
-                        String.valueOf(db.result.getInt("Jumlah"))
+                        formatJumlah(db.result.getDouble("Jumlah"))
                 ));
             }
             tbLimbah.setItems(dataList);
@@ -164,7 +176,7 @@ public class MasterLimbahController implements Initializable {
             db.cstat.setString(1, txtID.getText());
             db.cstat.setString(2, txtNama.getText());
             db.cstat.setString(3, cmbjenis.getValue());
-            db.cstat.setInt   (4, 0); // Jumlah default 0
+            db.cstat.setDouble(4, 0); // Jumlah tidak diubah lewat form ini (dikelola via transaksi)
             db.cstat.setString(5, txtJumlah.getText()); // Satuan otomatis
             db.cstat.setBigDecimal(6, new java.math.BigDecimal(txtHarga.getText().trim()));
             db.cstat.setString(7, txtketerangan.getText());
@@ -238,7 +250,7 @@ public class MasterLimbahController implements Initializable {
             db.cstat.setString(1, txtID.getText());
             db.cstat.setString(2, txtNama.getText().trim());
             db.cstat.setString(3, cmbjenis.getValue());
-            db.cstat.setInt   (4, 0);                       // Jumlah default 0
+            db.cstat.setDouble(4, 0);                        // Jumlah default 0
             db.cstat.setString(5, txtJumlah.getText());      // Satuan otomatis (Liter/Kilo)
             db.cstat.setBigDecimal(6, new java.math.BigDecimal(txtHarga.getText().trim()));
             db.cstat.setString(7, txtketerangan.getText().trim().isEmpty()

@@ -15,15 +15,12 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="Dashboard.DashboardKasirController">
 
-    <!-- ===================== SIDEBAR (KIRI) ===================== -->
+    <!-- ===================== SIDEBAR ===================== -->
     <left>
         <VBox prefWidth="230.0" spacing="6" styleClass="sidebar"
               BorderPane.alignment="CENTER">
-            <padding>
-                <Insets bottom="16" left="14" right="14" top="20"/>
-            </padding>
+            <padding><Insets bottom="16" left="14" right="14" top="20"/></padding>
 
-            <!-- Judul -->
             <Label styleClass="sidebar-title" text="DASHBOARD KASIR">
                 <font><Font size="18.0"/></font>
             </Label>
@@ -34,12 +31,25 @@
 
             <Separator styleClass="sidebar-separator"/>
 
-            <!-- Menu Transaksi -->
             <VBox spacing="6" VBox.vgrow="ALWAYS">
                 <VBox.margin><Insets top="14"/></VBox.margin>
 
+                <!-- Grup: Nasabah -->
+                <Label text="NASABAH"
+                       style="-fx-text-fill:#A5D6A7;-fx-font-size:10px;
+                              -fx-font-weight:bold;-fx-padding:4 0 2 4;"/>
+
+                <Button fx:id="btnTambahNasabah"
+                        mnemonicParsing="false"
+                        onAction="#handleTambahNasabah"
+                        prefHeight="40.0"
+                        styleClass="sidebar-btn"
+                        text="Tambah Nasabah"/>
+
+                <!-- Grup: Transaksi -->
                 <Label text="TRANSAKSI"
-                       style="-fx-text-fill:#A5D6A7;-fx-font-size:10px;-fx-font-weight:bold;-fx-padding:4 0 2 4;"/>
+                       style="-fx-text-fill:#A5D6A7;-fx-font-size:10px;
+                              -fx-font-weight:bold;-fx-padding:4 0 2 4;"/>
 
                 <Button fx:id="btnSetorLimbah"
                         mnemonicParsing="false"
@@ -61,11 +71,17 @@
                         prefHeight="40.0"
                         styleClass="sidebar-btn"
                         text="Penjualan Produk"/>
+
+                <Button fx:id="btnPenarikanSaldo"
+                        mnemonicParsing="false"
+                        onAction="#handlePenarikanSaldo"
+                        prefHeight="40.0"
+                        styleClass="sidebar-btn"
+                        text="Penarikan Saldo"/>
             </VBox>
 
             <Separator styleClass="sidebar-separator"/>
 
-            <!-- Logout -->
             <Button fx:id="btnLogout"
                     mnemonicParsing="false"
                     onAction="#handleLogout"
@@ -77,14 +93,12 @@
         </VBox>
     </left>
 
-    <!-- ===================== CONTENT AREA (KANAN) ===================== -->
+    <!-- ===================== CONTENT AREA ===================== -->
     <center>
         <StackPane fx:id="contentArea"
                    styleClass="content-area"
                    BorderPane.alignment="CENTER">
-            <padding>
-                <Insets bottom="16" left="16" right="16" top="16"/>
-            </padding>
+            <padding><Insets bottom="16" left="16" right="16" top="16"/></padding>
         </StackPane>
     </center>
 

@@ -86,7 +86,7 @@ public class TransaksiPenjualanController implements Initializable {
                     "-fx-padding:0;" +
                     "-fx-opacity:0.55;";
 
-    private static final double CARD_HEIGHT = 100.0;
+    private static final double CARD_HEIGHT = 124.0;
     private static final double IMG_SIZE    =  72.0;
 
     private static final String RUPIAH_PREFIX = "Rp ";
@@ -190,6 +190,11 @@ public class TransaksiPenjualanController implements Initializable {
         }
     }
 
+    /** Nilai stok produk (dari MasterProduk.getStok()), aman terhadap format tak terduga. */
+    private int stokProduk(MasterProduk p) {
+        try { return Integer.parseInt(p.getStok().trim()); } catch (Exception e) { return 0; }
+    }
+
     // ===================== ENABLE / DISABLE PANEL DETAIL & KARTU =====================
     private void setPanelDetailEnabled(boolean enabled) {
         // Field detail
@@ -198,11 +203,15 @@ public class TransaksiPenjualanController implements Initializable {
         btnBatal.setDisable(!enabled);
         btnTambahProduk.setDisable(!enabled);
 
-        // Kartu produk
+        // Kartu produk — kartu yang stoknya 0 tetap abu-abu/nonaktif walau header sudah lengkap
         for (ToggleButton card : daftarKartu) {
-            card.setDisable(!enabled);
-            card.setStyle(enabled ? CARD_NORMAL : CARD_DISABLED);
-            card.setMouseTransparent(!enabled);
+            MasterProduk p = (MasterProduk) card.getUserData();
+            boolean stokHabis = p != null && stokProduk(p) <= 0;
+            boolean cardEnabled = enabled && !stokHabis;
+
+            card.setDisable(!cardEnabled);
+            card.setStyle(cardEnabled ? CARD_NORMAL : CARD_DISABLED);
+            card.setMouseTransparent(!cardEnabled);
         }
 
         if (!enabled && tgProduk != null) {
@@ -297,7 +306,7 @@ public class TransaksiPenjualanController implements Initializable {
         card.setUserData(p);
         card.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
         card.setMaxWidth(Double.MAX_VALUE);
-        card.setStyle(CARD_DISABLED);   // nonaktif sampai header lengkap
+        card.setStyle(CARD_DISABLED);   // nonaktif sampai header lengkap (atau tetap abu-abu kalau stok habis)
         card.setDisable(true);
         card.setMouseTransparent(true);
 
@@ -306,11 +315,12 @@ public class TransaksiPenjualanController implements Initializable {
         card.setMaxHeight(CARD_HEIGHT);
         card.setGraphic(buildKartuGraphic(p));
 
+        boolean stokHabis = stokProduk(p) <= 0;
         card.setOnMouseEntered(e -> {
-            if (!card.isDisable() && !card.isSelected()) card.setStyle(CARD_HOVER);
+            if (!card.isDisable() && !card.isSelected() && !stokHabis) card.setStyle(CARD_HOVER);
         });
         card.setOnMouseExited(e -> {
-            if (!card.isDisable() && !card.isSelected()) card.setStyle(CARD_NORMAL);
+            if (!card.isDisable() && !card.isSelected() && !stokHabis) card.setStyle(CARD_NORMAL);
         });
 
         return card;
@@ -381,6 +391,29 @@ public class TransaksiPenjualanController implements Initializable {
         lblKom.setStyle("-fx-font-size:11px;-fx-text-fill:#757575;");
         lblKom.setWrapText(true); lblKom.setMaxWidth(Double.MAX_VALUE);
 
+        // ── Badge Stok (Stok Habis / Menipis / normal) — sama seperti Master Produk ──
+        Label lblStokJudul = new Label("Stok :");
+        lblStokJudul.setStyle("-fx-font-size:11px;-fx-text-fill:#9E9E9E;");
+
+        int nilaiStok = stokProduk(p);
+        String warnaStok, bgStok, teksStok;
+        if (nilaiStok <= 0) {
+            warnaStok = "#C62828"; bgStok = "#FFEBEE"; teksStok = "Stok Habis";
+        } else if (nilaiStok < 10) {
+            warnaStok = "#E65100"; bgStok = "#FFF3E0"; teksStok = nilaiStok + " " + p.getSatuan() + " (Menipis)";
+        } else {
+            warnaStok = "#2E7D32"; bgStok = "#E8F5E9"; teksStok = nilaiStok + " " + p.getSatuan();
+        }
+
+        Label lblStokIsi = new Label(teksStok);
+        lblStokIsi.setStyle(
+                "-fx-font-size:11px;-fx-font-weight:bold;-fx-text-fill:" + warnaStok + ";" +
+                        "-fx-background-color:" + bgStok + ";" +
+                        "-fx-padding:1 8 1 8;-fx-background-radius:8;");
+
+        HBox stokRow = new HBox(6, lblStokJudul, lblStokIsi);
+        stokRow.setAlignment(Pos.CENTER_LEFT);
+
         Label lblBadge = new Label(p.getSatuan());
         lblBadge.setStyle("-fx-background-color:#E8F5E9;-fx-text-fill:#2E7D32;" +
                 "-fx-font-size:10px;-fx-font-weight:bold;" +
@@ -389,7 +422,7 @@ public class TransaksiPenjualanController implements Initializable {
         Region spacer = new Region(); VBox.setVgrow(spacer, Priority.ALWAYS);
         HBox badgeRow = new HBox(lblBadge); badgeRow.setAlignment(Pos.BOTTOM_RIGHT);
 
-        VBox teks = new VBox(4, lblNama, lblKomTitle, lblKom, spacer, badgeRow);
+        VBox teks = new VBox(4, lblNama, lblKomTitle, lblKom, stokRow, spacer, badgeRow);
         teks.setAlignment(Pos.TOP_LEFT);
         teks.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(teks, Priority.ALWAYS);
@@ -586,10 +619,20 @@ public class TransaksiPenjualanController implements Initializable {
             showAlert(Alert.AlertType.WARNING, "Validasi", "Jumlah wajib diisi.");
             return false;
         }
-        try { Integer.parseInt(txtJumlah.getText().trim()); }
+        int jumlah;
+        try { jumlah = Integer.parseInt(txtJumlah.getText().trim()); }
         catch (NumberFormatException e) {
             showAlert(Alert.AlertType.WARNING, "Validasi", "Jumlah harus berupa angka.");
             return false;
+        }
+        if (produkTerpilih != null) {
+            int stokTersedia = stokProduk(produkTerpilih);
+            if (jumlah > stokTersedia) {
+                showAlert(Alert.AlertType.WARNING, "Validasi",
+                        "Jumlah stok tidak mencukupi.\n" +
+                                "Stok tersedia: " + stokTersedia + " " + produkTerpilih.getSatuan() + ".");
+                return false;
+            }
         }
         if (txtSubtotal.getText().trim().isEmpty()) {
             showAlert(Alert.AlertType.WARNING, "Validasi", "Subtotal belum terhitung. Pastikan jumlah sudah diisi.");
@@ -615,7 +658,6 @@ public class TransaksiPenjualanController implements Initializable {
 
         loadAutoIDPenjualan();
 
-        // Muat ulang daftar produk supaya perubahan stok/status di Master Produk ikut terbawa
         loadDataProduk();
     }
 

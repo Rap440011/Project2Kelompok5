@@ -9,10 +9,12 @@ module com.example.project2kelompok5 {
     opens Master to javafx.fxml;
     opens Connection to javafx.fxml;
     opens Transaksi to javafx.fxml;
+    opens Kasir to javafx.fxml;
 
     exports com.example.project2kelompok5;
     exports Dashboard;
     exports Master;
     exports Connection;
     exports Transaksi;
+    exports Kasir;
 }

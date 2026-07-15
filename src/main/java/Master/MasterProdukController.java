@@ -113,21 +113,21 @@ public class MasterProdukController implements Initializable {
     public static class RelasiProdukLimbah {
         private final javafx.beans.property.SimpleStringProperty idProduk;
         private final javafx.beans.property.SimpleStringProperty idLimbah;
-        private final javafx.beans.property.SimpleStringProperty presentase;
+        private final javafx.beans.property.SimpleStringProperty qty;
 
-        RelasiProdukLimbah(String idProduk, String idLimbah, String presentase) {
-            this.idProduk   = new javafx.beans.property.SimpleStringProperty(idProduk);
-            this.idLimbah   = new javafx.beans.property.SimpleStringProperty(idLimbah);
-            this.presentase = new javafx.beans.property.SimpleStringProperty(presentase);
+        RelasiProdukLimbah(String idProduk, String idLimbah, String qty) {
+            this.idProduk = new javafx.beans.property.SimpleStringProperty(idProduk);
+            this.idLimbah = new javafx.beans.property.SimpleStringProperty(idLimbah);
+            this.qty      = new javafx.beans.property.SimpleStringProperty(qty);
         }
-        public String getIdProduk()   { return idProduk.get(); }
-        public String getIdLimbah()   { return idLimbah.get(); }
-        public String getPresentase() { return presentase.get(); }
-        public void   setPresentase(String presentase) { this.presentase.set(presentase); }
+        public String getIdProduk() { return idProduk.get(); }
+        public String getIdLimbah() { return idLimbah.get(); }
+        public String getQty()      { return qty.get(); }
+        public void   setQty(String qty) { this.qty.set(qty); }
 
-        public javafx.beans.property.StringProperty idProdukProperty()   { return idProduk; }
-        public javafx.beans.property.StringProperty idLimbahProperty()   { return idLimbah; }
-        public javafx.beans.property.StringProperty presentaseProperty() { return presentase; }
+        public javafx.beans.property.StringProperty idProdukProperty() { return idProduk; }
+        public javafx.beans.property.StringProperty idLimbahProperty() { return idLimbah; }
+        public javafx.beans.property.StringProperty qtyProperty()      { return qty; }
     }
 
     // ── Initialize ────────────────────────────────────────────────────────────
@@ -164,35 +164,35 @@ public class MasterProdukController implements Initializable {
         });
     }
 
-    /** Tabel relasi: ID Produk & ID Limbah readonly, Presentase editable dengan validasi angka 0-100 */
+    /** Tabel relasi: ID Produk & ID Limbah readonly, Qty (jumlah limbah per unit produk) editable, angka desimal >= 0 */
     private void setupTabelRelasi() {
         clmRelasiIDProduk  .setCellValueFactory(new PropertyValueFactory<>("idProduk"));
         clmRelasiIDLimbah  .setCellValueFactory(new PropertyValueFactory<>("idLimbah"));
-        clmRelasiPresentase.setCellValueFactory(new PropertyValueFactory<>("presentase"));
+        clmRelasiPresentase.setCellValueFactory(new PropertyValueFactory<>("qty"));
 
         // ID Produk & ID Limbah tidak bisa diedit
         clmRelasiIDProduk.setEditable(false);
         clmRelasiIDLimbah.setEditable(false);
 
-        // Presentase bisa diedit manual
+        // Qty bisa diedit manual (jumlah limbah yang dibutuhkan per 1 unit produk, decimal(10,2))
         clmRelasiPresentase.setEditable(true);
         clmRelasiPresentase.setCellFactory(TextFieldTableCell.forTableColumn());
         clmRelasiPresentase.setOnEditCommit(evt -> {
             RelasiProdukLimbah row = evt.getRowValue();
-            String nilaiBaru = evt.getNewValue() == null ? "" : evt.getNewValue().trim().replace("%", "");
+            String nilaiBaru = evt.getNewValue() == null ? "" : evt.getNewValue().trim();
 
             if (!nilaiBaru.matches("\\d+(\\.\\d+)?")) {
-                showAlert(Alert.AlertType.WARNING, "Validasi", "Presentase harus berupa angka.");
+                showAlert(Alert.AlertType.WARNING, "Validasi", "Qty harus berupa angka.");
                 tbRelasi.refresh();
                 return;
             }
             double nilai = Double.parseDouble(nilaiBaru);
-            if (nilai < 0 || nilai > 100) {
-                showAlert(Alert.AlertType.WARNING, "Validasi", "Presentase harus di antara 0 - 100.");
+            if (nilai <= 0) {
+                showAlert(Alert.AlertType.WARNING, "Validasi", "Qty harus lebih dari 0.");
                 tbRelasi.refresh();
                 return;
             }
-            row.setPresentase(nilaiBaru);
+            row.setQty(nilaiBaru);
             tbRelasi.refresh();
         });
 
@@ -273,34 +273,22 @@ public class MasterProdukController implements Initializable {
     }
 
     /**
-     * Hitung ulang isi tabel relasi berdasarkan limbah yang sedang dipilih.
-     * Presentase dibagi rata: 100 / jumlah limbah terpilih.
-     * 1 limbah -> 100, 2 limbah -> 50 & 50, 3 limbah -> 33.33/33.33/33.34, dst.
+     * Bentuk ulang isi tabel relasi berdasarkan limbah yang sedang dipilih.
+     * Qty (jumlah limbah yang dibutuhkan per 1 unit produk) diberi nilai awal 1.00
+     * untuk limbah yang baru dipilih. Untuk limbah yang tetap terpilih, nilai Qty
+     * yang sudah diedit user sebelumnya dipertahankan (tidak direset ke 1.00 lagi).
      * Nilai boleh diedit manual sesudahnya lewat tabel.
      */
     private void recalcRelasi() {
+        Map<String, String> qtyLama = new LinkedHashMap<>();
+        for (RelasiProdukLimbah r : relasiList) qtyLama.put(r.getIdLimbah(), r.getQty());
+
         relasiList.clear();
-        int jumlah = idLimbahTerpilih.size();
-        if (jumlah == 0) return;
-
         String idProduk = txtID.getText();
-        BigDecimal seratus = new BigDecimal("100");
-        BigDecimal porsi = seratus.divide(BigDecimal.valueOf(jumlah), 2, RoundingMode.HALF_UP);
-        BigDecimal totalTerpakai = BigDecimal.ZERO;
 
-        int i = 0;
         for (String idLimbah : idLimbahTerpilih) {
-            i++;
-            BigDecimal nilai;
-            if (i == jumlah) {
-                // porsi terakhir menyesuaikan sisa supaya total tetap tepat 100
-                nilai = seratus.subtract(totalTerpakai);
-            } else {
-                nilai = porsi;
-                totalTerpakai = totalTerpakai.add(porsi);
-            }
-            relasiList.add(new RelasiProdukLimbah(
-                    idProduk, idLimbah, nilai.stripTrailingZeros().toPlainString()));
+            String qty = qtyLama.getOrDefault(idLimbah, "1");
+            relasiList.add(new RelasiProdukLimbah(idProduk, idLimbah, qty));
         }
     }
 
@@ -346,7 +334,7 @@ public class MasterProdukController implements Initializable {
             db.result = db.cstat.executeQuery();
             while (db.result.next()) {
                 String idLimbah = db.result.getString("ID_Limbah");
-                String qty      = String.valueOf(db.result.getInt("Qty"));
+                String qty = db.result.getBigDecimal("Qty").stripTrailingZeros().toPlainString();
 
                 Button btn = limbahButtonMap.get(idLimbah);
                 if (btn != null) toggleLimbah(idLimbah, btn, false); // aktifkan visual saja
@@ -449,6 +437,31 @@ public class MasterProdukController implements Initializable {
 
         VBox komposisiBox = new VBox(1, lblKomposisiJudul, lblKomposisiIsi);
 
+        // ── Tampilan Stok (di bawah Komposisi) ───────────────────────────────
+        Label lblStokJudul = new Label("Stok :");
+        lblStokJudul.setStyle("-fx-font-size:11px; -fx-text-fill:#9E9E9E;");
+
+        int nilaiStok = 0;
+        try { nilaiStok = Integer.parseInt(p.getStok().trim()); } catch (Exception ignored) {}
+
+        String warnaStok, bgStok, teksStok;
+        if (nilaiStok <= 0) {
+            warnaStok = "#C62828"; bgStok = "#FFEBEE"; teksStok = "Stok Habis";
+        } else if (nilaiStok < 10) {
+            warnaStok = "#E65100"; bgStok = "#FFF3E0"; teksStok = nilaiStok + " " + p.getSatuan() + " (Menipis)";
+        } else {
+            warnaStok = "#2E7D32"; bgStok = "#E8F5E9"; teksStok = nilaiStok + " " + p.getSatuan();
+        }
+
+        Label lblStokIsi = new Label(teksStok);
+        lblStokIsi.setStyle(
+                "-fx-font-size:11px; -fx-font-weight:bold; -fx-text-fill:" + warnaStok + ";" +
+                        "-fx-background-color:" + bgStok + ";" +
+                        "-fx-padding:1 8 1 8; -fx-background-radius:8;");
+
+        HBox stokRow = new HBox(6, lblStokJudul, lblStokIsi);
+        stokRow.setAlignment(Pos.CENTER_LEFT);
+
         Label lblSatuan = new Label(p.getSatuan());
         lblSatuan.setStyle(
                 "-fx-background-color:#E8F5E9; -fx-text-fill:#2E7D32;" +
@@ -461,7 +474,7 @@ public class MasterProdukController implements Initializable {
         HBox badgeRow = new HBox(lblSatuan);
         badgeRow.setAlignment(Pos.BOTTOM_RIGHT);
 
-        VBox info = new VBox(4, lblNama, komposisiBox, spacer, badgeRow);
+        VBox info = new VBox(4, lblNama, komposisiBox, stokRow, spacer, badgeRow);
         info.setAlignment(Pos.TOP_LEFT);
         info.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(info, Priority.ALWAYS);
@@ -562,8 +575,7 @@ public class MasterProdukController implements Initializable {
             db.cstat = db.conn.prepareCall("{CALL sp_Insert_DetailProduk(?,?,?)}");
             db.cstat.setString(1, idProduk);
             db.cstat.setString(2, r.getIdLimbah());
-            int qty = (int) Math.round(Double.parseDouble(r.getPresentase()));
-            db.cstat.setInt(3, qty);
+            db.cstat.setBigDecimal(3, new BigDecimal(r.getQty()));
             db.cstat.executeUpdate();
         }
     }

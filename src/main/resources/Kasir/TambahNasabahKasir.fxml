@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="rootTambahNasabah"
+      prefHeight="700.0" prefWidth="1000.0"
+      spacing="0"
+      styleClass="content-card"
+      xmlns="http://javafx.com/javafx/26"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Kasir.TambahNasabahKasirController">
+
+    <!-- TOP BAR -->
+    <HBox alignment="CENTER_LEFT" spacing="12"
+          style="-fx-background-color:#FFFFFF;
+                 -fx-border-color:transparent transparent #EBEBEB transparent;
+                 -fx-border-width:0 0 1 0;">
+        <padding><Insets top="20" right="24" bottom="16" left="24"/></padding>
+
+        <Label text="👤" style="-fx-font-size:22px;" />
+        <VBox spacing="1">
+            <Label text="Tambah Nasabah"
+                   style="-fx-font-size:18px; -fx-font-weight:bold; -fx-text-fill:#1A1A1A;" />
+            <Label text="Daftarkan nasabah baru Bumi Makmur"
+                   style="-fx-font-size:11px; -fx-text-fill:#9E9E9E;" />
+        </VBox>
+    </HBox>
+
+    <!-- FORM PANEL -->
+    <VBox spacing="20" VBox.vgrow="ALWAYS"
+          style="-fx-background-color:#FAFAFA;">
+        <padding><Insets top="30" right="60" bottom="30" left="60"/></padding>
+
+        <!-- Card form -->
+        <VBox spacing="18"
+              style="-fx-background-color:white;
+                     -fx-border-color:#E8E8E8;
+                     -fx-border-radius:12;
+                     -fx-background-radius:12;
+                     -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.06),8,0,0,2);">
+            <padding><Insets top="24" right="28" bottom="24" left="28"/></padding>
+
+            <!-- Sub-judul -->
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Region prefWidth="3" prefHeight="18"
+                        style="-fx-background-color:#2E7D32; -fx-background-radius:2;" />
+                <Label text="Data Nasabah"
+                       style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#333333;" />
+            </HBox>
+
+            <!-- FORM: 6 kolom -->
+            <GridPane hgap="16" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="100" prefWidth="115" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                    <ColumnConstraints minWidth="100" prefWidth="115" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                    <ColumnConstraints minWidth="100" prefWidth="115" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="36" />
+                    <RowConstraints minHeight="36" />
+                    <RowConstraints minHeight="36" />
+                    <RowConstraints minHeight="36" />
+                    <RowConstraints minHeight="36" />
+                </rowConstraints>
+
+                <!-- Baris 0: Nama | Provinsi | Bank -->
+                <Label text="Nama Nasabah"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <TextField fx:id="txtNama" maxWidth="260"
+                           promptText="Nama lengkap nasabah..."
+                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
+                           GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <Label text="Provinsi"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="2" GridPane.rowIndex="0" />
+                <ComboBox fx:id="cmbProvinsi" maxWidth="260"
+                          GridPane.columnIndex="3" GridPane.rowIndex="0" />
+
+                <Label text="Bank"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="4" GridPane.rowIndex="0" />
+                <ComboBox fx:id="cmbBank" maxWidth="260"
+                          GridPane.columnIndex="5" GridPane.rowIndex="0" />
+
+                <!-- Baris 1: No. HP | Kabupaten | No. Rekening -->
+                <Label text="No. HP"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <TextField fx:id="txtHP" maxWidth="260"
+                           promptText="08xxxxxxxxxx"
+                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
+                           GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <Label text="Kabupaten"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="2" GridPane.rowIndex="1" />
+                <ComboBox fx:id="cmbKabupaten" maxWidth="260"
+                          GridPane.columnIndex="3" GridPane.rowIndex="1" />
+
+                <Label text="No. Rekening"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="4" GridPane.rowIndex="1" />
+                <TextField fx:id="txtNoRek" maxWidth="260"
+                           promptText="Otomatis dari kode bank..."
+                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
+                           GridPane.columnIndex="5" GridPane.rowIndex="1" />
+
+                <!-- Baris 2: (kosong) | Kecamatan | Saldo -->
+                <Label text="Kecamatan"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                <ComboBox fx:id="cmbKecamatan" maxWidth="260"
+                          GridPane.columnIndex="3" GridPane.rowIndex="2" />
+
+                <Label text="Saldo Awal"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="4" GridPane.rowIndex="2" />
+                <TextField fx:id="txtSaldo" maxWidth="260" editable="false"
+                           style="-fx-background-color:#F5F5F5; -fx-opacity:1;
+                                  -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
+                           GridPane.columnIndex="5" GridPane.rowIndex="2" />
+
+                <!-- Baris 3: | Kelurahan | -->
+                <Label text="Kelurahan"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="2" GridPane.rowIndex="3" />
+                <ComboBox fx:id="cmbKelurahan" maxWidth="260"
+                          GridPane.columnIndex="3" GridPane.rowIndex="3" />
+
+                <!-- Baris 4: | RT/RW | -->
+                <Label text="RT / RW"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="2" GridPane.rowIndex="4" />
+                <HBox spacing="8" GridPane.columnIndex="3" GridPane.rowIndex="4">
+                    <TextField fx:id="txtRT" prefWidth="80"
+                               promptText="RT"
+                               style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;" />
+                    <Label text="/"
+                           style="-fx-font-size:14px; -fx-text-fill:#999; -fx-padding:5 0 0 0;" />
+                    <TextField fx:id="txtRW" prefWidth="80"
+                               promptText="RW"
+                               style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;" />
+                </HBox>
+            </GridPane>
+
+            <!-- Info saldo -->
+            <HBox alignment="CENTER_LEFT" spacing="6"
+                  style="-fx-background-color:#FFF8E1; -fx-background-radius:8;
+                         -fx-border-color:#FFE082; -fx-border-radius:8; -fx-padding:10 14 10 14;">
+                <Label text="ℹ" style="-fx-font-size:14px; -fx-text-fill:#F9A825;" />
+                <Label text="Saldo awal nasabah baru adalah Rp 0. Saldo akan bertambah saat nasabah menyetorkan limbah."
+                       style="-fx-font-size:11px; -fx-text-fill:#795548;" />
+            </HBox>
+
+            <!-- Tombol -->
+            <HBox alignment="CENTER_RIGHT" spacing="10">
+                <Button fx:id="btnBatal" onAction="#handleBatal"
+                        text="Batal"
+                        prefWidth="110" prefHeight="38"
+                        styleClass="btn,btn-batal" />
+                <Button fx:id="btnSimpan" onAction="#handleSimpan"
+                        text="💾  Daftarkan Nasabah"
+                        prefWidth="180" prefHeight="38"
+                        styleClass="btn,btn-simpan" />
+            </HBox>
+        </VBox>
+    </VBox>
+
+</VBox>

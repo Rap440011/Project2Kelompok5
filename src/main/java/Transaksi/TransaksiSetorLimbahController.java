@@ -453,40 +453,82 @@ public class TransaksiSetorLimbahController implements Initializable {
         txtTotal.setText(totalTransaksi.toPlainString());
     }
 
-    // ===================== TAMBAH TRANSAKSI (simpan satu detail) =====================
+    // ===================== TAMBAH TRANSAKSI (susun satu baris detail — BELUM disimpan ke DB) =====================
 
     @FXML
     private void handleTambahTransaksi() {
         if (!validateDetailForm()) return;
-        try {
-            String idDetail    = txtIDDetail.getText();
-            String idSetor     = txtIDSetorLimbahDetail.getText();
-            String namaLimbah  = cmbJenisLimbah.getValue();
-            String jumlah      = txtJumlah.getText().trim();
-            String satuan      = lblSatuan.getText();
-            String keterangan  = txtKeteranganDetail.getText().trim();
-            String subTotal    = txtSubTotal.getText().trim();
 
-            db.cstat = db.conn.prepareCall("{CALL sp_Insert_DetailSetorLimbah(?,?,?,?,?,?,?)}");
-            db.cstat.setString(1, idDetail);
-            db.cstat.setString(2, idSetor);
-            db.cstat.setString(3, namaLimbah);
-            db.cstat.setBigDecimal(4, new BigDecimal(jumlah));
-            db.cstat.setString(5, satuan);
-            db.cstat.setString(6, keterangan);
-            db.cstat.setBigDecimal(7, new BigDecimal(subTotal));
-            db.cstat.executeUpdate();
+        String idDetail    = txtIDDetail.getText();
+        String idSetor     = txtIDSetorLimbahDetail.getText();
+        String namaLimbah  = cmbJenisLimbah.getValue();
+        String jumlah      = txtJumlah.getText().trim();
+        String satuan      = lblSatuan.getText();
+        String keterangan  = txtKeteranganDetail.getText().trim();
+        String subTotal    = txtSubTotal.getText().trim();
 
-            detailList.add(new DetailSetorLimbah(idDetail, idSetor, namaLimbah, jumlah, satuan, keterangan, subTotal));
-            hitungTotalTransaksi();
-            btnSelesai.setDisable(false);
+        // PENTING: baris detail TIDAK di-insert ke database di sini.
+        // dtl_tr_Setor_Limbah punya FOREIGN KEY ke tr_Setor_Limbah.ID_Setor, sedangkan
+        // header (tr_Setor_Limbah) baru benar-benar disimpan saat tombol "Selesai" diklik
+        // (lihat handleSelesai()). Kalau detail di-insert duluan di sini, ID_Setor-nya
+        // belum ada di tabel induk -> INSERT ditolak (FOREIGN KEY constraint violation).
+        // Jadi detail hanya disusun di memori (detailList) dulu, dan semuanya baru
+        // dikirim ke database sekaligus setelah header berhasil disimpan.
+        detailList.add(new DetailSetorLimbah(idDetail, idSetor, namaLimbah, jumlah, satuan, keterangan, subTotal));
+        hitungTotalTransaksi();
+        btnSelesai.setDisable(false);
 
-            clearInputDetail();
+        clearInputDetail();
+
+        // Generate ID Detail berikutnya secara LOKAL (bukan query ulang ke database),
+        // karena selama header belum tersimpan, dtl_tr_Setor_Limbah juga belum berisi
+        // baris apa pun untuk ID_Setor ini -> sp_AutoID_DetailSetorLimbah akan selalu
+        // mengembalikan urutan yang sama kalau dipanggil berulang di titik ini.
+        String idDetailBerikutnya = idDetailBerikutnyaLokal(idDetail);
+        if (idDetailBerikutnya != null) {
+            txtIDDetail.setText(idDetailBerikutnya);
+        } else {
+            // fallback: kalau format ID tidak sesuai dugaan, tetap coba ambil dari DB
             loadAutoIDDetail();
-
-        } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Error Tambah Transaksi", e.getMessage());
         }
+    }
+
+    /**
+     * Increment 2 digit terakhir dari ID Detail saat ini (format: ...NN, hasil
+     * sp_AutoID_DetailSetorLimbah) tanpa perlu query ulang ke database. Dipakai selama
+     * beberapa baris detail disusun di memori sebelum header (dan detail-detailnya)
+     * benar-benar di-INSERT ke database saat "Selesai".
+     */
+    private String idDetailBerikutnyaLokal(String idSaatIni) {
+        if (idSaatIni == null || idSaatIni.length() < 2) return null;
+        try {
+            String prefix = idSaatIni.substring(0, idSaatIni.length() - 2);
+            int urut = Integer.parseInt(idSaatIni.substring(idSaatIni.length() - 2)) + 1;
+            return prefix + String.format("%02d", urut);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Cek apakah ID_Karyawan yang diketik user benar-benar terdaftar di tb_Karyawan.
+     * Diperlukan karena txtIDKaryawan adalah TextField bebas ketik (bukan pilihan dari
+     * daftar), sedangkan tr_Setor_Limbah.ID_Karyawan punya FOREIGN KEY ke tb_Karyawan.
+     * Tanpa validasi ini, ID yang salah ketik baru ketahuan lewat error SQL mentah saat
+     * INSERT (FOREIGN KEY constraint violation).
+     */
+    private boolean validasiKaryawanAda(String idKaryawan) {
+        if (idKaryawan == null || idKaryawan.trim().isEmpty()) return false;
+        try (java.sql.PreparedStatement ps = db.conn.prepareStatement(
+                "SELECT COUNT(1) AS Jumlah FROM tb_Karyawan WHERE ID_Karyawan = ?")) {
+            ps.setString(1, idKaryawan.trim());
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("Jumlah") > 0;
+            }
+        } catch (SQLException e) {
+            showAlert(Alert.AlertType.ERROR, "Error Validasi Karyawan", e.getMessage());
+        }
+        return false;
     }
 
     private boolean validateDetailForm() {
@@ -514,9 +556,18 @@ public class TransaksiSetorLimbahController implements Initializable {
             showAlert(Alert.AlertType.WARNING, "Peringatan", "Tambahkan minimal satu detail transaksi terlebih dahulu.");
             return;
         }
+        String idKaryawan = txtIDKaryawan.getText().trim();
+        if (!validasiKaryawanAda(idKaryawan)) {
+            showAlert(Alert.AlertType.WARNING, "Validasi",
+                    "ID Karyawan '" + idKaryawan + "' tidak ditemukan di Master Karyawan.\n" +
+                            "Periksa kembali ID yang diketik.");
+            return;
+        }
         try {
             String tanggal = dpTanggal.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
+            // 1) Simpan HEADER lebih dulu — dtl_tr_Setor_Limbah.ID_Setor (FOREIGN KEY)
+            //    hanya bisa diisi kalau baris ini sudah ada di tr_Setor_Limbah.
             db.cstat = db.conn.prepareCall("{CALL sp_Insert_SetorLimbah(?,?,?,?,?)}");
             db.cstat.setString(1, txtIDTransaksi.getText());
             db.cstat.setString(2, idNasabahTerpilih);
@@ -524,6 +575,36 @@ public class TransaksiSetorLimbahController implements Initializable {
             db.cstat.setString(4, tanggal);
             db.cstat.setBigDecimal(5, totalTransaksi);
             db.cstat.executeUpdate();
+
+            // 2) Baru setelah header ada, simpan seluruh baris detail yang sudah disusun.
+            //    ID_Setor sama untuk semua baris dalam transaksi ini, jadi ambil langsung
+            //    dari txtIDTransaksi (tidak bergantung pada getter idSetor di DetailSetorLimbah).
+            String idSetorHeader = txtIDTransaksi.getText();
+            for (DetailSetorLimbah d : detailList) {
+                db.cstat = db.conn.prepareCall("{CALL sp_Insert_DetailSetorLimbah(?,?,?,?,?,?,?)}");
+                db.cstat.setString(1, d.getIdDetail());
+                db.cstat.setString(2, idSetorHeader);
+                db.cstat.setString(3, d.getJenis());
+                db.cstat.setBigDecimal(4, new BigDecimal(d.getJumlah()));
+                db.cstat.setString(5, d.getSatuan());
+                db.cstat.setString(6, d.getKeterangan());
+                db.cstat.setBigDecimal(7, new BigDecimal(d.getSubTotal()));
+                db.cstat.executeUpdate();
+            }
+
+            // 3) Saldo nasabah bertambah sesuai total transaksi setor limbah.
+            db.cstat = db.conn.prepareCall("{CALL sp_Tambah_SaldoNasabah(?,?)}");
+            db.cstat.setString(1, idNasabahTerpilih);
+            db.cstat.setBigDecimal(2, totalTransaksi);
+            db.cstat.executeUpdate();
+
+            // 4) Stok tiap jenis limbah di Master Limbah bertambah sesuai jumlah yang disetor.
+            for (DetailSetorLimbah d : detailList) {
+                db.cstat = db.conn.prepareCall("{CALL sp_Tambah_StokLimbah(?,?)}");
+                db.cstat.setString(1, d.getJenis());
+                db.cstat.setInt(2, Integer.parseInt(d.getJumlah()));
+                db.cstat.executeUpdate();
+            }
 
             showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Transaksi setor limbah berhasil disimpan.");
             resetSemua();

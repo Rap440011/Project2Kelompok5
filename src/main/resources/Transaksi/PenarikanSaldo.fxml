@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox fx:id="rootPenarikanSaldo"
+      prefHeight="700.0" prefWidth="1100.0"
+      spacing="0"
+      styleClass="content-card"
+      xmlns="http://javafx.com/javafx/26"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="Transaksi.PenarikanSaldoController">
+
+    <!-- ══ TOP BAR ═══════════════════════════════════════════════════════ -->
+    <HBox alignment="CENTER_LEFT" spacing="12"
+          style="-fx-background-color:#FFFFFF;
+                 -fx-border-color:transparent transparent #EBEBEB transparent;
+                 -fx-border-width:0 0 1 0;">
+        <padding><Insets top="18" right="24" bottom="14" left="24"/></padding>
+        <Label text="💰" style="-fx-font-size:20px;" />
+        <VBox spacing="1">
+            <Label text="Penarikan Saldo Nasabah"
+                   style="-fx-font-size:18px; -fx-font-weight:bold; -fx-text-fill:#1A1A1A;" />
+            <Label text="Proses penarikan saldo nasabah bank sampah"
+                   style="-fx-font-size:11px; -fx-text-fill:#9E9E9E;" />
+        </VBox>
+    </HBox>
+
+    <!-- ══ BADAN UTAMA: 2 KOLOM ══════════════════════════════════════════ -->
+    <HBox spacing="0" VBox.vgrow="ALWAYS" style="-fx-background-color:#FAFAFA;">
+
+        <!-- ═ KOLOM KIRI: Form Transaksi ═════════════════════════════════ -->
+        <VBox spacing="16" prefWidth="480"
+              style="-fx-background-color:#FFFFFF;
+                     -fx-border-color:transparent #EBEBEB transparent transparent;
+                     -fx-border-width:0 1 0 0;">
+            <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Region prefWidth="3" prefHeight="16"
+                        style="-fx-background-color:#2E7D32; -fx-background-radius:2;" />
+                <Label text="Detail Transaksi"
+                       style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#333;" />
+            </HBox>
+
+            <GridPane hgap="14" vgap="12">
+                <columnConstraints>
+                    <ColumnConstraints minWidth="130" prefWidth="140" />
+                    <ColumnConstraints hgrow="ALWAYS" />
+                </columnConstraints>
+                <rowConstraints>
+                    <RowConstraints minHeight="34" />
+                    <RowConstraints minHeight="34" />
+                    <RowConstraints minHeight="34" />
+                    <RowConstraints minHeight="34" />
+                    <RowConstraints minHeight="34" />
+                    <RowConstraints minHeight="34" />
+                </rowConstraints>
+
+                <!-- ID Transaksi -->
+                <Label text="ID Transaksi"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <TextField fx:id="txtIDTransaksi" editable="false" maxWidth="Infinity"
+                           style="-fx-background-color:#F5F5F5; -fx-border-color:#E0E0E0;
+                                  -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
+                           GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                <!-- Nama Nasabah -->
+                <Label text="Nama Nasabah"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <TextField fx:id="txtNamaNasabah" editable="false" maxWidth="Infinity"
+                           promptText="Klik nasabah di tabel kanan >"
+                           style="-fx-background-color:#F5F5F5; -fx-border-color:#E0E0E0;
+                                  -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
+                           GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                <!-- ID Karyawan -->
+                <Label text="ID Karyawan"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <TextField fx:id="txtIDKaryawan" maxWidth="Infinity"
+                           promptText="ID karyawan yang bertugas..."
+                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
+                           GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                <!-- Tanggal Penarikan -->
+                <Label text="Tanggal Penarikan"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <DatePicker fx:id="dpTanggalPenarikan" maxWidth="Infinity"
+                            style="-fx-font-size:12px;"
+                            GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                <!-- Jumlah Penarikan + tombol Tarik Semua Saldo -->
+                <Label text="Jumlah Penarikan"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                <HBox spacing="8" alignment="CENTER_LEFT"
+                      GridPane.columnIndex="1" GridPane.rowIndex="4">
+                    <TextField fx:id="txtJumlahPenarikan" maxWidth="Infinity"
+                               style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
+                               HBox.hgrow="ALWAYS" />
+                    <Button fx:id="btnTarikSemuaSaldo" onAction="#handleTarikSemuaSaldo"
+                            text="Tarik Semua Saldo"
+                            prefHeight="32"
+                            style="-fx-background-color:#E8F5E9; -fx-border-color:#2E7D32;
+                                   -fx-border-radius:6; -fx-background-radius:6;
+                                   -fx-text-fill:#2E7D32; -fx-font-size:11px; -fx-font-weight:bold;
+                                   -fx-cursor:hand;" />
+                </HBox>
+
+                <!-- Keterangan -->
+                <Label text="Keterangan"
+                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
+                       GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                <TextField fx:id="txtKeterangan" maxWidth="Infinity"
+                           promptText="Keterangan (opsional)..."
+                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
+                           GridPane.columnIndex="1" GridPane.rowIndex="5" />
+            </GridPane>
+
+            <Region VBox.vgrow="ALWAYS" />
+
+            <!-- Tombol aksi -->
+            <HBox alignment="CENTER_RIGHT" spacing="8">
+                <Button fx:id="btnBatal" onAction="#handleBatal"
+                        text="Batal" prefWidth="100" prefHeight="36"
+                        styleClass="btn,btn-batal" />
+                <Button fx:id="btnSimpan" onAction="#handleSimpan"
+                        text="💾  Simpan" prefWidth="120" prefHeight="36"
+                        styleClass="btn,btn-simpan" />
+            </HBox>
+        </VBox>
+
+        <!-- ═ KOLOM KANAN: Tabel Nasabah ═════════════════════════════════ -->
+        <VBox spacing="12" HBox.hgrow="ALWAYS">
+            <padding><Insets top="20" right="24" bottom="20" left="20"/></padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Region prefWidth="3" prefHeight="16"
+                        style="-fx-background-color:#1565C0; -fx-background-radius:2;" />
+                <Label text="Tabel Nasabah (Aktif)"
+                       style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#333;" />
+                <Region HBox.hgrow="ALWAYS" />
+                <Label text="Klik baris untuk memilih nasabah"
+                       style="-fx-font-size:10px; -fx-text-fill:#AAA; -fx-font-style:italic;" />
+            </HBox>
+
+            <TableView fx:id="tbNasabah" VBox.vgrow="ALWAYS"
+                       style="-fx-background-color:white; -fx-border-color:#E8E8E8;
+                              -fx-border-radius:8; -fx-background-radius:8;">
+                <columns>
+                    <TableColumn fx:id="clmNama"  text="Nama" />
+                    <TableColumn fx:id="clmNoHp"  text="Nomor Telepon" />
+                    <TableColumn fx:id="clmSaldo" text="Saldo" />
+                </columns>
+                <placeholder>
+                    <Label text="Belum ada data nasabah aktif"
+                           style="-fx-text-fill:#CCC; -fx-font-size:11px; -fx-font-style:italic;" />
+                </placeholder>
+            </TableView>
+        </VBox>
+    </HBox>
+
+</VBox>

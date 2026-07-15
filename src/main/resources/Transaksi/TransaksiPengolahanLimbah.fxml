@@ -147,14 +147,27 @@
                           GridPane.columnIndex="1" GridPane.rowIndex="6" />
             </GridPane>
 
-            <!-- Spacer dorong tombol ke bawah -->
-            <Region VBox.vgrow="ALWAYS" />
-
-            <!-- Tombol Simpan -->
+            <!-- Tombol Simpan (dipindah ke atas, tepat di bawah Keterangan) -->
             <Button fx:id="btnSimpan" text="💾  Simpan Transaksi"
                     onAction="#handleSimpan"
                     maxWidth="Infinity" prefHeight="40"
                     styleClass="btn,btn-simpan" />
+
+            <!-- Sub-judul tabel stok bahan limbah -->
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Region prefWidth="3" prefHeight="18"
+                        style="-fx-background-color:#2E7D32; -fx-background-radius:2;" />
+                <Label text="Stok Bahan Limbah"
+                       style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#333;" />
+            </HBox>
+
+            <!-- Tabel Stok Bahan Limbah: Nama Limbah & Stok saat ini (mengikuti komposisi produk terpilih) -->
+            <TableView fx:id="tblStokLimbah" prefHeight="160" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colNamaLimbahStok" text="Nama Limbah" prefWidth="220" />
+                    <TableColumn fx:id="colStokLimbah" text="Stok" prefWidth="120" />
+                </columns>
+            </TableView>
         </VBox>
 
         <!-- ═══ PANEL KANAN: DAFTAR PRODUK (kartu dinamis, desain sama dengan Master Produk) ═══ -->

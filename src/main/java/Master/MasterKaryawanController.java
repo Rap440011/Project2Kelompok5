@@ -44,7 +44,7 @@ public class MasterKaryawanController implements Initializable {
         clmJabatan1.setCellValueFactory(new PropertyValueFactory<>("status"));
         clmJabatan11.setCellValueFactory(new PropertyValueFactory<>("jenisKelamin"));
 
-        cmbJabatan.setItems(FXCollections.observableArrayList("Kasir", "Manager", "Admin"));
+        cmbJabatan.setItems(FXCollections.observableArrayList("src/Kasir", "Manager", "Admin"));
         cmbJabatan.getSelectionModel().selectFirst();
 
         txtStatus.setText("Aktif");

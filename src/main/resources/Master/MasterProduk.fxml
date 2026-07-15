@@ -162,7 +162,7 @@
                                      style="-fx-alignment:CENTER;" />
                         <TableColumn fx:id="clmRelasiIDLimbah"   text="ID Limbah"  prefWidth="110"
                                      style="-fx-alignment:CENTER;" />
-                        <TableColumn fx:id="clmRelasiPresentase" text="Presentase" prefWidth="100"
+                        <TableColumn fx:id="clmRelasiPresentase" text="Qty" prefWidth="100"
                                      style="-fx-alignment:CENTER;" />
                     </columns>
                     <placeholder>

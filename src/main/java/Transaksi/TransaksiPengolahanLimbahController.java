@@ -25,22 +25,17 @@ import java.util.*;
 
 public class TransaksiPengolahanLimbahController implements Initializable {
 
-    // ===================== FXML — FORM KIRI =====================
     @FXML private TextField  txtIDPengolahan;
     @FXML private TextField  txtIDProduk;
     @FXML private DatePicker jpTanggal;
-    @FXML private TextField  txtNamaProduk;   // dulu cmbJenisProduk (ComboBox) -> sekarang readonly, otomatis dari kartu
+    @FXML private TextField  txtNamaProduk;
     @FXML private TextField  txtKuantitas;
-    @FXML private TextField  txtSatuan;       // dulu cmbSatuan (ComboBox) -> sekarang readonly, otomatis mengikuti Master Produk
+    @FXML private TextField  txtSatuan;
     @FXML private TextArea   txtKeterangan;
 
-    // ===================== FXML — PANEL KANAN (kartu produk, dinamis dari Master) =====================
     @FXML private VBox       vbKartuProduk;
     @FXML private TextField  txtCariProduk;
 
-    // ===================== FXML — TABEL DETAIL TRANSAKSI (bawah, otomatis) =====================
-    // Baris tabel memakai Map<String,String> biasa (key: idDetail/idPengolahan/idLimbah/kuantitas/satuan)
-    // supaya tidak perlu membuat class model baru.
     @FXML private TableView<Map<String, String>> tblDetailTransaksi;
     @FXML private TableColumn<Map<String, String>, String> colIDDetail;
     @FXML private TableColumn<Map<String, String>, String> colIDPengolahanDetail;
@@ -48,13 +43,16 @@ public class TransaksiPengolahanLimbahController implements Initializable {
     @FXML private TableColumn<Map<String, String>, String> colKuantitasLimbah;
     @FXML private TableColumn<Map<String, String>, String> colSatuanLimbah;
 
-    // ===================== STATE =====================
+    @FXML private TableView<Map<String, String>> tblStokLimbah;
+    @FXML private TableColumn<Map<String, String>, String> colNamaLimbahStok;
+    @FXML private TableColumn<Map<String, String>, String> colStokLimbah;
+
     private final DBConnect db = new DBConnect();
 
-    /** Data baris untuk tblDetailTransaksi — dibentuk otomatis dari komposisi produk terpilih. */
     private final ObservableList<Map<String, String>> detailTransaksiData = FXCollections.observableArrayList();
 
-    /** Style kartu produk — disamakan persis dengan MasterProdukController. */
+    private final ObservableList<Map<String, String>> stokLimbahData = FXCollections.observableArrayList();
+
     private static final String STYLE_KARTU_NORMAL =
             "-fx-background-color:white;" +
                     "-fx-border-color:#E8E8E8; -fx-border-width:1;" +
@@ -73,41 +71,37 @@ public class TransaksiPengolahanLimbahController implements Initializable {
 
     private static final String RUPIAH_PREFIX = "Rp ";
 
-    /** Status produk yang boleh dipakai bertransaksi (konsisten dengan filter Aktif pada Nasabah). */
     private static final String STATUS_AKTIF = "Aktif";
 
-    // Data produk (dari Master) + kartu yang sedang ditampilkan, dipakai untuk fitur cari/filter
     private final List<MasterProduk> daftarProduk     = new ArrayList<>();
     private final Map<MasterProduk, VBox> kartuPerProduk = new LinkedHashMap<>();
 
-    // Mapping referensi Master Limbah, dipakai untuk menampilkan komposisi & menghitung pengurangan stok
-    private final LinkedHashMap<String, String> namaLimbahMap   = new LinkedHashMap<>(); // ID_Limbah -> Nama_Limbah
-    private final LinkedHashMap<String, String> satuanLimbahMap = new LinkedHashMap<>(); // ID_Limbah -> Satuan
+    private final LinkedHashMap<String, String>  namaLimbahMap  = new LinkedHashMap<>(); // ID_Limbah -> Nama_Limbah
+    private final LinkedHashMap<String, String>  satuanLimbahMap = new LinkedHashMap<>(); // ID_Limbah -> Satuan
+    private final LinkedHashMap<String, BigDecimal> stokLimbahMap  = new LinkedHashMap<>(); // ID_Limbah -> Stok (Jumlah)
 
     private VBox kartuAktif = null;
     private MasterProduk produkTerpilih = null;
 
-    /** Satu baris komposisi bahan limbah untuk sebuah produk (persentase 0-100, mengikuti Master Produk). */
     private static class KomposisiBahan {
         final String idLimbah, namaBahan, satuanBahan;
-        final BigDecimal presentase;
-        KomposisiBahan(String idLimbah, String namaBahan, String satuanBahan, BigDecimal presentase) {
+        final BigDecimal qty;
+        KomposisiBahan(String idLimbah, String namaBahan, String satuanBahan, BigDecimal qty) {
             this.idLimbah = idLimbah;
             this.namaBahan = namaBahan;
             this.satuanBahan = satuanBahan;
-            this.presentase = presentase;
+            this.qty = qty;
         }
     }
 
-    // ===================== INITIALIZE =====================
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         addNumericOnly(txtKuantitas, 8);
 
-        // Setiap kali Kuantitas diketik/diubah, tabel Detail Transaksi ikut dihitung ulang
         txtKuantitas.textProperty().addListener((obs, oldVal, newVal) -> refreshDetailTransaksiTable());
 
         setupTabelDetailTransaksi();
+        setupTabelStokLimbah();
 
         loadDataLimbahReferensi();
         loadDataProduk();
@@ -115,7 +109,6 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         loadAutoIDPengolahan();
     }
 
-    /** Menghubungkan kolom TableView dengan key pada Map setiap baris (tanpa class model baru). */
     private void setupTabelDetailTransaksi() {
         colIDDetail.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getOrDefault("idDetail", "")));
@@ -130,7 +123,6 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         tblDetailTransaksi.setItems(detailTransaksiData);
     }
 
-    /** Helper: bikin satu baris (Map) untuk tblDetailTransaksi. */
     private Map<String, String> buatBarisDetail(String idDetail, String idPengolahan,
                                                 String idLimbah, String kuantitas, String satuan) {
         Map<String, String> baris = new LinkedHashMap<>();
@@ -142,6 +134,32 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         return baris;
     }
 
+    private void setupTabelStokLimbah() {
+        colNamaLimbahStok.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getOrDefault("namaLimbah", "")));
+        colStokLimbah.setCellValueFactory(data ->
+                new SimpleStringProperty(data.getValue().getOrDefault("stok", "")));
+        tblStokLimbah.setItems(stokLimbahData);
+    }
+
+    private Map<String, String> buatBarisStok(String namaLimbah, String stok) {
+        Map<String, String> baris = new LinkedHashMap<>();
+        baris.put("namaLimbah", namaLimbah);
+        baris.put("stok", stok);
+        return baris;
+    }
+
+    private void refreshStokLimbahTable() {
+        stokLimbahData.clear();
+        if (produkTerpilih == null) return;
+
+        List<KomposisiBahan> komposisi = loadKomposisiProduk(produkTerpilih.getIdProduk());
+        for (KomposisiBahan b : komposisi) {
+            BigDecimal stok = stokLimbahMap.getOrDefault(b.idLimbah, BigDecimal.ZERO);
+            stokLimbahData.add(buatBarisStok(b.namaBahan, formatAngka(stok) + " " + b.satuanBahan));
+        }
+    }
+
     private void addNumericOnly(TextField field, int maxLen) {
         field.textProperty().addListener((obs, oldVal, newVal) -> {
             String filtered = newVal.replaceAll("[^0-9.]", "");
@@ -150,10 +168,16 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         });
     }
 
-    // ===================== LOAD REFERENSI MASTER LIMBAH (untuk nama & satuan bahan) =====================
+    private String formatAngka(BigDecimal nilai) {
+        BigDecimal bd = nilai.stripTrailingZeros();
+        if (bd.scale() < 0) bd = bd.setScale(0, RoundingMode.HALF_UP);
+        return bd.toPlainString();
+    }
+
     private void loadDataLimbahReferensi() {
         namaLimbahMap.clear();
         satuanLimbahMap.clear();
+        stokLimbahMap.clear();
         try {
             db.cstat = db.conn.prepareCall("{CALL sp_SelectAll_Limbah}");
             db.result = db.cstat.executeQuery();
@@ -161,18 +185,13 @@ public class TransaksiPengolahanLimbahController implements Initializable {
                 String idLimbah = db.result.getString("ID_Limbah");
                 namaLimbahMap.put(idLimbah, db.result.getString("Nama_Limbah"));
                 satuanLimbahMap.put(idLimbah, db.result.getString("Satuan"));
+                stokLimbahMap.put(idLimbah, db.result.getBigDecimal("Jumlah"));
             }
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Error Load Data Limbah", e.getMessage());
         }
     }
 
-    // ===================== LOAD DATA PRODUK (dinamis dari Master Produk) =====================
-    /**
-     * Memuat daftar produk dari Master Produk dan membangun kartu dengan desain
-     * yang sama persis dengan panel kanan MasterProdukController.buildKartu().
-     * Hanya produk berstatus Aktif yang ditampilkan untuk transaksi.
-     */
     private void loadDataProduk() {
         daftarProduk.clear();
         kartuPerProduk.clear();
@@ -214,7 +233,6 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         }
     }
 
-    /** Teks komposisi ("• Lumpur, Kotoran") berdasarkan daftar ID_Limbah (dipisah koma) pada produk. */
     private String buildKomposisiText(String idLimbahCsv) {
         if (idLimbahCsv == null || idLimbahCsv.trim().isEmpty()) return "-";
         StringBuilder sb = new StringBuilder();
@@ -228,7 +246,6 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         return sb.length() > 0 ? sb.toString() : "-";
     }
 
-    /** Kartu produk — desain disamakan persis dengan MasterProdukController.buildKartu(). */
     private VBox buildKartu(MasterProduk p) {
 
         ImageView iv = new ImageView();
@@ -324,10 +341,6 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         return kartu;
     }
 
-    /**
-     * Dipanggil saat kartu produk diklik: isi ID Produk, Nama Produk, dan Satuan otomatis dari
-     * Master Produk, lalu bentuk ulang tabel Detail Transaksi berdasarkan komposisi produk ini.
-     */
     private void pilihProdukUntukTransaksi(MasterProduk p, VBox kartu) {
         if (kartuAktif != null) kartuAktif.setStyle(STYLE_KARTU_NORMAL);
 
@@ -337,12 +350,11 @@ public class TransaksiPengolahanLimbahController implements Initializable {
 
         txtIDProduk.setText(p.getIdProduk());
         txtNamaProduk.setText(p.getNamaProduk());
-        txtSatuan.setText(p.getSatuan()); // satuan otomatis, tidak bisa dipilih manual
+        txtSatuan.setText(p.getSatuan());
 
         refreshDetailTransaksiTable();
     }
 
-    // ===================== CARI PRODUK (filter kartu) =====================
     @FXML
     private void handleCariProduk() {
         String keyword = txtCariProduk.getText().trim().toLowerCase(Locale.ROOT);
@@ -357,7 +369,6 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         }
     }
 
-    // ===================== AUTO ID (ID PENGOLAHAN / HEADER) =====================
     private void loadAutoIDPengolahan() {
         try {
             db.result = db.stmt.executeQuery("{CALL sp_AutoID_Pengolahan}");
@@ -367,18 +378,10 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Error Auto ID", e.getMessage());
         }
-        // ID Pengolahan berubah -> ID Detail Pengolahan pada tabel bawah ikut berubah
+
         refreshDetailTransaksiTable();
     }
 
-    // ===================== AUTO ID (ID DETAIL PENGOLAHAN) =====================
-    /**
-     * Memanggil sp_AutoID_DetailPengolahan(@ID_Pengolahan) untuk mendapatkan nomor urut
-     * detail berikutnya (format: DT + ID_Pengolahan + 2 digit urut) berdasarkan data yang
-     * sudah tersimpan di tabel dtl_tr_Pengolahan_Limbah untuk ID_Pengolahan yang sama.
-     * Mengembalikan urutan (int) yang lalu dipakai sebagai titik awal untuk baris-baris
-     * komposisi yang dibentuk di tabel (belum tersimpan ke database).
-     */
     private int ambilUrutAwalDetailPengolahan(String idPengolahan) {
         try {
             db.cstat = db.conn.prepareCall("{CALL sp_AutoID_DetailPengolahan(?)}");
@@ -392,22 +395,15 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Error Auto ID Detail Pengolahan", e.getMessage());
         } catch (Exception ignored) {
-            // parsing gagal -> fallback ke urutan 1
+
         }
         return 1;
     }
 
-    /** Format ID Detail Pengolahan sesuai pola sp_AutoID_DetailPengolahan: DT + ID_Pengolahan + 2 digit urut. */
     private String formatIDDetailPengolahan(String idPengolahan, int urut) {
         return "DT" + idPengolahan + String.format("%02d", urut);
     }
 
-    // ===================== KOMPOSISI BAHAN LIMBAH PRODUK (dari relasi Master Produk) =====================
-    /**
-     * Mengambil komposisi bahan limbah sesungguhnya dari produk yang dipilih,
-     * memakai data relasi yang sama dengan MasterProdukController
-     * (sp_SelectByID_DetailProduk: ID_Limbah + Qty/persentase 0-100).
-     */
     private List<KomposisiBahan> loadKomposisiProduk(String idProduk) {
         List<KomposisiBahan> hasil = new ArrayList<>();
         try {
@@ -416,10 +412,10 @@ public class TransaksiPengolahanLimbahController implements Initializable {
             db.result = db.cstat.executeQuery();
             while (db.result.next()) {
                 String idLimbah = db.result.getString("ID_Limbah");
-                int qty = db.result.getInt("Qty");
+                BigDecimal qty = db.result.getBigDecimal("Qty"); // persentase komposisi, kini mendukung desimal
                 String namaBahan  = namaLimbahMap.getOrDefault(idLimbah, idLimbah);
                 String satuanBahan = satuanLimbahMap.getOrDefault(idLimbah, "");
-                hasil.add(new KomposisiBahan(idLimbah, namaBahan, satuanBahan, BigDecimal.valueOf(qty)));
+                hasil.add(new KomposisiBahan(idLimbah, namaBahan, satuanBahan, qty));
             }
         } catch (SQLException e) {
             showAlert(Alert.AlertType.ERROR, "Error Load Komposisi Produk", e.getMessage());
@@ -427,16 +423,9 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         return hasil;
     }
 
-    // ===================== BENTUK ULANG TABEL DETAIL TRANSAKSI (otomatis) =====================
-    /**
-     * Membentuk ulang isi tblDetailTransaksi berdasarkan produk yang sedang dipilih:
-     * satu baris untuk setiap bahan limbah pada komposisi produk tersebut, dengan
-     * ID Detail Pengolahan dibuat otomatis lewat sp_AutoID_DetailPengolahan, dan
-     * Kuantitas Limbah dihitung dari (Kuantitas hasil x persentase bahan / 100).
-     * Dipanggil setiap kali: kartu produk diklik, Kuantitas diubah, atau ID Pengolahan berganti.
-     */
     private void refreshDetailTransaksiTable() {
         detailTransaksiData.clear();
+        refreshStokLimbahTable();
 
         if (produkTerpilih == null) return;
 
@@ -452,11 +441,9 @@ public class TransaksiPengolahanLimbahController implements Initializable {
 
             String kuantitasLimbahStr;
             if (kuantitas == null) {
-                kuantitasLimbahStr = "-"; // kuantitas hasil belum diisi/valid
+                kuantitasLimbahStr = "-";
             } else {
-                BigDecimal total = kuantitas
-                        .multiply(b.presentase)
-                        .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+                BigDecimal total = kuantitas.multiply(b.qty).setScale(2, RoundingMode.HALF_UP);
                 kuantitasLimbahStr = total.toPlainString();
             }
 
@@ -466,7 +453,6 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         }
     }
 
-    // ===================== EVENT: KUANTITAS DIISI (Enter) =====================
     @FXML
     private void txtKuantitasHasil() {
         if (produkTerpilih == null || txtIDProduk.getText().trim().isEmpty()) {
@@ -486,19 +472,44 @@ public class TransaksiPengolahanLimbahController implements Initializable {
             return;
         }
 
-        // Tabel Detail Transaksi juga ikut ter-update lewat listener txtKuantitas,
-        // di sini cukup tampilkan ringkasan sebagai konfirmasi ke user.
+        if (!validasiStok(kuantitas)) return;
+
         StringBuilder sb = new StringBuilder();
         sb.append("Bahan limbah yang akan berkurang untuk ")
                 .append(kuantitas).append(" ").append(txtNamaProduk.getText()).append(":\n");
         for (KomposisiBahan b : komposisi) {
-            BigDecimal total = kuantitas
-                    .multiply(b.presentase)
-                    .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
-            sb.append("- ").append(b.namaBahan).append(" (").append(b.presentase).append("%) : ")
+            BigDecimal total = kuantitas.multiply(b.qty).setScale(2, RoundingMode.HALF_UP);
+            sb.append("- ").append(b.namaBahan).append(" (").append(b.qty.stripTrailingZeros().toPlainString())
+                    .append(" ").append(b.satuanBahan).append("/unit) : ")
                     .append(total).append(" ").append(b.satuanBahan).append("\n");
         }
         showAlert(Alert.AlertType.INFORMATION, "Perkiraan Pengurangan Bahan Limbah", sb.toString());
+    }
+
+    private boolean validasiStok(BigDecimal kuantitas) {
+        List<KomposisiBahan> komposisi = loadKomposisiProduk(txtIDProduk.getText());
+        StringBuilder kurang = new StringBuilder();
+        boolean cukup = true;
+
+        for (KomposisiBahan b : komposisi) {
+            BigDecimal totalDibutuhkan = kuantitas.multiply(b.qty).setScale(2, RoundingMode.HALF_UP);
+            BigDecimal stokTersedia = stokLimbahMap.getOrDefault(b.idLimbah, BigDecimal.ZERO);
+
+            if (totalDibutuhkan.compareTo(stokTersedia) > 0) {
+                cukup = false;
+                kurang.append("- ").append(b.namaBahan)
+                        .append(" : butuh ").append(totalDibutuhkan.toPlainString()).append(" ").append(b.satuanBahan)
+                        .append(", stok tersedia ").append(formatAngka(stokTersedia)).append(" ").append(b.satuanBahan)
+                        .append("\n");
+            }
+        }
+
+        if (!cukup) {
+            showAlert(Alert.AlertType.ERROR, "Stok Tidak Mencukupi",
+                    "Transaksi tidak dapat disimpan karena stok bahan limbah berikut tidak mencukupi:\n\n"
+                            + kurang);
+        }
+        return cukup;
     }
 
     private BigDecimal parseKuantitas() {
@@ -512,7 +523,6 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         }
     }
 
-    // ===================== SIMPAN TRANSAKSI =====================
     @FXML
     private void handleSimpan() {
         if (!validateForm()) return;
@@ -526,8 +536,13 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         String keterangan   = txtKeterangan.getText() == null ? "" : txtKeterangan.getText().trim();
         BigDecimal kuantitas = new BigDecimal(kuantitasStr);
 
+        loadDataLimbahReferensi();
+        refreshStokLimbahTable();
+
+        if (!validasiStok(kuantitas)) return;
+
         try {
-            // 1. Simpan header transaksi
+
             db.cstat = db.conn.prepareCall("{CALL sp_Insert_PengolahanLimbah(?,?,?,?,?,?,?)}");
             db.cstat.setString(1, idPengolahan);
             db.cstat.setString(2, idProduk);
@@ -538,18 +553,23 @@ public class TransaksiPengolahanLimbahController implements Initializable {
             db.cstat.setString(7, keterangan);
             db.cstat.executeUpdate();
 
-            // 2. Kurangi stok bahan limbah sesuai komposisi asli produk (dari Master Produk)
-            //    sekaligus simpan baris detail yang sudah ditampilkan di tblDetailTransaksi.
             List<KomposisiBahan> komposisi = loadKomposisiProduk(idProduk);
             for (KomposisiBahan b : komposisi) {
-                BigDecimal totalKurang = kuantitas
-                        .multiply(b.presentase)
-                        .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+                BigDecimal totalKurang = kuantitas.multiply(b.qty).setScale(2, RoundingMode.HALF_UP);
                 db.cstat = db.conn.prepareCall("{CALL sp_Kurangi_StokLimbah(?,?)}");
                 db.cstat.setString(1, b.namaBahan);
                 db.cstat.setBigDecimal(2, totalKurang);
                 db.cstat.executeUpdate();
             }
+
+            loadDataLimbahReferensi();
+            refreshStokLimbahTable();
+
+            int tambahStok = kuantitas.setScale(0, RoundingMode.HALF_UP).intValue();
+            db.cstat = db.conn.prepareCall("{CALL sp_Tambah_StokProduk(?,?)}");
+            db.cstat.setString(1, idProduk);
+            db.cstat.setInt(2, tambahStok);
+            db.cstat.executeUpdate();
 
             showAlert(Alert.AlertType.INFORMATION, "Berhasil", "Transaksi pengolahan limbah berhasil disimpan.");
             resetForm();
@@ -590,12 +610,12 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         txtSatuan.clear();
         txtKeterangan.clear();
 
-        // Deselect kartu yang aktif
         if (kartuAktif != null) kartuAktif.setStyle(STYLE_KARTU_NORMAL);
         kartuAktif = null;
         produkTerpilih = null;
 
         detailTransaksiData.clear();
+        stokLimbahData.clear();
 
         loadAutoIDPengolahan();
     }
