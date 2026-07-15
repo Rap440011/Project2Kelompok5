@@ -31,6 +31,9 @@ public class MasterNasabahController implements Initializable {
     @FXML private ComboBox<String> cmbBank;
     @FXML private ComboBox<String> cmbProvinsi, cmbKabupaten, cmbKecamatan, cmbKelurahan;
 
+    // Tambahan: referensi tombol untuk kontrol disable/enable
+    @FXML private Button btnUbah, btnHapus, btnSimpan;
+
     // ===================== STATE & DEPENDENCIES =====================
     private final ObservableList<MasterNasabah> dataList = FXCollections.observableArrayList();
     private final DBConnect db = new DBConnect();
@@ -71,6 +74,47 @@ public class MasterNasabahController implements Initializable {
         loadAutoID();
         loadData();
         generateNoRekening(cmbBank.getValue());
+
+        // Tambahan: listener untuk memantau perubahan input form agar tombol Simpan bereaksi otomatis
+        txtNama.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        txtHP.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        txtRT.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        txtRW.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        txtNoRek.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        cmbBank.valueProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        cmbProvinsi.valueProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        cmbKabupaten.valueProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        cmbKecamatan.valueProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        cmbKelurahan.valueProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+
+        // Tambahan: set status awal tombol saat form pertama kali dibuka
+        updateButtonStates();
+    }
+
+    /**
+     * Tambahan: Mengatur status aktif/nonaktif tombol Simpan, Ubah, dan Hapus.
+     * - Simpan  : aktif jika semua field wajib terisi, DAN tidak ada baris tabel yang sedang dipilih.
+     * - Ubah    : aktif jika ada baris tabel yang sedang dipilih.
+     * - Hapus   : aktif jika ada baris tabel yang sedang dipilih.
+     * - Batal   : tidak diatur di sini, tetap selalu aktif seperti semula.
+     */
+    private void updateButtonStates() {
+        boolean formValid = !txtNama.getText().trim().isEmpty()
+                && !txtHP.getText().trim().isEmpty()
+                && !txtRT.getText().trim().isEmpty()
+                && !txtRW.getText().trim().isEmpty()
+                && cmbKelurahan.getValue() != null
+                && cmbKecamatan.getValue() != null
+                && cmbKabupaten.getValue() != null
+                && cmbProvinsi.getValue() != null
+                && !txtNoRek.getText().trim().isEmpty()
+                && cmbBank.getValue() != null;
+
+        boolean rowSelected = tbNasabah.getSelectionModel().getSelectedItem() != null;
+
+        btnSimpan.setDisable(!formValid || rowSelected);
+        btnUbah.setDisable(!rowSelected);
+        btnHapus.setDisable(!rowSelected);
     }
 
     private void setupTableColumns() {
@@ -115,6 +159,7 @@ public class MasterNasabahController implements Initializable {
         tbNasabah.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal == null) return;
             fillFormFromSelection(newVal);
+            updateButtonStates(); // Tambahan: update status tombol setiap seleksi tabel berubah
         });
     }
 

@@ -115,8 +115,12 @@
         <!-- Row 0: ID Limbah | Nama Limbah -->
         <HBox spacing="24">
             <VBox spacing="6" minWidth="150" prefWidth="150" maxWidth="150">
-                <Label text="ID Limbah"
-                       style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                <HBox spacing="2" alignment="CENTER_LEFT">
+                    <Label text="ID Limbah"
+                           style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+<!--                    <Label text="*"-->
+<!--                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />-->
+                </HBox>
                 <TextField fx:id="txtID" editable="false"
                            minWidth="150" prefWidth="150" maxWidth="150"
                            minHeight="34" prefHeight="34"
@@ -124,8 +128,12 @@
             </VBox>
 
             <VBox spacing="6" minWidth="420" prefWidth="420" maxWidth="420">
-                <Label text="Nama Limbah"
-                       style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                <HBox spacing="2" alignment="CENTER_LEFT">
+                    <Label text="Nama Limbah"
+                           style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                    <Label text="*"
+                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />
+                </HBox>
                 <TextField fx:id="txtNama"
                            promptText="Contoh: Kepala Udang, Endapan / Lumpur"
                            minWidth="420" prefWidth="420" maxWidth="420"
@@ -136,8 +144,12 @@
 
         <HBox spacing="24">
             <VBox spacing="6" minWidth="150" prefWidth="150" maxWidth="150">
-                <Label text="Kategori Limbah"
-                       style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                <HBox spacing="2" alignment="CENTER_LEFT">
+                    <Label text="Kategori Limbah"
+                           style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                    <Label text="*"
+                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />
+                </HBox>
                 <ComboBox fx:id="cmbjenis"
                           minWidth="150" prefWidth="150" maxWidth="150"
                           minHeight="34" prefHeight="34"
@@ -145,8 +157,12 @@
             </VBox>
 
             <VBox spacing="6" minWidth="150" prefWidth="150" maxWidth="150">
-                <Label text="Satuan"
-                       style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                <HBox spacing="2" alignment="CENTER_LEFT">
+                    <Label text="Satuan"
+                           style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+<!--                    <Label text="*"-->
+<!--                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />-->
+                </HBox>
                 <TextField fx:id="txtJumlah" editable="false"
                            minWidth="150" prefWidth="150" maxWidth="150"
                            minHeight="34" prefHeight="34"
@@ -154,8 +170,12 @@
             </VBox>
 
             <VBox spacing="6" minWidth="200" prefWidth="200" maxWidth="200">
-                <Label text="Harga (Rp)"
-                       style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                <HBox spacing="2" alignment="CENTER_LEFT">
+                    <Label text="Harga (Rp)"
+                           style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
+                    <Label text="*"
+                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />
+                </HBox>
                 <TextField fx:id="txtHarga"
                            promptText="Contoh: 5000"
                            minWidth="200" prefWidth="200" maxWidth="200"
@@ -164,7 +184,7 @@
             </VBox>
         </HBox>
 
-        <!-- Row 2: Keterangan full width -->
+        <!-- Row 2: Keterangan full width (tidak wajib, tanpa bintang) -->
         <VBox spacing="6">
             <Label text="Keterangan"
                    style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
@@ -185,17 +205,20 @@
                     mnemonicParsing="false" onAction="#handleHapus"
                     styleClass="btn,btn-hapus"
                     text="Hapus"
-                    prefWidth="100" prefHeight="36" />
+                    prefWidth="100" prefHeight="36"
+                    disable="true" />
             <Button fx:id="btnUbah"
                     mnemonicParsing="false" onAction="#handleUbah"
                     styleClass="btn,btn-ubah"
                     text="Ubah"
-                    prefWidth="100" prefHeight="36" />
+                    prefWidth="100" prefHeight="36"
+                    disable="true" />
             <Button fx:id="btnSimpan"
                     mnemonicParsing="false" onAction="#handleSimpan"
                     styleClass="btn,btn-simpan"
                     text="Simpan"
-                    prefWidth="100" prefHeight="36" />
+                    prefWidth="100" prefHeight="36"
+                    disable="true" />
         </HBox>
     </VBox>
 </VBox>

@@ -29,6 +29,9 @@ public class MasterKaryawanController implements Initializable {
 
     @FXML private ComboBox<String> cmbProvinsi, cmbKabupaten, cmbKecamatan, cmbKelurahan;
 
+    // Tambahan: referensi tombol untuk kontrol disable/enable
+    @FXML private Button btnUbah, btnHapus, btnSimpan;
+
     private ObservableList<MasterKaryawan> dataList = FXCollections.observableArrayList();
     private DBConnect db = new DBConnect();
 
@@ -44,7 +47,7 @@ public class MasterKaryawanController implements Initializable {
         clmJabatan1.setCellValueFactory(new PropertyValueFactory<>("status"));
         clmJabatan11.setCellValueFactory(new PropertyValueFactory<>("jenisKelamin"));
 
-        cmbJabatan.setItems(FXCollections.observableArrayList("src/Kasir", "Manager", "Admin"));
+        cmbJabatan.setItems(FXCollections.observableArrayList("Kasir", "Manager", "Admin"));
         cmbJabatan.getSelectionModel().selectFirst();
 
         txtStatus.setText("Aktif");
@@ -90,7 +93,69 @@ public class MasterKaryawanController implements Initializable {
                 cmbKelurahan.setValue(newVal.getKelurahan());
                 isLoadingFromTable = false;
             }
+            updateButtonStates(); // Tambahan: update status tombol setiap seleksi tabel berubah
         });
+
+        // Tambahan: listener untuk memantau perubahan input form agar tombol Simpan bereaksi otomatis
+        txtNama.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        txtUsn.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        txtPW.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        txtRT.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        txtRW.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        txtHP.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        cmbJabatan.valueProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        cmbJK.valueProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        cmbProvinsi.valueProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        cmbKabupaten.valueProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        cmbKecamatan.valueProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        cmbKelurahan.valueProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+
+        updateButtonStates();
+    }
+
+    private void updateButtonStates() {
+        boolean formValid = !txtNama.getText().trim().isEmpty()
+                && !txtUsn.getText().trim().isEmpty()
+                && !txtPW.getText().trim().isEmpty()
+                && !txtRT.getText().trim().isEmpty()
+                && !txtRW.getText().trim().isEmpty()
+                && !txtHP.getText().trim().isEmpty()
+                && cmbKelurahan.getValue() != null
+                && cmbKecamatan.getValue() != null
+                && cmbKabupaten.getValue() != null
+                && cmbProvinsi.getValue() != null
+                && cmbJabatan.getValue() != null
+                && cmbJK.getValue() != null;
+
+        boolean rowSelected = tbKaryawan.getSelectionModel().getSelectedItem() != null;
+
+        btnSimpan.setDisable(!formValid || rowSelected);
+        btnUbah.setDisable(!rowSelected);
+        btnHapus.setDisable(!rowSelected);
+    }
+
+    private boolean isUsernameDuplicate(String username) {
+        String currentId = txtID.getText();
+        boolean editing = tbKaryawan.getSelectionModel().getSelectedItem() != null;
+        for (MasterKaryawan k : dataList) {
+            if (k.getUsername() != null && k.getUsername().equalsIgnoreCase(username)) {
+                if (editing && k.getIdKaryawan().equals(currentId)) continue;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isNoHpDuplicate(String noHp) {
+        String currentId = txtID.getText();
+        boolean editing = tbKaryawan.getSelectionModel().getSelectedItem() != null;
+        for (MasterKaryawan k : dataList) {
+            if (k.getNoHp() != null && k.getNoHp().equals(noHp)) {
+                if (editing && k.getIdKaryawan().equals(currentId)) continue;
+                return true;
+            }
+        }
+        return false;
     }
 
     private void setupComboboxWilayah() {
@@ -172,20 +237,20 @@ public class MasterKaryawanController implements Initializable {
             db.result = db.cstat.executeQuery();
             while (db.result.next()) {
                 dataList.add(new MasterKaryawan(
-                    db.result.getString("ID_Karyawan"),
-                    db.result.getString("Nama_Karyawan"),
-                    db.result.getString("Username"),
-                    db.result.getString("Password"),
-                    db.result.getString("RT"),
-                    db.result.getString("RW"),
-                    db.result.getString("Kelurahan"),
-                    db.result.getString("Kecamatan"),
-                    db.result.getString("Kabupaten"),
-                    db.result.getString("Provinsi"),
-                    db.result.getString("No_HP"),
-                    db.result.getString("Jabatan"),
-                    db.result.getString("Status"),
-                    db.result.getString("Jenis_Kelamin")
+                        db.result.getString("ID_Karyawan"),
+                        db.result.getString("Nama_Karyawan"),
+                        db.result.getString("Username"),
+                        db.result.getString("Password"),
+                        db.result.getString("RT"),
+                        db.result.getString("RW"),
+                        db.result.getString("Kelurahan"),
+                        db.result.getString("Kecamatan"),
+                        db.result.getString("Kabupaten"),
+                        db.result.getString("Provinsi"),
+                        db.result.getString("No_HP"),
+                        db.result.getString("Jabatan"),
+                        db.result.getString("Status"),
+                        db.result.getString("Jenis_Kelamin")
                 ));
             }
             tbKaryawan.setItems(dataList);
@@ -202,20 +267,20 @@ public class MasterKaryawanController implements Initializable {
             db.result = db.cstat.executeQuery();
             while (db.result.next()) {
                 dataList.add(new MasterKaryawan(
-                    db.result.getString("ID_Karyawan"),
-                    db.result.getString("Nama_Karyawan"),
-                    db.result.getString("Username"),
-                    db.result.getString("Password"),
-                    db.result.getString("RT"),
-                    db.result.getString("RW"),
-                    db.result.getString("Kelurahan"),
-                    db.result.getString("Kecamatan"),
-                    db.result.getString("Kabupaten"),
-                    db.result.getString("Provinsi"),
-                    db.result.getString("No_HP"),
-                    db.result.getString("Jabatan"),
-                    db.result.getString("Status"),
-                    db.result.getString("Jenis_Kelamin")
+                        db.result.getString("ID_Karyawan"),
+                        db.result.getString("Nama_Karyawan"),
+                        db.result.getString("Username"),
+                        db.result.getString("Password"),
+                        db.result.getString("RT"),
+                        db.result.getString("RW"),
+                        db.result.getString("Kelurahan"),
+                        db.result.getString("Kecamatan"),
+                        db.result.getString("Kabupaten"),
+                        db.result.getString("Provinsi"),
+                        db.result.getString("No_HP"),
+                        db.result.getString("Jabatan"),
+                        db.result.getString("Status"),
+                        db.result.getString("Jenis_Kelamin")
                 ));
             }
             tbKaryawan.setItems(dataList);
@@ -308,7 +373,7 @@ public class MasterKaryawanController implements Initializable {
 
         Alert konfirmasi = new Alert(Alert.AlertType.CONFIRMATION,
                 "Karyawan ID: " + txtID.getText() + " akan dinonaktifkan.\n" +
-                "Data tidak akan dihapus, status berubah menjadi 'Tidak Aktif'.\n\nLanjutkan?",
+                        "Data tidak akan dihapus, status berubah menjadi 'Tidak Aktif'.\n\nLanjutkan?",
                 ButtonType.YES, ButtonType.NO);
         konfirmasi.setTitle("Konfirmasi Nonaktifkan");
         konfirmasi.showAndWait().ifPresent(bt -> {
@@ -332,15 +397,15 @@ public class MasterKaryawanController implements Initializable {
     @FXML
     private void handleBatal() {
         boolean adaIsi = !txtNama.getText().trim().isEmpty()       ||
-                          !txtUsn.getText().trim().isEmpty()       ||
-                          !txtPW.getText().trim().isEmpty()        ||
-                          !txtRT.getText().trim().isEmpty()        ||
-                          !txtRW.getText().trim().isEmpty()        ||
-                          cmbKelurahan.getValue() != null          ||
-                          cmbKecamatan.getValue() != null          ||
-                          cmbKabupaten.getValue() != null          ||
-                          cmbProvinsi.getValue()  != null          ||
-                          !txtHP.getText().trim().isEmpty();
+                !txtUsn.getText().trim().isEmpty()       ||
+                !txtPW.getText().trim().isEmpty()        ||
+                !txtRT.getText().trim().isEmpty()        ||
+                !txtRW.getText().trim().isEmpty()        ||
+                cmbKelurahan.getValue() != null          ||
+                cmbKecamatan.getValue() != null          ||
+                cmbKabupaten.getValue() != null          ||
+                cmbProvinsi.getValue()  != null          ||
+                !txtHP.getText().trim().isEmpty();
 
         if (!adaIsi) {
             showAlert(Alert.AlertType.INFORMATION, "Info", "Tidak ada data yang perlu dibatalkan.");
@@ -361,20 +426,33 @@ public class MasterKaryawanController implements Initializable {
 
     private boolean validateForm() {
         if (txtNama.getText().trim().isEmpty()      ||
-            txtUsn.getText().trim().isEmpty()       ||
-            txtPW.getText().trim().isEmpty()        ||
-            txtRT.getText().trim().isEmpty()        ||
-            txtRW.getText().trim().isEmpty()        ||
-            cmbKelurahan.getValue() == null         ||
-            cmbKecamatan.getValue() == null         ||
-            cmbKabupaten.getValue() == null         ||
-            cmbProvinsi.getValue()  == null         ||
-            txtHP.getText().trim().isEmpty()        ||
-            cmbJabatan.getValue() == null           ||
-            cmbJK.getValue()      == null) {
+                txtUsn.getText().trim().isEmpty()       ||
+                txtPW.getText().trim().isEmpty()        ||
+                txtRT.getText().trim().isEmpty()        ||
+                txtRW.getText().trim().isEmpty()        ||
+                cmbKelurahan.getValue() == null         ||
+                cmbKecamatan.getValue() == null         ||
+                cmbKabupaten.getValue() == null         ||
+                cmbProvinsi.getValue()  == null         ||
+                txtHP.getText().trim().isEmpty()        ||
+                cmbJabatan.getValue() == null           ||
+                cmbJK.getValue()      == null) {
             showAlert(Alert.AlertType.WARNING, "Validasi", "Semua data harus diisi!");
             return false;
         }
+
+        // Tambahan: validasi username tidak boleh sama dengan karyawan lain
+        if (isUsernameDuplicate(txtUsn.getText().trim())) {
+            showAlert(Alert.AlertType.WARNING, "Validasi", "Username sudah digunakan, silakan gunakan username lain.");
+            return false;
+        }
+
+        // Tambahan: validasi No. HP tidak boleh sama dengan karyawan lain
+        if (isNoHpDuplicate(txtHP.getText().trim())) {
+            showAlert(Alert.AlertType.WARNING, "Validasi", "No. HP sudah digunakan oleh karyawan lain.");
+            return false;
+        }
+
         return true;
     }
 

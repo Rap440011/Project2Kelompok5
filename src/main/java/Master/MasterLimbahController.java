@@ -25,6 +25,9 @@ public class MasterLimbahController implements Initializable {
     @FXML private TextArea   txtketerangan;
     @FXML private ComboBox<String> cmbjenis;
 
+    // Tambahan: referensi tombol untuk kontrol disable/enable
+    @FXML private Button btnUbah, btnHapus, btnSimpan;
+
     private final ObservableList<MasterLimbah> dataList = FXCollections.observableArrayList();
     private final DBConnect db = new DBConnect();
 
@@ -66,7 +69,35 @@ public class MasterLimbahController implements Initializable {
                 txtHarga.setText(newVal.getHarga());
                 txtketerangan.setText(newVal.getKeterangan());
             }
+            updateButtonStates(); // Tambahan: update status tombol setiap seleksi tabel berubah
         });
+
+        // Tambahan: listener untuk memantau perubahan input form agar tombol Simpan bereaksi otomatis
+        txtNama.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        txtHarga.textProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+        cmbjenis.valueProperty().addListener((obs, oldVal, newVal) -> updateButtonStates());
+
+        // Tambahan: set status awal tombol saat form pertama kali dibuka
+        updateButtonStates();
+    }
+
+    /**
+     * Tambahan: Mengatur status aktif/nonaktif tombol Simpan, Ubah, dan Hapus.
+     * - Simpan  : aktif jika Nama, Kategori, dan Harga terisi, DAN tidak ada baris tabel yang sedang dipilih.
+     * - Ubah    : aktif jika ada baris tabel yang sedang dipilih.
+     * - Hapus   : aktif jika ada baris tabel yang sedang dipilih.
+     * - Batal   : tidak diatur di sini, tetap selalu aktif seperti semula.
+     */
+    private void updateButtonStates() {
+        boolean formValid = !txtNama.getText().trim().isEmpty()
+                && cmbjenis.getValue() != null && !cmbjenis.getValue().trim().isEmpty()
+                && !txtHarga.getText().trim().isEmpty();
+
+        boolean rowSelected = tbLimbah.getSelectionModel().getSelectedItem() != null;
+
+        btnSimpan.setDisable(!formValid || rowSelected);
+        btnUbah.setDisable(!rowSelected);
+        btnHapus.setDisable(!rowSelected);
     }
 
     /** Menentukan satuan otomatis: Cair -> Liter, Padat -> Kilo */
