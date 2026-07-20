@@ -65,7 +65,6 @@
                     <RowConstraints minHeight="34" />
                     <RowConstraints minHeight="34" />
                     <RowConstraints minHeight="34" />
-                    <RowConstraints minHeight="34" />
                 </rowConstraints>
 
                 <!-- ID Transaksi -->
@@ -87,29 +86,20 @@
                                   -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
                            GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                <!-- ID Karyawan -->
-                <Label text="ID Karyawan"
-                       style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                       GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                <TextField fx:id="txtIDKaryawan" maxWidth="Infinity"
-                           promptText="ID karyawan yang bertugas..."
-                           style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
-                           GridPane.columnIndex="1" GridPane.rowIndex="2" />
-
                 <!-- Tanggal Penarikan -->
                 <Label text="Tanggal Penarikan"
                        style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                       GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                       GridPane.columnIndex="0" GridPane.rowIndex="2" />
                 <DatePicker fx:id="dpTanggalPenarikan" maxWidth="Infinity"
                             style="-fx-font-size:12px;"
-                            GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                            GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
                 <!-- Jumlah Penarikan + tombol Tarik Semua Saldo -->
                 <Label text="Jumlah Penarikan"
                        style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                       GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                       GridPane.columnIndex="0" GridPane.rowIndex="3" />
                 <HBox spacing="8" alignment="CENTER_LEFT"
-                      GridPane.columnIndex="1" GridPane.rowIndex="4">
+                      GridPane.columnIndex="1" GridPane.rowIndex="3">
                     <TextField fx:id="txtJumlahPenarikan" maxWidth="Infinity"
                                style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
                                HBox.hgrow="ALWAYS" />
@@ -125,11 +115,11 @@
                 <!-- Keterangan -->
                 <Label text="Keterangan"
                        style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                       GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                       GridPane.columnIndex="0" GridPane.rowIndex="4" />
                 <TextField fx:id="txtKeterangan" maxWidth="Infinity"
                            promptText="Keterangan (opsional)..."
                            style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
-                           GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                           GridPane.columnIndex="1" GridPane.rowIndex="4" />
             </GridPane>
 
             <Region VBox.vgrow="ALWAYS" />
@@ -163,9 +153,9 @@
                        style="-fx-background-color:white; -fx-border-color:#E8E8E8;
                               -fx-border-radius:8; -fx-background-radius:8;">
                 <columns>
-                    <TableColumn fx:id="clmNama"  text="Nama" />
-                    <TableColumn fx:id="clmNoHp"  text="Nomor Telepon" />
-                    <TableColumn fx:id="clmSaldo" text="Saldo" />
+                    <TableColumn fx:id="clmNama"  text="Nama" style="-fx-alignment:CENTER-RIGHT;" />
+                    <TableColumn fx:id="clmNoHp"  text="Nomor Telepon" style="-fx-alignment:CENTER-RIGHT;" />
+                    <TableColumn fx:id="clmSaldo" text="Saldo (Rp)" style="-fx-alignment:CENTER-RIGHT;" />
                 </columns>
                 <placeholder>
                     <Label text="Belum ada data nasabah aktif"

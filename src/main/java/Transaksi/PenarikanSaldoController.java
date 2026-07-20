@@ -13,13 +13,13 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ResourceBundle;
+import Auth.Session;
 
 public class PenarikanSaldoController implements Initializable {
 
     // ── Form kiri ─────────────────────────────────────────────────────────────
     @FXML private TextField   txtIDTransaksi;
     @FXML private TextField   txtNamaNasabah;
-    @FXML private TextField   txtIDKaryawan;
     @FXML private DatePicker  dpTanggalPenarikan;
     @FXML private TextField   txtJumlahPenarikan;
     @FXML private Button      btnTarikSemuaSaldo;
@@ -38,7 +38,27 @@ public class PenarikanSaldoController implements Initializable {
     private final ObservableList<PenarikanSaldo> dataNasabah = FXCollections.observableArrayList();
     private PenarikanSaldo nasabahDipilih = null;
 
+    String idKaryawan = Session.getIdKaryawanLogin();
     private static final String RUPIAH_PREFIX = "Rp ";
+
+    /**
+     * Disalin dari MasterLimbahController: mengubah string digit murni menjadi
+     * format dengan pemisah ribuan (titik) untuk field yang sedang diketik user.
+     * Contoh: "150000" -> "150.000".
+     */
+    private static String formatRibuan(String digitsOnly) {
+        if (digitsOnly.isEmpty()) return "";
+        digitsOnly = digitsOnly.replaceFirst("^0+(?=\\d)", "");
+        return digitsOnly.replaceAll("\\B(?=(\\d{3})+(?!\\d))", ".");
+    }
+
+    /** Format BigDecimal (mis. saldo nasabah) menjadi angka dengan pemisah ribuan, mis. "150.000". */
+    private static String formatRupiah(BigDecimal value) {
+        if (value == null) value = BigDecimal.ZERO;
+        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###",
+                new java.text.DecimalFormatSymbols(new java.util.Locale("in", "ID")));
+        return df.format(value.setScale(0, java.math.RoundingMode.HALF_UP));
+    }
 
     // ── Initialize ────────────────────────────────────────────────────────────
     @Override
@@ -59,7 +79,7 @@ public class PenarikanSaldoController implements Initializable {
                 new SimpleStringProperty(data.getValue().getNoHp()));
         clmSaldo.setCellValueFactory(data -> {
             BigDecimal nilai = new BigDecimal(data.getValue().getSaldo());
-            return new SimpleStringProperty(RUPIAH_PREFIX + nilai.stripTrailingZeros().toPlainString());
+            return new SimpleStringProperty(formatRupiah(nilai));
         });
         tbNasabah.setItems(dataNasabah);
 
@@ -77,7 +97,7 @@ public class PenarikanSaldoController implements Initializable {
         txtJumlahPenarikan.textProperty().addListener((obs, oldV, newV) -> {
             String angka = newV.replaceAll("[^0-9]", "");
             if (angka.length() > 15) angka = angka.substring(0, 15);
-            String hasil = RUPIAH_PREFIX + angka;
+            String hasil = RUPIAH_PREFIX + formatRibuan(angka);
             if (!hasil.equals(newV)) {
                 txtJumlahPenarikan.setText(hasil);
                 txtJumlahPenarikan.positionCaret(hasil.length());
@@ -162,14 +182,15 @@ public class PenarikanSaldoController implements Initializable {
         try {
             BigDecimal jumlah = new BigDecimal(getJumlahRaw());
 
-            // 1) Simpan header transaksi penarikan
             db.cstat = db.conn.prepareCall("{CALL sp_Insert_PenarikanSaldo(?,?,?,?,?,?)}");
+
             db.cstat.setString(1, txtIDTransaksi.getText());
             db.cstat.setString(2, nasabahDipilih.getIdNasabah());
-            db.cstat.setString(3, txtIDKaryawan.getText().trim());
+            db.cstat.setString(3, idKaryawan);
             db.cstat.setDate(4, java.sql.Date.valueOf(dpTanggalPenarikan.getValue()));
             db.cstat.setBigDecimal(5, jumlah);
             db.cstat.setString(6, txtKeterangan.getText().trim());
+
             db.cstat.executeUpdate();
 
             // 2) Kurangi saldo nasabah sebesar jumlah yang ditarik
@@ -207,10 +228,6 @@ public class PenarikanSaldoController implements Initializable {
             showAlert(Alert.AlertType.WARNING, "Validasi", "Nasabah ini tidak memiliki saldo.");
             return false;
         }
-        if (txtIDKaryawan.getText().trim().isEmpty()) {
-            showAlert(Alert.AlertType.WARNING, "Validasi", "ID Karyawan wajib diisi.");
-            return false;
-        }
         if (dpTanggalPenarikan.getValue() == null) {
             showAlert(Alert.AlertType.WARNING, "Validasi", "Tanggal Penarikan wajib diisi.");
             return false;
@@ -224,19 +241,18 @@ public class PenarikanSaldoController implements Initializable {
         if (jumlah.compareTo(saldoNasabah) > 0) {
             showAlert(Alert.AlertType.WARNING, "Validasi",
                     "Jumlah penarikan tidak boleh melebihi saldo nasabah (" +
-                            RUPIAH_PREFIX + saldoNasabah.toPlainString() + ").");
+                            RUPIAH_PREFIX + formatRupiah(saldoNasabah) + ").");
             return false;
         }
         return true;
     }
 
     private String getJumlahRaw() {
-        return txtJumlahPenarikan.getText().replace(RUPIAH_PREFIX, "").trim();
+        return txtJumlahPenarikan.getText().replace(RUPIAH_PREFIX, "").replace(".", "").trim();
     }
 
     private void clearForm() {
         txtNamaNasabah.clear();
-        txtIDKaryawan.clear();
         dpTanggalPenarikan.setValue(LocalDate.now());
         txtJumlahPenarikan.setText(RUPIAH_PREFIX);
         txtKeterangan.clear();

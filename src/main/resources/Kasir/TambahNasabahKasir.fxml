@@ -4,6 +4,8 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
@@ -13,7 +15,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox fx:id="rootTambahNasabah"
-      prefHeight="700.0" prefWidth="1000.0"
+      prefHeight="780.0" prefWidth="1150.0"
       spacing="0"
       styleClass="content-card"
       xmlns="http://javafx.com/javafx/26"
@@ -31,18 +33,18 @@
         <VBox spacing="1">
             <Label text="Tambah Nasabah"
                    style="-fx-font-size:18px; -fx-font-weight:bold; -fx-text-fill:#1A1A1A;" />
-            <Label text="Daftarkan nasabah baru Bumi Makmur"
+            <Label text="Daftarkan, ubah, atau nonaktifkan nasabah Bumi Makmur"
                    style="-fx-font-size:11px; -fx-text-fill:#9E9E9E;" />
         </VBox>
     </HBox>
 
-    <!-- FORM PANEL -->
+    <!-- KONTEN: Form (atas) + Toolbar (CRUD kiri, Cari kanan) + Tabel (bawah) -->
     <VBox spacing="20" VBox.vgrow="ALWAYS"
           style="-fx-background-color:#FAFAFA;">
         <padding><Insets top="30" right="60" bottom="30" left="60"/></padding>
 
-        <!-- Card form -->
-        <VBox spacing="18"
+        <!-- Card form: Data Nasabah (full width) -->
+        <VBox spacing="18" VBox.vgrow="NEVER"
               style="-fx-background-color:white;
                      -fx-border-color:#E8E8E8;
                      -fx-border-radius:12;
@@ -166,18 +168,66 @@
                 <Label text="Saldo awal nasabah baru adalah Rp 0. Saldo akan bertambah saat nasabah menyetorkan limbah."
                        style="-fx-font-size:11px; -fx-text-fill:#795548;" />
             </HBox>
+        </VBox>
 
-            <!-- Tombol -->
-            <HBox alignment="CENTER_RIGHT" spacing="10">
-                <Button fx:id="btnBatal" onAction="#handleBatal"
-                        text="Batal"
-                        prefWidth="110" prefHeight="38"
-                        styleClass="btn,btn-batal" />
-                <Button fx:id="btnSimpan" onAction="#handleSimpan"
-                        text="💾  Daftarkan Nasabah"
-                        prefWidth="180" prefHeight="38"
-                        styleClass="btn,btn-simpan" />
+        <!-- Toolbar: tombol CRUD (kiri) + pencarian (kanan) -->
+        <HBox alignment="CENTER_LEFT" spacing="10" VBox.vgrow="NEVER">
+            <Button fx:id="btnBatal" onAction="#handleBatal"
+                    text="Batal"
+                    prefWidth="100" prefHeight="38"
+                    styleClass="btn,btn-batal" />
+            <Button fx:id="btnHapus" onAction="#handleHapus"
+                    text="Hapus"
+                    prefWidth="100" prefHeight="38"
+                    styleClass="btn,btn-hapus" />
+            <Button fx:id="btnUbah" onAction="#handleUbah"
+                    text="Ubah"
+                    prefWidth="100" prefHeight="38"
+                    styleClass="btn,btn-ubah" />
+            <Button fx:id="btnSimpan" onAction="#handleSimpan"
+                    text="Simpan"
+                    prefWidth="100" prefHeight="38"
+                    styleClass="btn,btn-simpan" />
+
+            <Region HBox.hgrow="ALWAYS" />
+
+            <TextField fx:id="txtCari" promptText="Cari nama / No. HP / No. Rekening..."
+                       prefWidth="320"
+                       style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;" />
+            <Button fx:id="btnCari" onAction="#handleCari"
+                    text="🔍 Cari"
+                    prefWidth="90" prefHeight="34"
+                    styleClass="btn,btn-cari" />
+        </HBox>
+
+        <!-- Card tabel: Daftar Nasabah (full width, bawah) -->
+        <VBox spacing="12" VBox.vgrow="ALWAYS"
+              style="-fx-background-color:white;
+                     -fx-border-color:#E8E8E8;
+                     -fx-border-radius:12;
+                     -fx-background-radius:12;
+                     -fx-effect: dropshadow(gaussian,rgba(0,0,0,0.06),8,0,0,2);">
+            <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="8">
+                <Region prefWidth="3" prefHeight="18"
+                        style="-fx-background-color:#6A1B9A; -fx-background-radius:2;" />
+                <Label text="Daftar Nasabah"
+                       style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#333333;" />
             </HBox>
+
+            <TableView fx:id="tbNasabah" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="clmNama" text="Nama" prefWidth="150" />
+                    <TableColumn fx:id="clmHP" text="No. HP" prefWidth="110" />
+                    <TableColumn fx:id="clmNoRek" text="No. Rekening" prefWidth="130" />
+                    <TableColumn fx:id="clmSaldo" text="Saldo" prefWidth="100" />
+                    <TableColumn fx:id="clmStatus" text="Status" prefWidth="90" />
+                </columns>
+                <placeholder>
+                    <Label text="Belum ada data nasabah" style="-fx-text-fill:#CCC; -fx-font-size:11px; -fx-font-style:italic;" />
+                </placeholder>
+            </TableView>
         </VBox>
     </VBox>
 

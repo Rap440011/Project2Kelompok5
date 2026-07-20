@@ -37,7 +37,6 @@ public class TransaksiPengolahanLimbahController implements Initializable {
     @FXML private TextField  txtCariProduk;
 
     @FXML private TableView<Map<String, String>> tblDetailTransaksi;
-    @FXML private TableColumn<Map<String, String>, String> colIDDetail;
     @FXML private TableColumn<Map<String, String>, String> colIDPengolahanDetail;
     @FXML private TableColumn<Map<String, String>, String> colIDLimbah;
     @FXML private TableColumn<Map<String, String>, String> colKuantitasLimbah;
@@ -72,6 +71,23 @@ public class TransaksiPengolahanLimbahController implements Initializable {
     private static final String RUPIAH_PREFIX = "Rp ";
 
     private static final String STATUS_AKTIF = "Aktif";
+
+    /**
+     * Menyeragamkan nama satuan: "Kilo" (apapun huruf besar/kecilnya) ditampilkan sebagai "Kg".
+     * Satuan lain ditampilkan apa adanya.
+     */
+    private static String normalizeSatuan(String satuan) {
+        if (satuan == null) return satuan;
+        return "Kilo".equalsIgnoreCase(satuan.trim()) ? "Kg" : satuan;
+    }
+
+    /**
+     * Hanya satuan "Kg" dan "Liter" yang diizinkan tampil di transaksi ini.
+     * Nilai yang dikirim ke sini HARUS sudah melalui normalizeSatuan() terlebih dahulu.
+     */
+    private static boolean isSatuanDiizinkan(String satuanTernormalisasi) {
+        return "Kg".equalsIgnoreCase(satuanTernormalisasi) || "Liter".equalsIgnoreCase(satuanTernormalisasi);
+    }
 
     private final List<MasterProduk> daftarProduk     = new ArrayList<>();
     private final Map<MasterProduk, VBox> kartuPerProduk = new LinkedHashMap<>();
@@ -110,8 +126,6 @@ public class TransaksiPengolahanLimbahController implements Initializable {
     }
 
     private void setupTabelDetailTransaksi() {
-        colIDDetail.setCellValueFactory(data ->
-                new SimpleStringProperty(data.getValue().getOrDefault("idDetail", "")));
         colIDPengolahanDetail.setCellValueFactory(data ->
                 new SimpleStringProperty(data.getValue().getOrDefault("idPengolahan", "")));
         colIDLimbah.setCellValueFactory(data ->
@@ -123,10 +137,13 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         tblDetailTransaksi.setItems(detailTransaksiData);
     }
 
-    private Map<String, String> buatBarisDetail(String idDetail, String idPengolahan,
+    /**
+     * Membuat baris detail transaksi tanpa ID_Detail.
+     * Schema baru menggunakan composite key (ID_Pengolahan, ID_Limbah).
+     */
+    private Map<String, String> buatBarisDetail(String idPengolahan,
                                                 String idLimbah, String kuantitas, String satuan) {
         Map<String, String> baris = new LinkedHashMap<>();
-        baris.put("idDetail", idDetail);
         baris.put("idPengolahan", idPengolahan);
         baris.put("idLimbah", idLimbah);
         baris.put("kuantitas", kuantitas);
@@ -184,7 +201,8 @@ public class TransaksiPengolahanLimbahController implements Initializable {
             while (db.result.next()) {
                 String idLimbah = db.result.getString("ID_Limbah");
                 namaLimbahMap.put(idLimbah, db.result.getString("Nama_Limbah"));
-                satuanLimbahMap.put(idLimbah, db.result.getString("Satuan"));
+                // "Kilo" diseragamkan menjadi "Kg" di seluruh tampilan satuan.
+                satuanLimbahMap.put(idLimbah, normalizeSatuan(db.result.getString("Satuan")));
                 stokLimbahMap.put(idLimbah, db.result.getBigDecimal("Jumlah"));
             }
         } catch (SQLException e) {
@@ -204,13 +222,17 @@ public class TransaksiPengolahanLimbahController implements Initializable {
                 String status = db.result.getString("Status");
                 if (status != null && !status.trim().equalsIgnoreCase(STATUS_AKTIF)) continue;
 
+                // "Kilo" diseragamkan menjadi "Kg"; produk dengan satuan selain Kg/Liter tidak ditampilkan.
+                String satuan = normalizeSatuan(db.result.getString("Satuan"));
+                if (!isSatuanDiizinkan(satuan)) continue;
+
                 MasterProduk p = new MasterProduk(
                         db.result.getString("ID_Produk"),
                         db.result.getString("Nama_Produk"),
                         String.valueOf(db.result.getInt("Stok")),
                         RUPIAH_PREFIX + db.result.getBigDecimal("Harga_Jual")
                                 .stripTrailingZeros().toPlainString(),
-                        db.result.getString("Satuan"),
+                        satuan,
                         db.result.getString("Keterangan"),
                         db.result.getString("ID_Limbah"),
                         status
@@ -382,28 +404,6 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         refreshDetailTransaksiTable();
     }
 
-    private int ambilUrutAwalDetailPengolahan(String idPengolahan) {
-        try {
-            db.cstat = db.conn.prepareCall("{CALL sp_AutoID_DetailPengolahan(?)}");
-            db.cstat.setString(1, idPengolahan);
-            db.result = db.cstat.executeQuery();
-            if (db.result.next()) {
-                String idBaru = db.result.getString("ID_Detail_Pengolahan"); // contoh: DT TRP08072026001 01
-                String urutStr = idBaru.substring(idBaru.length() - 2);
-                return Integer.parseInt(urutStr);
-            }
-        } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Error Auto ID Detail Pengolahan", e.getMessage());
-        } catch (Exception ignored) {
-
-        }
-        return 1;
-    }
-
-    private String formatIDDetailPengolahan(String idPengolahan, int urut) {
-        return "DT" + idPengolahan + String.format("%02d", urut);
-    }
-
     private List<KomposisiBahan> loadKomposisiProduk(String idProduk) {
         List<KomposisiBahan> hasil = new ArrayList<>();
         try {
@@ -423,6 +423,10 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         return hasil;
     }
 
+    /**
+     * Refresh detail transaksi table berdasarkan komposisi produk yang dipilih.
+     * Schema baru tidak menggunakan ID_Detail, hanya composite key (ID_Pengolahan, ID_Limbah).
+     */
     private void refreshDetailTransaksiTable() {
         detailTransaksiData.clear();
         refreshStokLimbahTable();
@@ -435,10 +439,7 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         String idPengolahan = txtIDPengolahan.getText();
         BigDecimal kuantitas = parseKuantitas();
 
-        int urut = ambilUrutAwalDetailPengolahan(idPengolahan);
         for (KomposisiBahan b : komposisi) {
-            String idDetail = formatIDDetailPengolahan(idPengolahan, urut);
-
             String kuantitasLimbahStr;
             if (kuantitas == null) {
                 kuantitasLimbahStr = "-";
@@ -448,8 +449,7 @@ public class TransaksiPengolahanLimbahController implements Initializable {
             }
 
             detailTransaksiData.add(buatBarisDetail(
-                    idDetail, idPengolahan, b.idLimbah, kuantitasLimbahStr, b.satuanBahan));
-            urut++;
+                    idPengolahan, b.idLimbah, kuantitasLimbahStr, b.satuanBahan));
         }
     }
 
@@ -542,7 +542,7 @@ public class TransaksiPengolahanLimbahController implements Initializable {
         if (!validasiStok(kuantitas)) return;
 
         try {
-
+            // 1. Insert header transaksi ke tr_Pengolahan_Limbah
             db.cstat = db.conn.prepareCall("{CALL sp_Insert_PengolahanLimbah(?,?,?,?,?,?,?)}");
             db.cstat.setString(1, idPengolahan);
             db.cstat.setString(2, idProduk);
@@ -553,9 +553,29 @@ public class TransaksiPengolahanLimbahController implements Initializable {
             db.cstat.setString(7, keterangan);
             db.cstat.executeUpdate();
 
+            // 2. Insert detail transaksi ke dtl_tr_Pengolahan_Limbah dengan composite key
             List<KomposisiBahan> komposisi = loadKomposisiProduk(idProduk);
             for (KomposisiBahan b : komposisi) {
                 BigDecimal totalKurang = kuantitas.multiply(b.qty).setScale(2, RoundingMode.HALF_UP);
+
+                // Insert ke dtl_tr_Pengolahan_Limbah (composite key: ID_Pengolahan, ID_Limbah)
+                // Menggunakan OUTPUT parameter @Result untuk status
+                db.cstat = db.conn.prepareCall("{CALL sp_Insert_DetailPengolahanLimbah(?,?,?,?,?)}");
+                db.cstat.setString(1, idPengolahan);
+                db.cstat.setString(2, b.idLimbah);
+                db.cstat.setBigDecimal(3, totalKurang);
+                db.cstat.setString(4, b.satuanBahan);
+                db.cstat.registerOutParameter(5, java.sql.Types.INTEGER);  // @Result OUTPUT
+                db.cstat.executeUpdate();
+
+                int insertResult = db.cstat.getInt(5);
+                if (insertResult == 0) {
+                    showAlert(Alert.AlertType.ERROR, "Error Simpan Detail",
+                            "Gagal menyimpan detail limbah: " + b.namaBahan);
+                    return;
+                }
+
+                // Kurangi stok limbah
                 db.cstat = db.conn.prepareCall("{CALL sp_Kurangi_StokLimbah(?,?)}");
                 db.cstat.setString(1, b.namaBahan);
                 db.cstat.setBigDecimal(2, totalKurang);
@@ -565,6 +585,7 @@ public class TransaksiPengolahanLimbahController implements Initializable {
             loadDataLimbahReferensi();
             refreshStokLimbahTable();
 
+            // 3. Tambah stok produk
             int tambahStok = kuantitas.setScale(0, RoundingMode.HALF_UP).intValue();
             db.cstat = db.conn.prepareCall("{CALL sp_Tambah_StokProduk(?,?)}");
             db.cstat.setString(1, idProduk);

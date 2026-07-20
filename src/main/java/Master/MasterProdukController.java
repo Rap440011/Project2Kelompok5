@@ -9,9 +9,9 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -20,12 +20,12 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.UnaryOperator;
 
 public class MasterProdukController implements Initializable {
 
@@ -89,6 +89,11 @@ public class MasterProdukController implements Initializable {
                     "-fx-border-radius:8; -fx-background-radius:8;" +
                     "-fx-text-fill:#333333; -fx-cursor:hand;";
 
+    // Style label nama file gambar - HARUS sama persis baik sebelum maupun
+    // sesudah produk dipilih, supaya tampilan tidak berubah bentuk.
+    private static final String STYLE_LABEL_GAMBAR =
+            "-fx-font-size:11px; -fx-text-fill:#999; -fx-font-style:italic;";
+
     // Style kartu produk (panel kanan) — mengikuti desain pada Gambar 1
     private static final String STYLE_KARTU_NORMAL =
             "-fx-background-color:white;" +
@@ -130,15 +135,126 @@ public class MasterProdukController implements Initializable {
         public javafx.beans.property.StringProperty qtyProperty()      { return qty; }
     }
 
+    /**
+     * Cell editor khusus untuk kolom Qty: hanya menerima digit dan satu titik desimal.
+     * Karakter huruf/simbol lain ditolak oleh TextFormatter sehingga tidak akan
+     * pernah muncul di kolom input sama sekali (bukan sekadar divalidasi setelah diketik).
+     */
+    private class QtyEditingCell extends TableCell<RelasiProdukLimbah, String> {
+        private TextField textField;
+
+        @Override
+        public void startEdit() {
+            if (isEmpty()) return;
+            super.startEdit();
+            createTextField();
+            setText(null);
+            setGraphic(textField);
+            textField.requestFocus();
+            textField.selectAll();
+        }
+
+        @Override
+        public void cancelEdit() {
+            super.cancelEdit();
+            setText(getItem());
+            setGraphic(null);
+        }
+
+        @Override
+        protected void updateItem(String item, boolean empty) {
+            super.updateItem(item, empty);
+            if (empty) {
+                setText(null);
+                setGraphic(null);
+            } else if (isEditing()) {
+                if (textField != null) textField.setText(item);
+                setText(null);
+                setGraphic(textField);
+            } else {
+                setText(item);
+                setGraphic(null);
+            }
+        }
+
+        private void createTextField() {
+            textField = new TextField(getItem());
+            textField.setStyle("-fx-font-size:12px;");
+
+            // Filter: hanya digit, boleh satu titik desimal. Selain itu ditolak total.
+            UnaryOperator<TextFormatter.Change> filter = change -> {
+                String newText = change.getControlNewText();
+                if (newText.isEmpty() || newText.matches("\\d*(\\.\\d*)?")) {
+                    return change;
+                }
+                return null; // tolak perubahan -> karakter tidak akan muncul
+            };
+            textField.setTextFormatter(new TextFormatter<>(filter));
+
+            textField.setOnAction(e -> commitEdit(textField.getText()));
+            textField.focusedProperty().addListener((obs, oldV, newV) -> {
+                if (!newV) commitEdit(textField.getText());
+            });
+            textField.setOnKeyPressed(e -> {
+                if (e.getCode() == KeyCode.ESCAPE) cancelEdit();
+            });
+        }
+    }
+
     // ── Initialize ────────────────────────────────────────────────────────────
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         setupCombo();
         setupHargaRupiah();
         setupTabelRelasi();
+        setupPemicuStatusSimpan();
         loadAutoID();
         loadDataLimbah();
         loadDataProduk();
+
+        // Belum ada produk dipilih -> mode tambah baru (Simpan nonaktif sampai ada input)
+        aturSebagaiModeTambah();
+    }
+
+    private void aturSebagaiModeTambah() {
+        btnUbah.setDisable(true);
+        btnHapus.setDisable(true);
+        // Simpan tidak langsung diaktifkan; aktif hanya jika form sudah diisi.
+        updateStatusSimpanJikaModeTambah();
+    }
+
+    private void aturSebagaiModeEdit() {
+        btnUbah.setDisable(false);
+        btnHapus.setDisable(false);
+        btnSimpan.setDisable(true);
+    }
+
+    /**
+     * Memantau perubahan pada Nama Produk dan Harga Jual supaya tombol Simpan
+     * otomatis aktif/nonaktif mengikuti isi form (hanya berlaku saat belum ada
+     * produk yang dipilih / mode tambah baru).
+     */
+    private void setupPemicuStatusSimpan() {
+        txtNama.textProperty().addListener((obs, oldV, newV) -> updateStatusSimpanJikaModeTambah());
+        txtHarga.textProperty().addListener((obs, oldV, newV) -> updateStatusSimpanJikaModeTambah());
+    }
+
+    /**
+     * Menentukan status disable tombol Simpan.
+     * - Jika sedang mode edit (produk sudah dipilih), Simpan tetap nonaktif
+     *   (diatur oleh aturSebagaiModeEdit()), method ini tidak mengubahnya.
+     * - Jika mode tambah baru, Simpan aktif hanya bila minimal salah satu dari
+     *   Nama Produk, Harga Jual, atau pilihan limbah sudah diisi/dipilih.
+     */
+    private void updateStatusSimpanJikaModeTambah() {
+        if (produkDipilih != null) return; // mode edit, tidak diubah di sini
+
+        boolean sudahAdaInput =
+                !txtNama.getText().trim().isEmpty()
+                        || !getHargaRaw().isEmpty()
+                        || !idLimbahTerpilih.isEmpty();
+
+        btnSimpan.setDisable(!sudahAdaInput);
     }
 
     // ── Setup ─────────────────────────────────────────────────────────────────
@@ -152,7 +268,7 @@ public class MasterProdukController implements Initializable {
         txtHarga.textProperty().addListener((obs, oldV, newV) -> {
             String angka = newV.replaceAll("[^0-9]", "");
             if (angka.length() > 15) angka = angka.substring(0, 15);
-            String hasil = RUPIAH_PREFIX + angka;
+            String hasil = RUPIAH_PREFIX + formatRibuan(angka);
             if (!hasil.equals(newV)) {
                 txtHarga.setText(hasil);
                 txtHarga.positionCaret(hasil.length());
@@ -164,7 +280,18 @@ public class MasterProdukController implements Initializable {
         });
     }
 
-    /** Tabel relasi: ID Produk & ID Limbah readonly, Qty (jumlah limbah per unit produk) editable, angka desimal >= 0 */
+    /**
+     * Disalin dari MasterLimbahController: mengubah string digit murni menjadi
+     * format dengan pemisah ribuan (titik). Contoh: "2000" -> "2.000",
+     * "10000000" -> "10.000.000". Angka nol di depan (kecuali jika hanya "0") ikut dibuang.
+     */
+    private String formatRibuan(String digitsOnly) {
+        if (digitsOnly.isEmpty()) return "";
+        digitsOnly = digitsOnly.replaceFirst("^0+(?=\\d)", "");
+        return digitsOnly.replaceAll("\\B(?=(\\d{3})+(?!\\d))", ".");
+    }
+
+    /** Tabel relasi: ID Produk & ID Limbah readonly, Qty (jumlah limbah per unit produk) editable, hanya angka >= 0 */
     private void setupTabelRelasi() {
         clmRelasiIDProduk  .setCellValueFactory(new PropertyValueFactory<>("idProduk"));
         clmRelasiIDLimbah  .setCellValueFactory(new PropertyValueFactory<>("idLimbah"));
@@ -175,8 +302,9 @@ public class MasterProdukController implements Initializable {
         clmRelasiIDLimbah.setEditable(false);
 
         // Qty bisa diedit manual (jumlah limbah yang dibutuhkan per 1 unit produk, decimal(10,2))
+        // Menggunakan cell editor custom (QtyEditingCell) supaya huruf tidak bisa diketik sama sekali.
         clmRelasiPresentase.setEditable(true);
-        clmRelasiPresentase.setCellFactory(TextFieldTableCell.forTableColumn());
+        clmRelasiPresentase.setCellFactory(col -> new QtyEditingCell());
         clmRelasiPresentase.setOnEditCommit(evt -> {
             RelasiProdukLimbah row = evt.getRowValue();
             String nilaiBaru = evt.getNewValue() == null ? "" : evt.getNewValue().trim();
@@ -263,7 +391,10 @@ public class MasterProdukController implements Initializable {
             idLimbahTerpilih.add(idLimbah);
             btn.setStyle(STYLE_TOMBOL_AKTIF);
         }
-        if (recalc) recalcRelasi();
+        if (recalc) {
+            recalcRelasi();
+            updateStatusSimpanJikaModeTambah();
+        }
     }
 
     private void resetPilihanLimbah() {
@@ -274,9 +405,9 @@ public class MasterProdukController implements Initializable {
 
     /**
      * Bentuk ulang isi tabel relasi berdasarkan limbah yang sedang dipilih.
-     * Qty (jumlah limbah yang dibutuhkan per 1 unit produk) diberi nilai awal 1.00
+     * Qty (jumlah limbah yang dibutuhkan per 1 unit produk) diberi nilai awal 1
      * untuk limbah yang baru dipilih. Untuk limbah yang tetap terpilih, nilai Qty
-     * yang sudah diedit user sebelumnya dipertahankan (tidak direset ke 1.00 lagi).
+     * yang sudah diedit user sebelumnya dipertahankan (tidak direset ke 1 lagi).
      * Nilai boleh diedit manual sesudahnya lewat tabel.
      */
     private void recalcRelasi() {
@@ -364,6 +495,12 @@ public class MasterProdukController implements Initializable {
             showAlert(Alert.AlertType.ERROR, "Error Simpan Gambar", e.getMessage());
             return null;
         }
+    }
+
+    /** Ambil nama file saja dari path lengkap, supaya label tidak menampilkan path panjang. */
+    private String extractNamaFileGambar(String path) {
+        if (path == null || path.trim().isEmpty()) return "";
+        return new File(path).getName();
     }
 
     private String buildKomposisiText(String idLimbahCsv) {
@@ -513,13 +650,20 @@ public class MasterProdukController implements Initializable {
         cmbSatuan.setValue(p.getSatuan());
         String rawHarga = p.getHargaJual().replace(RUPIAH_PREFIX, "").trim();
         txtHarga.setText(RUPIAH_PREFIX + rawHarga);
-        lblGambar.setText(p.getPathGambar() == null || p.getPathGambar().isEmpty()
-                ? "Belum ada gambar" : p.getPathGambar());
+        // Tampilkan hanya nama file (bukan path lengkap) supaya tampilan tetap
+        // sama persis dengan kondisi awal (tombol "Pilih Gambar" + label singkat),
+        // tidak berubah jadi kotak path panjang.
+        String namaFileGambar = extractNamaFileGambar(p.getPathGambar());
+        lblGambar.setText(namaFileGambar.isEmpty() ? "Belum ada gambar" : namaFileGambar);
+        lblGambar.setStyle(STYLE_LABEL_GAMBAR);
         pathGambarAktif = p.getPathGambar() != null ? p.getPathGambar() : "";
         filGambarDipilih = null;
 
         resetPilihanLimbah();
         loadDetailRelasi(p.getIdProduk());
+
+        // Produk sudah dipilih -> aktifkan Ubah & Hapus, nonaktifkan Simpan
+        aturSebagaiModeEdit();
     }
 
     @FXML
@@ -671,11 +815,37 @@ public class MasterProdukController implements Initializable {
             showAlert(Alert.AlertType.WARNING, "Validasi", "Harga Jual wajib diisi.");
             return false;
         }
+
+        // Validasi nama produk tidak boleh sama (case-insensitive).
+        // Saat mode Ubah, produk yang sedang diedit dikecualikan dari pengecekan.
+        String idDikecualikan = produkDipilih != null ? produkDipilih.getIdProduk() : null;
+        if (namaProdukSudahAda(txtNama.getText(), idDikecualikan)) {
+            showAlert(Alert.AlertType.WARNING, "Validasi", "Nama Produk sudah digunakan, gunakan nama lain.");
+            return false;
+        }
+
         return true;
     }
 
+    /**
+     * Mengecek apakah nama produk sudah dipakai oleh produk lain.
+     * @param nama nama produk yang akan disimpan/diubah
+     * @param idProdukDikecualikan ID produk yang sedang diedit (diabaikan dari pengecekan), null jika mode tambah baru
+     */
+    private boolean namaProdukSudahAda(String nama, String idProdukDikecualikan) {
+        for (MasterProduk p : dataList) {
+            if (idProdukDikecualikan != null && p.getIdProduk().equals(idProdukDikecualikan)) {
+                continue; // lewati produk yang sedang diedit
+            }
+            if (p.getNamaProduk().trim().equalsIgnoreCase(nama.trim())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private String getHargaRaw() {
-        return txtHarga.getText().replace(RUPIAH_PREFIX, "").trim();
+        return txtHarga.getText().replace(RUPIAH_PREFIX, "").replace(".", "").trim();
     }
 
     private void clearForm() {
@@ -683,12 +853,24 @@ public class MasterProdukController implements Initializable {
         cmbSatuan.getSelectionModel().selectFirst();
         txtHarga.setText(RUPIAH_PREFIX);
         lblGambar.setText("Belum ada gambar");
+        lblGambar.setStyle(STYLE_LABEL_GAMBAR);
         filGambarDipilih = null;
         pathGambarAktif  = "";
         produkDipilih    = null;
-        kartuAktif       = null;
+
+        // PENTING: reset style kartu yang sebelumnya aktif ke normal SEBELUM
+        // referensinya di-null-kan. Sebelumnya kartuAktif langsung di-null-kan
+        // tanpa mengembalikan style-nya, sehingga kartu produk yang terakhir
+        // dipilih tetap terlihat hijau/aktif walau produk sudah tidak dipilih.
+        if (kartuAktif != null) {
+            kartuAktif.setStyle(STYLE_KARTU_NORMAL);
+            kartuAktif = null;
+        }
 
         resetPilihanLimbah();
+
+        // Kembali ke mode tambah baru: Ubah & Hapus nonaktif, Simpan aktif
+        aturSebagaiModeTambah();
     }
 
     private void showAlert(Alert.AlertType type, String title, String msg) {

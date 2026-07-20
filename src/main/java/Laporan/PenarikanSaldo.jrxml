@@ -1,0 +1,40 @@
+<!-- Created with Jaspersoft Studio version 7.0.6.final using JasperReports Library version 7.0.6-5d2a603fdc6b3db8f842a83383e594f41891534d  -->
+<jasperReport name="PenarikanSaldo" language="java" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="32f12a90-a979-4fb7-b99e-159d5220d925">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="PenarikanSaldo.jrdax"/>
+	<query language="SQL"><![CDATA[select * from tr_Penarikan_Saldo]]></query>
+	<field name="ID_Penarikan" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ID_Penarikan"/>
+		<property name="com.jaspersoft.studio.field.label" value="ID_Penarikan"/>
+	</field>
+	<field name="ID_Nasabah" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ID_Nasabah"/>
+		<property name="com.jaspersoft.studio.field.label" value="ID_Nasabah"/>
+	</field>
+	<field name="ID_Karyawan" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ID_Karyawan"/>
+		<property name="com.jaspersoft.studio.field.label" value="ID_Karyawan"/>
+	</field>
+	<field name="Tanggal_Penarikan" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="Tanggal_Penarikan"/>
+		<property name="com.jaspersoft.studio.field.label" value="Tanggal_Penarikan"/>
+	</field>
+	<field name="Jumlah_Saldo" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="Jumlah_Saldo"/>
+		<property name="com.jaspersoft.studio.field.label" value="Jumlah_Saldo"/>
+	</field>
+	<field name="Keterangan" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="Keterangan"/>
+		<property name="com.jaspersoft.studio.field.label" value="Keterangan"/>
+	</field>
+	<background splitType="Stretch"/>
+	<title height="79" splitType="Stretch"/>
+	<pageHeader height="35" splitType="Stretch"/>
+	<columnHeader height="61" splitType="Stretch"/>
+	<detail>
+		<band height="125" splitType="Stretch"/>
+	</detail>
+	<columnFooter height="45" splitType="Stretch"/>
+	<pageFooter height="54" splitType="Stretch"/>
+	<summary height="42" splitType="Stretch"/>
+</jasperReport>

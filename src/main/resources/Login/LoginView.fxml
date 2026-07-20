@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane prefHeight="500.0" prefWidth="380.0" styleClass="login-bg" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Login.LoginController">
+
+    <VBox alignment="CENTER" maxWidth="320" spacing="14" styleClass="content-card">
+        <padding><Insets bottom="32" left="28" right="28" top="32" /></padding>
+
+        <Label styleClass="page-title" text="Login" />
+        <Label style="-fx-text-fill:#757575;-fx-font-size:12px;" text="Aplikasi Bank Sampah - Bumi Makmur" />
+
+        <VBox spacing="6">
+            <Label styleClass="field-label" text="Username" />
+            <TextField fx:id="txtUsername" prefHeight="36" promptText="Masukkan username" />
+        </VBox>
+
+        <VBox spacing="6">
+            <Label styleClass="field-label" text="Password" />
+            <PasswordField fx:id="txtPassword" prefHeight="36" promptText="Masukkan password" />
+        </VBox>
+
+        <Label fx:id="lblError" style="-fx-text-fill:#D32F2F;-fx-font-size:12px;" visible="false" wrapText="true" />
+
+        <Button fx:id="btnLogin" maxWidth="Infinity" mnemonicParsing="false" onAction="#handleLoginAction" prefHeight="38" styleClass="btn,btn-simpan" text="Masuk" />
+
+        <VBox.margin><Insets top="6" /></VBox.margin>
+    </VBox>
+
+</StackPane>

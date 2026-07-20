@@ -208,8 +208,8 @@
 
     <!-- ══════════════════════════════════════════════════════════════
          DETAIL TRANSAKSI (otomatis, read-only)
-         Terbentuk otomatis begitu user memilih kartu produk. Tidak ada
-         field yang bisa diisi manual oleh user pada bagian ini.
+         Terbentuk otomatis begitu user memilih kartu produk.
+         Schema baru: composite key (ID_Pengolahan, ID_Limbah), tanpa ID_Detail
     ═══════════════════════════════════════════════════════════════ -->
     <VBox spacing="10" prefHeight="230"
           style="-fx-background-color:#FFFFFF;
@@ -227,12 +227,14 @@
         </HBox>
 
         <TableView fx:id="tblDetailTransaksi" prefHeight="170" VBox.vgrow="ALWAYS">
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+            </columnResizePolicy>
             <columns>
-                <TableColumn fx:id="colIDDetail" text="ID Detail Transaksi" prefWidth="180" />
-                <TableColumn fx:id="colIDPengolahanDetail" text="ID Pengolahan" prefWidth="150" />
-                <TableColumn fx:id="colIDLimbah" text="ID Limbah" prefWidth="140" />
-                <TableColumn fx:id="colKuantitasLimbah" text="Kuantitas Limbah" prefWidth="150" />
-                <TableColumn fx:id="colSatuanLimbah" text="Satuan Limbah" prefWidth="140" />
+                <TableColumn fx:id="colIDPengolahanDetail" text="ID Pengolahan" style="-fx-alignment:CENTER-RIGHT;" />
+                <TableColumn fx:id="colIDLimbah" text="ID Limbah" style="-fx-alignment:CENTER-RIGHT;" />
+                <TableColumn fx:id="colKuantitasLimbah" text="Kuantitas Limbah" style="-fx-alignment:CENTER-RIGHT;" />
+                <TableColumn fx:id="colSatuanLimbah" text="Satuan Limbah" style="-fx-alignment:CENTER-RIGHT;" />
             </columns>
         </TableView>
     </VBox>

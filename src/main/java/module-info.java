@@ -3,6 +3,9 @@ module com.example.project2kelompok5 {
     requires javafx.fxml;
     requires java.sql;
     requires com.microsoft.sqlserver.jdbc;
+    requires javafx.swing;
+    requires java.desktop;
+    requires net.sf.jasperreports.core;
 
     opens com.example.project2kelompok5 to javafx.fxml;
     opens Dashboard to javafx.fxml;
@@ -10,6 +13,8 @@ module com.example.project2kelompok5 {
     opens Connection to javafx.fxml;
     opens Transaksi to javafx.fxml;
     opens Kasir to javafx.fxml;
+    opens Login to javafx.fxml;
+    opens Auth to javafx.fxml;
 
     exports com.example.project2kelompok5;
     exports Dashboard;
@@ -17,4 +22,6 @@ module com.example.project2kelompok5 {
     exports Connection;
     exports Transaksi;
     exports Kasir;
+    exports Login;
+    exports Auth;
 }

@@ -80,26 +80,38 @@
                                       -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
                                GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                    <!-- Nama Produk -->
-                    <Label text="Nama Produk"
-                           style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                           GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                    <!-- Nama Produk (wajib) -->
+                    <HBox spacing="2" alignment="CENTER_LEFT"
+                          GridPane.columnIndex="0" GridPane.rowIndex="1">
+                        <Label text="Nama Produk"
+                               style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" />
+                        <Label text="*"
+                               style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#D32F2F;" />
+                    </HBox>
                     <TextField fx:id="txtNama" maxWidth="Infinity"
                                promptText="Nama produk..."
                                style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
                                GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                    <!-- Satuan -->
-                    <Label text="Satuan"
-                           style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                           GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                    <!-- Satuan (wajib) -->
+                    <HBox spacing="2" alignment="CENTER_LEFT"
+                          GridPane.columnIndex="0" GridPane.rowIndex="2">
+                        <Label text="Satuan"
+                               style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" />
+                        <Label text="*"
+                               style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#D32F2F;" />
+                    </HBox>
                     <ComboBox fx:id="cmbSatuan" maxWidth="Infinity"
                               GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-                    <!-- Harga Jual -->
-                    <Label text="Harga Jual"
-                           style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"
-                           GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                    <!-- Harga Jual (wajib) -->
+                    <HBox spacing="2" alignment="CENTER_LEFT"
+                          GridPane.columnIndex="0" GridPane.rowIndex="3">
+                        <Label text="Harga Jual"
+                               style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;" />
+                        <Label text="*"
+                               style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#D32F2F;" />
+                    </HBox>
                     <TextField fx:id="txtHarga" maxWidth="Infinity"
                                style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
                                GridPane.columnIndex="1" GridPane.rowIndex="3" />
@@ -129,9 +141,11 @@
                             styleClass="btn,btn-batal" />
                     <Button fx:id="btnHapus"  onAction="#handleHapus"
                             text="Hapus"  prefWidth="90" prefHeight="34"
+                            disable="true"
                             styleClass="btn,btn-hapus" />
                     <Button fx:id="btnUbah"   onAction="#handleUbah"
                             text="Ubah"   prefWidth="90" prefHeight="34"
+                            disable="true"
                             styleClass="btn,btn-ubah" />
                     <Button fx:id="btnSimpan" onAction="#handleSimpan"
                             text="Simpan" prefWidth="90" prefHeight="34"

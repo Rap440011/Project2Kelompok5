@@ -1,5 +1,6 @@
 package Transaksi;
 
+import Auth.Session;
 import Connection.DBConnect;
 import Master.MasterNasabah;
 import javafx.collections.FXCollections;
@@ -10,8 +11,12 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.net.URL;
 import java.sql.SQLException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,9 +27,8 @@ public class TransaksiSetorLimbahController implements Initializable {
 
     // ---- Header Transaksi ----
     @FXML private TextField txtIDTransaksi;
-    @FXML private TextField txtNamaNasabah; // menampilkan Nama Nasabah, bukan ID
-    @FXML private TextField txtIDKaryawan;
-    @FXML private DatePicker dpTanggal;
+    @FXML private TextField txtNamaNasabah;
+    @FXML private TextField txtTanggal;
     @FXML private TextField txtTotal;
 
     @FXML private TextField txtCariNasabah;
@@ -35,7 +39,6 @@ public class TransaksiSetorLimbahController implements Initializable {
     @FXML private TableColumn<MasterNasabah, String> clmNasabahNama, clmNasabahHP, clmNasabahSaldo;
 
     // ---- Detail Transaksi ----
-    @FXML private TextField txtIDDetail;
     @FXML private TextField txtIDSetorLimbahDetail;
     @FXML private ComboBox<String> cmbJenis;
     @FXML private ComboBox<String> cmbJenisLimbah;
@@ -46,7 +49,7 @@ public class TransaksiSetorLimbahController implements Initializable {
     @FXML private Button btnTambahTransaksi;
 
     @FXML private TableView<DetailSetorLimbah> tbDetail;
-    @FXML private TableColumn<DetailSetorLimbah, String> clmDetailID, clmDetailJenis, clmDetailJumlah;
+    @FXML private TableColumn<DetailSetorLimbah, String> clmDetailJenis, clmDetailJumlah;
     @FXML private TableColumn<DetailSetorLimbah, String> clmDetailSatuan, clmDetailKeterangan, clmDetailSubTotal;
 
     private final ObservableList<MasterNasabah> nasabahList = FXCollections.observableArrayList();
@@ -54,23 +57,25 @@ public class TransaksiSetorLimbahController implements Initializable {
     private final DBConnect db = new DBConnect();
 
     private final List<LimbahItem> limbahList = new ArrayList<>();
-
     private final List<String> keteranganProdukList = new ArrayList<>();
 
+    /** Total keseluruhan setor limbah pada transaksi ini (jumlah sub total semua detail yang SUDAH ditambahkan). */
     private BigDecimal totalTransaksi = BigDecimal.ZERO;
+
+    /** Sub total yang sedang diketik di form detail (belum ditambahkan ke tabel detail). */
+    private BigDecimal subTotalHitung = BigDecimal.ZERO;
+
+    /** Saldo nasabah terpilih SEBELUM transaksi ini (disimpan untuk keperluan lain, tidak dipakai di preview Total header). */
+    private BigDecimal saldoNasabahTerpilih = BigDecimal.ZERO;
+
     private static final String RUPIAH_PREFIX = "Rp ";
 
-    /**
-     * ID Nasabah yang sesungguhnya dipilih (dipakai untuk disimpan ke database).
-     * txtNamaNasabah hanya menampilkan nama nasabah untuk kemudahan baca,
-     * jadi ID-nya harus disimpan terpisah di sini.
-     */
     private String idNasabahTerpilih = null;
 
-    /** Status nasabah yang boleh tampil / dipakai bertransaksi. */
+    private LocalDate tanggalTransaksi;
+
     private static final String STATUS_AKTIF = "Aktif";
 
-    /** Style abu-abu untuk field yang tidak bisa diedit (readonly), konsisten dengan MasterLimbahController. */
     private static final String STYLE_READONLY =
             "-fx-background-color:#F5F5F5; -fx-opacity:1; -fx-border-color:#E0E0E0; " +
                     "-fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;";
@@ -102,21 +107,33 @@ public class TransaksiSetorLimbahController implements Initializable {
 
         loadAutoIDTransaksi();
         loadDataNasabah();
+        setTanggalOtomatis();
 
         applyReadonlyStyles();
         setDetailPanelEnabled(false);
 
         tbNasabah.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal != null) {
-                idNasabahTerpilih = newVal.getIdNasabah();
-                txtNamaNasabah.setText(newVal.getNamaNasabah());
-                cekKelengkapanHeader();
+            if (newVal == null) return;
+
+            // Jaga-jaga: hanya nasabah berstatus Aktif yang boleh mengaktifkan panel Input Detail Limbah,
+            // walaupun tabel di kanan sudah difilter hanya menampilkan nasabah Aktif.
+            if (!isNasabahAktif(newVal.getStatus())) {
+                showAlert(Alert.AlertType.WARNING, "Nasabah Tidak Aktif",
+                        "Nasabah \"" + newVal.getNamaNasabah() + "\" berstatus tidak aktif. " +
+                                "Input Detail Limbah tidak dapat diaktifkan.");
+                idNasabahTerpilih = null;
+                txtNamaNasabah.clear();
+                setDetailPanelEnabled(false);
+                return;
             }
+
+            idNasabahTerpilih = newVal.getIdNasabah();
+            txtNamaNasabah.setText(newVal.getNamaNasabah());
+            saldoNasabahTerpilih = parseRupiah(newVal.getSaldo());
+            // Nasabah aktif sudah terpilih -> panel Input Detail Limbah diaktifkan (lihat cekKelengkapanHeader()).
+            cekKelengkapanHeader();
+            updateTampilanTotal();
         });
-
-        txtIDKaryawan.textProperty().addListener((obs, oldVal, newVal) -> cekKelengkapanHeader());
-
-        dpTanggal.valueProperty().addListener((obs, oldVal, newVal) -> cekKelengkapanHeader());
 
         txtJumlah.textProperty().addListener((obs, oldVal, newVal) -> hitungSubTotal());
 
@@ -128,34 +145,81 @@ public class TransaksiSetorLimbahController implements Initializable {
         });
     }
 
+    private void setTanggalOtomatis() {
+        tanggalTransaksi = LocalDate.now();
+        txtTanggal.setText(tanggalTransaksi.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+    }
+
+    private static String formatRupiah(BigDecimal value) {
+        if (value == null) value = BigDecimal.ZERO;
+        DecimalFormat df = new DecimalFormat("#,###", new DecimalFormatSymbols(new Locale("in", "ID")));
+        return df.format(value.setScale(0, RoundingMode.HALF_UP));
+    }
+
     /**
-     * Menandai field-field yang bersifat readonly (editable="false") dengan
-     * gaya abu-abu, mengikuti pola styling txtJumlah di MasterLimbahController.
-     * Style emphasis yang sudah ada (bold/warna teks) tetap dipertahankan.
+     * Menyeragamkan nama satuan tampilan: "Kilo" (apapun huruf besar/kecilnya)
+     * ditampilkan sebagai "Kg". Satuan lain ditampilkan apa adanya.
      */
+    private static String normalizeSatuan(String satuan) {
+        if (satuan == null) return satuan;
+        return "Kilo".equalsIgnoreCase(satuan.trim()) ? "Kg" : satuan;
+    }
+
+    /**
+     * Hanya satuan "Kg" dan "Liter" yang diizinkan dipakai pada transaksi ini.
+     * Nilai yang dikirim ke sini HARUS sudah melalui normalizeSatuan() terlebih dahulu
+     * (supaya "Kilo" sudah menjadi "Kg" sebelum dicek).
+     */
+    private static boolean isSatuanDiizinkan(String satuanTernormalisasi) {
+        return "Kg".equalsIgnoreCase(satuanTernormalisasi) || "Liter".equalsIgnoreCase(satuanTernormalisasi);
+    }
+
+    /**
+     * Mengubah teks nominal (mis. "47.500") menjadi BigDecimal.
+     * Dipakai untuk membaca kembali nilai saldo nasabah yang ditampilkan di tabel nasabah.
+     */
+    private BigDecimal parseRupiah(String rupiahText) {
+        if (rupiahText == null) return BigDecimal.ZERO;
+        String cleaned = rupiahText.replace(RUPIAH_PREFIX, "").replace(".", "").trim();
+        if (cleaned.isEmpty()) return BigDecimal.ZERO;
+        try {
+            return new BigDecimal(cleaned);
+        } catch (NumberFormatException e) {
+            return BigDecimal.ZERO;
+        }
+    }
+
+    /**
+     * Menampilkan Total (Rp) di header sebagai akumulasi Sub Total pada panel
+     * Input Detail Limbah: total detail yang sudah "Tambah ke Transaksi"
+     * (totalTransaksi) ditambah subtotal yang sedang diketik saat ini
+     * (subTotalHitung, live preview sebelum diklik tombol tambah).
+     */
+    private void updateTampilanTotal() {
+        BigDecimal tampil = totalTransaksi.add(subTotalHitung);
+        txtTotal.setText(formatRupiah(tampil));
+    }
+
     private void applyReadonlyStyles() {
         txtIDTransaksi.setStyle(STYLE_READONLY);
         txtNamaNasabah.setStyle(STYLE_READONLY);
-        txtIDDetail.setStyle(STYLE_READONLY);
+        txtTanggal.setStyle(STYLE_READONLY);
         txtIDSetorLimbahDetail.setStyle(STYLE_READONLY);
         txtTotal.setStyle(STYLE_READONLY + "-fx-font-weight:bold;-fx-text-fill:#1B5E20;");
         txtSubTotal.setStyle(STYLE_READONLY + "-fx-font-weight:bold;-fx-text-fill:#1565C0;");
     }
 
+    /**
+     * Panel "Input Detail Limbah" aktif cukup dengan memilih nasabah (Aktif) dari tabel.
+     * Validasi ID Karyawan (Session) tetap dilakukan terpisah saat tombol "Selesai dan Simpan
+     * Transaksi" ditekan (lihat handleSelesai() / validasiKaryawanAda()), sehingga panel tidak
+     * ikut terkunci hanya karena Session belum sempat terisi.
+     */
     private void cekKelengkapanHeader() {
-        boolean nasabahTerisi   = idNasabahTerpilih != null && !idNasabahTerpilih.trim().isEmpty();
-        boolean karyawanTerisi  = !txtIDKaryawan.getText().trim().isEmpty();
-        boolean tanggalTerpilih = dpTanggal.getValue() != null;
+        boolean nasabahTerisi = idNasabahTerpilih != null && !idNasabahTerpilih.trim().isEmpty();
 
-        boolean headerLengkap = nasabahTerisi && karyawanTerisi && tanggalTerpilih;
-
-        if (headerLengkap) {
-
+        if (nasabahTerisi) {
             txtIDSetorLimbahDetail.setText(txtIDTransaksi.getText());
-
-            if (detailList.isEmpty()) {
-                loadAutoIDDetail();
-            }
             setDetailPanelEnabled(true);
         } else {
             setDetailPanelEnabled(false);
@@ -164,17 +228,79 @@ public class TransaksiSetorLimbahController implements Initializable {
 
     private void setupTabelNasabah() {
         clmNasabahNama.setCellValueFactory(new PropertyValueFactory<>("namaNasabah"));
+
         clmNasabahHP.setCellValueFactory(new PropertyValueFactory<>("noHp"));
+        clmNasabahHP.setCellFactory(col -> new TableCell<MasterNasabah, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : item);
+                setStyle("-fx-alignment: CENTER;");
+            }
+        });
+
         clmNasabahSaldo.setCellValueFactory(new PropertyValueFactory<>("saldo"));
+        clmNasabahSaldo.setCellFactory(col -> new TableCell<MasterNasabah, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : item);
+                setStyle("-fx-alignment: CENTER-RIGHT;");
+            }
+        });
     }
 
     private void setupTabelDetail() {
-        clmDetailID.setCellValueFactory(new PropertyValueFactory<>("idDetail"));
         clmDetailJenis.setCellValueFactory(new PropertyValueFactory<>("jenis"));
+
         clmDetailJumlah.setCellValueFactory(new PropertyValueFactory<>("jumlah"));
+        clmDetailJumlah.setCellFactory(col -> new TableCell<DetailSetorLimbah, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : item);
+                setStyle("-fx-alignment: CENTER;");
+            }
+        });
+
         clmDetailSatuan.setCellValueFactory(new PropertyValueFactory<>("satuan"));
+        clmDetailSatuan.setCellFactory(col -> new TableCell<DetailSetorLimbah, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null ? null : normalizeSatuan(item));
+                setStyle("-fx-alignment: CENTER;");
+            }
+        });
+
         clmDetailKeterangan.setCellValueFactory(new PropertyValueFactory<>("keterangan"));
+        clmDetailKeterangan.setCellFactory(col -> new TableCell<DetailSetorLimbah, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : item);
+                setStyle("-fx-alignment: CENTER-LEFT;");
+            }
+        });
+
         clmDetailSubTotal.setCellValueFactory(new PropertyValueFactory<>("subTotal"));
+        clmDetailSubTotal.setCellFactory(col -> new TableCell<DetailSetorLimbah, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null || item.isEmpty()) {
+                    setText(null);
+                } else {
+                    try {
+                        setText(formatRupiah(new BigDecimal(item)));
+                    } catch (NumberFormatException e) {
+                        setText(item);
+                    }
+                }
+                setStyle("-fx-alignment: CENTER-RIGHT;");
+            }
+        });
+
         tbDetail.setItems(detailList);
     }
 
@@ -184,9 +310,7 @@ public class TransaksiSetorLimbahController implements Initializable {
         updateJenisLimbahCombo();
     }
 
-
     private void setDetailPanelEnabled(boolean enabled) {
-        txtIDDetail.setDisable(!enabled);
         txtIDSetorLimbahDetail.setDisable(!enabled);
         cmbJenis.setDisable(!enabled);
         txtJumlah.setDisable(!enabled);
@@ -201,11 +325,6 @@ public class TransaksiSetorLimbahController implements Initializable {
         }
     }
 
-    /**
-     * Mengisi combo "Nama Limbah" berdasarkan kategori (Padat/Cair) yang
-     * sedang dipilih di cmbJenis. Data diambil dari Master Limbah (limbahList),
-     * bukan daftar statis, sehingga otomatis mengikuti data di database.
-     */
     private void updateJenisLimbahCombo() {
         boolean isPadat = "Padat".equalsIgnoreCase(cmbJenis.getValue());
         String kategoriTerpilih = isPadat ? "Padat" : "Cair";
@@ -233,11 +352,6 @@ public class TransaksiSetorLimbahController implements Initializable {
         hitungSubTotal();
     }
 
-    /**
-     * Cek apakah suatu jenis limbah dipakai sebagai bahan baku (komposisi)
-     * di salah satu produk pada Master Produk. Keterangan produk berisi
-     * daftar bahan dipisah koma, mis. "Lumpur, Kotoran".
-     */
     private boolean dipakaiDiProduk(String namaJenisLimbah) {
         if (namaJenisLimbah == null) return false;
         String target = namaJenisLimbah.trim().toLowerCase(Locale.ROOT);
@@ -253,18 +367,15 @@ public class TransaksiSetorLimbahController implements Initializable {
         return false;
     }
 
-    /** Update label satuan mengikuti Nama Limbah yang terpilih saat ini (data dari Master Limbah). */
     private void updateLabelSatuanDanHarga() {
         LimbahItem terpilih = getLimbahTerpilih();
         if (terpilih != null) {
-            lblSatuan.setText(terpilih.satuan);
+            lblSatuan.setText(normalizeSatuan(terpilih.satuan));
         } else {
-            // Fallback sebelum data limbah tersedia / belum ada pilihan cocok
             lblSatuan.setText("Padat".equalsIgnoreCase(cmbJenis.getValue()) ? "Kg" : "Liter");
         }
     }
 
-    /** Ambil data LimbahItem yang sedang dipilih di cmbJenisLimbah (berdasarkan Nama Limbah), atau null jika tidak ada. */
     private LimbahItem getLimbahTerpilih() {
         String namaTerpilih = cmbJenisLimbah.getValue();
         if (namaTerpilih == null) return null;
@@ -295,35 +406,23 @@ public class TransaksiSetorLimbahController implements Initializable {
         }
     }
 
-    private void loadAutoIDDetail() {
-        try {
-            db.cstat = db.conn.prepareCall("{CALL sp_AutoID_DetailSetorLimbah(?)}");
-            db.cstat.setString(1, txtIDTransaksi.getText());
-            db.result = db.cstat.executeQuery();
-            if (db.result.next()) txtIDDetail.setText(db.result.getString("ID_Detail_Setor"));
-        } catch (SQLException e) {
-            showAlert(Alert.AlertType.ERROR, "Error Auto ID", e.getMessage());
-        }
-    }
+    // ===================== LOAD DATA REFERENSI =====================
 
-    // ===================== LOAD DATA REFERENSI (Master Limbah & Master Produk) =====================
-
-    /**
-     * Memuat data Master Limbah (ID_Limbah, Nama_Limbah, Kategori, Satuan,
-     * Harga, Keterangan) untuk mengisi combobox Nama Limbah, difilter
-     * menurut kategori (Padat/Cair) yang dipilih pengguna.
-     */
     private void loadDataLimbah() {
         limbahList.clear();
         try {
             db.cstat = db.conn.prepareCall("{CALL sp_SelectAll_Limbah}");
             db.result = db.cstat.executeQuery();
             while (db.result.next()) {
+                // "Kilo" diseragamkan menjadi "Kg"; satuan selain Kg/Liter tidak dipakai di transaksi ini.
+                String satuan = normalizeSatuan(db.result.getString("Satuan"));
+                if (!isSatuanDiizinkan(satuan)) continue;
+
                 limbahList.add(new LimbahItem(
                         db.result.getString("ID_Limbah"),
                         db.result.getString("Nama_Limbah"),
                         db.result.getString("Kategori"),
-                        db.result.getString("Satuan"),
+                        satuan,
                         db.result.getBigDecimal("Harga"),
                         db.result.getString("Keterangan")
                 ));
@@ -333,11 +432,6 @@ public class TransaksiSetorLimbahController implements Initializable {
         }
     }
 
-    /**
-     * Memuat kolom Keterangan (komposisi) dari seluruh produk di Master
-     * Produk, dipakai untuk menyaring Jenis Limbah supaya combobox hanya
-     * menampilkan jenis limbah yang benar-benar dipakai sebagai bahan baku.
-     */
     private void loadKeteranganProduk() {
         keteranganProdukList.clear();
         try {
@@ -353,7 +447,6 @@ public class TransaksiSetorLimbahController implements Initializable {
 
     // ===================== LOAD / CARI NASABAH =====================
 
-    /** Hanya menampilkan nasabah dengan status Aktif. */
     private boolean isNasabahAktif(String status) {
         return status != null && status.trim().equalsIgnoreCase(STATUS_AKTIF);
     }
@@ -377,7 +470,7 @@ public class TransaksiSetorLimbahController implements Initializable {
                         db.result.getString("Kabupaten"),
                         db.result.getString("Provinsi"),
                         db.result.getString("No_Rekening"),
-                        RUPIAH_PREFIX + db.result.getBigDecimal("Saldo").stripTrailingZeros().toPlainString(),
+                        formatRupiah(db.result.getBigDecimal("Saldo")),
                         db.result.getString("Bank"),
                         db.result.getString("Status")
                 ));
@@ -408,7 +501,7 @@ public class TransaksiSetorLimbahController implements Initializable {
                         db.result.getString("Kabupaten"),
                         db.result.getString("Provinsi"),
                         db.result.getString("No_Rekening"),
-                        RUPIAH_PREFIX + db.result.getBigDecimal("Saldo").stripTrailingZeros().toPlainString(),
+                        formatRupiah(db.result.getBigDecimal("Saldo")),
                         db.result.getString("Bank"),
                         db.result.getString("Status")
                 ));
@@ -431,17 +524,25 @@ public class TransaksiSetorLimbahController implements Initializable {
     private void hitungSubTotal() {
         try {
             String jumlahText = txtJumlah.getText().trim();
-            if (jumlahText.isEmpty()) { txtSubTotal.setText(""); return; }
+            if (jumlahText.isEmpty()) {
+                txtSubTotal.setText("");
+                subTotalHitung = BigDecimal.ZERO;
+                updateTampilanTotal();
+                return;
+            }
 
             BigDecimal jumlah = new BigDecimal(jumlahText);
 
             LimbahItem terpilih = getLimbahTerpilih();
             BigDecimal harga = (terpilih != null && terpilih.harga != null) ? terpilih.harga : BigDecimal.ZERO;
 
-            txtSubTotal.setText(jumlah.multiply(harga).toPlainString());
+            subTotalHitung = jumlah.multiply(harga);
+            txtSubTotal.setText(formatRupiah(subTotalHitung));
         } catch (NumberFormatException e) {
             txtSubTotal.setText("");
+            subTotalHitung = BigDecimal.ZERO;
         }
+        updateTampilanTotal();
     }
 
     private void hitungTotalTransaksi() {
@@ -450,73 +551,87 @@ public class TransaksiSetorLimbahController implements Initializable {
             try { totalTransaksi = totalTransaksi.add(new BigDecimal(d.getSubTotal())); }
             catch (NumberFormatException ignored) {}
         }
-        txtTotal.setText(totalTransaksi.toPlainString());
+        updateTampilanTotal();
     }
 
-    // ===================== TAMBAH TRANSAKSI (susun satu baris detail — BELUM disimpan ke DB) =====================
+    // ===================== TAMBAH TRANSAKSI =====================
 
     @FXML
     private void handleTambahTransaksi() {
         if (!validateDetailForm()) return;
 
-        String idDetail    = txtIDDetail.getText();
         String idSetor     = txtIDSetorLimbahDetail.getText();
         String namaLimbah  = cmbJenisLimbah.getValue();
-        String jumlah      = txtJumlah.getText().trim();
-        String satuan      = lblSatuan.getText();
+        String jumlahInput = txtJumlah.getText().trim();
+        String satuan      = normalizeSatuan(lblSatuan.getText());
         String keterangan  = txtKeteranganDetail.getText().trim();
-        String subTotal    = txtSubTotal.getText().trim();
 
-        // PENTING: baris detail TIDAK di-insert ke database di sini.
-        // dtl_tr_Setor_Limbah punya FOREIGN KEY ke tr_Setor_Limbah.ID_Setor, sedangkan
-        // header (tr_Setor_Limbah) baru benar-benar disimpan saat tombol "Selesai" diklik
-        // (lihat handleSelesai()). Kalau detail di-insert duluan di sini, ID_Setor-nya
-        // belum ada di tabel induk -> INSERT ditolak (FOREIGN KEY constraint violation).
-        // Jadi detail hanya disusun di memori (detailList) dulu, dan semuanya baru
-        // dikirim ke database sekaligus setelah header berhasil disimpan.
-        detailList.add(new DetailSetorLimbah(idDetail, idSetor, namaLimbah, jumlah, satuan, keterangan, subTotal));
+        LimbahItem limbahTerpilih = getLimbahTerpilih();
+        if (limbahTerpilih == null || limbahTerpilih.idLimbah == null) {
+            showAlert(Alert.AlertType.WARNING, "Validasi", "Nama Limbah tidak valid.");
+            return;
+        }
+        String idLimbah = limbahTerpilih.idLimbah;
+
+        DetailSetorLimbah existing = cariDetailByIdLimbah(idLimbah);
+
+        if (existing != null) {
+            // ID Limbah sudah ada di daftar detail -> gabungkan baris (PK dtl_tr_Setor_Limbah
+            // adalah kombinasi ID_Setor + ID_Limbah, sehingga tidak boleh ada baris duplikat
+            // untuk ID_Limbah yang sama pada satu transaksi).
+            // Yang berubah HANYA Jumlah dan Sub Total, field lain (Satuan, Keterangan)
+            // tetap mengikuti baris yang sudah ada.
+            BigDecimal jumlahGabungan = parseBigDecimalAman(existing.getJumlah())
+                    .add(parseBigDecimalAman(jumlahInput));
+            BigDecimal subTotalGabungan = parseBigDecimalAman(existing.getSubTotal())
+                    .add(subTotalHitung);
+
+            DetailSetorLimbah gabungan = new DetailSetorLimbah(
+                    idSetor,
+                    existing.getIdLimbah(),
+                    existing.getJenis(),
+                    jumlahGabungan.toPlainString(),
+                    existing.getSatuan(),
+                    existing.getKeterangan(),
+                    subTotalGabungan.toPlainString()
+            );
+
+            int idx = detailList.indexOf(existing);
+            detailList.set(idx, gabungan);
+        } else {
+            // ID Limbah baru -> tambah baris baru seperti biasa.
+            detailList.add(new DetailSetorLimbah(
+                    idSetor, idLimbah, namaLimbah, jumlahInput, satuan, keterangan,
+                    subTotalHitung.toPlainString()
+            ));
+        }
+
         hitungTotalTransaksi();
         btnSelesai.setDisable(false);
 
         clearInputDetail();
-
-        // Generate ID Detail berikutnya secara LOKAL (bukan query ulang ke database),
-        // karena selama header belum tersimpan, dtl_tr_Setor_Limbah juga belum berisi
-        // baris apa pun untuk ID_Setor ini -> sp_AutoID_DetailSetorLimbah akan selalu
-        // mengembalikan urutan yang sama kalau dipanggil berulang di titik ini.
-        String idDetailBerikutnya = idDetailBerikutnyaLokal(idDetail);
-        if (idDetailBerikutnya != null) {
-            txtIDDetail.setText(idDetailBerikutnya);
-        } else {
-            // fallback: kalau format ID tidak sesuai dugaan, tetap coba ambil dari DB
-            loadAutoIDDetail();
-        }
     }
 
-    /**
-     * Increment 2 digit terakhir dari ID Detail saat ini (format: ...NN, hasil
-     * sp_AutoID_DetailSetorLimbah) tanpa perlu query ulang ke database. Dipakai selama
-     * beberapa baris detail disusun di memori sebelum header (dan detail-detailnya)
-     * benar-benar di-INSERT ke database saat "Selesai".
-     */
-    private String idDetailBerikutnyaLokal(String idSaatIni) {
-        if (idSaatIni == null || idSaatIni.length() < 2) return null;
+    /** Mencari baris detail yang sudah ada berdasarkan ID Limbah (PK/FK pada dtl_tr_Setor_Limbah). */
+    private DetailSetorLimbah cariDetailByIdLimbah(String idLimbah) {
+        if (idLimbah == null) return null;
+        for (DetailSetorLimbah d : detailList) {
+            if (idLimbah.equalsIgnoreCase(d.getIdLimbah())) {
+                return d;
+            }
+        }
+        return null;
+    }
+
+    private BigDecimal parseBigDecimalAman(String text) {
+        if (text == null || text.trim().isEmpty()) return BigDecimal.ZERO;
         try {
-            String prefix = idSaatIni.substring(0, idSaatIni.length() - 2);
-            int urut = Integer.parseInt(idSaatIni.substring(idSaatIni.length() - 2)) + 1;
-            return prefix + String.format("%02d", urut);
+            return new BigDecimal(text.trim());
         } catch (NumberFormatException e) {
-            return null;
+            return BigDecimal.ZERO;
         }
     }
 
-    /**
-     * Cek apakah ID_Karyawan yang diketik user benar-benar terdaftar di tb_Karyawan.
-     * Diperlukan karena txtIDKaryawan adalah TextField bebas ketik (bukan pilihan dari
-     * daftar), sedangkan tr_Setor_Limbah.ID_Karyawan punya FOREIGN KEY ke tb_Karyawan.
-     * Tanpa validasi ini, ID yang salah ketik baru ketahuan lewat error SQL mentah saat
-     * INSERT (FOREIGN KEY constraint violation).
-     */
     private boolean validasiKaryawanAda(String idKaryawan) {
         if (idKaryawan == null || idKaryawan.trim().isEmpty()) return false;
         try (java.sql.PreparedStatement ps = db.conn.prepareStatement(
@@ -556,49 +671,42 @@ public class TransaksiSetorLimbahController implements Initializable {
             showAlert(Alert.AlertType.WARNING, "Peringatan", "Tambahkan minimal satu detail transaksi terlebih dahulu.");
             return;
         }
-        String idKaryawan = txtIDKaryawan.getText().trim();
+
+        String idKaryawan = Session.getIdKaryawanLogin();
         if (!validasiKaryawanAda(idKaryawan)) {
-            showAlert(Alert.AlertType.WARNING, "Validasi",
-                    "ID Karyawan '" + idKaryawan + "' tidak ditemukan di Master Karyawan.\n" +
-                            "Periksa kembali ID yang diketik.");
+            showAlert(Alert.AlertType.ERROR, "Sesi Tidak Valid",
+                    "ID Karyawan login tidak ditemukan / tidak valid. Silakan login ulang.");
             return;
         }
-        try {
-            String tanggal = dpTanggal.getValue().format(DateTimeFormatter.ISO_LOCAL_DATE);
 
-            // 1) Simpan HEADER lebih dulu — dtl_tr_Setor_Limbah.ID_Setor (FOREIGN KEY)
-            //    hanya bisa diisi kalau baris ini sudah ada di tr_Setor_Limbah.
+        try {
+            String tanggal = tanggalTransaksi.format(DateTimeFormatter.ISO_LOCAL_DATE);
+
             db.cstat = db.conn.prepareCall("{CALL sp_Insert_SetorLimbah(?,?,?,?,?)}");
             db.cstat.setString(1, txtIDTransaksi.getText());
             db.cstat.setString(2, idNasabahTerpilih);
-            db.cstat.setString(3, txtIDKaryawan.getText());
+            db.cstat.setString(3, idKaryawan);
             db.cstat.setString(4, tanggal);
             db.cstat.setBigDecimal(5, totalTransaksi);
             db.cstat.executeUpdate();
 
-            // 2) Baru setelah header ada, simpan seluruh baris detail yang sudah disusun.
-            //    ID_Setor sama untuk semua baris dalam transaksi ini, jadi ambil langsung
-            //    dari txtIDTransaksi (tidak bergantung pada getter idSetor di DetailSetorLimbah).
             String idSetorHeader = txtIDTransaksi.getText();
             for (DetailSetorLimbah d : detailList) {
-                db.cstat = db.conn.prepareCall("{CALL sp_Insert_DetailSetorLimbah(?,?,?,?,?,?,?)}");
-                db.cstat.setString(1, d.getIdDetail());
-                db.cstat.setString(2, idSetorHeader);
-                db.cstat.setString(3, d.getJenis());
-                db.cstat.setBigDecimal(4, new BigDecimal(d.getJumlah()));
-                db.cstat.setString(5, d.getSatuan());
-                db.cstat.setString(6, d.getKeterangan());
-                db.cstat.setBigDecimal(7, new BigDecimal(d.getSubTotal()));
+                db.cstat = db.conn.prepareCall("{CALL sp_Insert_DetailSetorLimbah(?,?,?,?,?,?)}");
+                db.cstat.setString(1, idSetorHeader);
+                db.cstat.setString(2, d.getIdLimbah());
+                db.cstat.setBigDecimal(3, new BigDecimal(d.getJumlah()));
+                db.cstat.setString(4, d.getSatuan());
+                db.cstat.setString(5, d.getKeterangan());
+                db.cstat.setBigDecimal(6, new BigDecimal(d.getSubTotal()));
                 db.cstat.executeUpdate();
             }
 
-            // 3) Saldo nasabah bertambah sesuai total transaksi setor limbah.
             db.cstat = db.conn.prepareCall("{CALL sp_Tambah_SaldoNasabah(?,?)}");
             db.cstat.setString(1, idNasabahTerpilih);
             db.cstat.setBigDecimal(2, totalTransaksi);
             db.cstat.executeUpdate();
 
-            // 4) Stok tiap jenis limbah di Master Limbah bertambah sesuai jumlah yang disetor.
             for (DetailSetorLimbah d : detailList) {
                 db.cstat = db.conn.prepareCall("{CALL sp_Tambah_StokLimbah(?,?)}");
                 db.cstat.setString(1, d.getJenis());
@@ -630,12 +738,12 @@ public class TransaksiSetorLimbahController implements Initializable {
     private void resetSemua() {
         idNasabahTerpilih = null;
         txtNamaNasabah.clear();
-        txtIDKaryawan.clear();
-        dpTanggal.setValue(null);
-        txtTotal.clear();
+        setTanggalOtomatis();
         totalTransaksi = BigDecimal.ZERO;
+        subTotalHitung = BigDecimal.ZERO;
+        saldoNasabahTerpilih = BigDecimal.ZERO;
+        txtTotal.clear();
 
-        txtIDDetail.clear();
         txtIDSetorLimbahDetail.clear();
         detailList.clear();
         clearInputDetail();

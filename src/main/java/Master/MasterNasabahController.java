@@ -11,7 +11,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -48,6 +51,9 @@ public class MasterNasabahController implements Initializable {
     private boolean isUpdatingNoRek = false;
     private String currentKodeBank = "";
 
+    // Tambahan: menyimpan batas maksimal digit No. Rekening sesuai bank yang aktif
+    private int currentMaxNoRekLen = MAX_NOREK_LEN;
+
     private static final String RUPIAH_PREFIX = "Rp ";
 
     private static final Map<String, String> KODE_BANK = new HashMap<>();
@@ -58,6 +64,17 @@ public class MasterNasabahController implements Initializable {
         KODE_BANK.put("Permata", "013");
         KODE_BANK.put("CimbNiaga", "022");
         KODE_BANK.put("BSI", "451");
+    }
+
+    // Tambahan: batas maksimal digit No. Rekening untuk masing-masing bank
+    private static final Map<String, Integer> MAX_DIGIT_BANK = new HashMap<>();
+    static {
+        MAX_DIGIT_BANK.put("BCA", 13);
+        MAX_DIGIT_BANK.put("BRI", 18);
+        MAX_DIGIT_BANK.put("BNI", 13);
+        MAX_DIGIT_BANK.put("Permata", 13);
+        MAX_DIGIT_BANK.put("CimbNiaga", 16);
+        MAX_DIGIT_BANK.put("BSI", 13);
     }
 
     // ===================== INITIALIZE =====================
@@ -117,12 +134,49 @@ public class MasterNasabahController implements Initializable {
         btnHapus.setDisable(!rowSelected);
     }
 
+    // ── Tabel data nasabah ────────────────────────────────────────────────────
     private void setupTableColumns() {
+        // Nama rata kiri (default)
         clmNama.setCellValueFactory(new PropertyValueFactory<>("namaNasabah"));
+        clmNama.setStyle("-fx-alignment: CENTER-LEFT;");
+
+        // Tambahan: No. HP rata tengah
         clmHP.setCellValueFactory(new PropertyValueFactory<>("noHp"));
+        clmHP.setStyle("-fx-alignment: CENTER;");
+
+        // Tambahan: No. Rekening rata tengah
         clmNoRek.setCellValueFactory(new PropertyValueFactory<>("noRekening"));
+        clmNoRek.setStyle("-fx-alignment: CENTER;");
+
+        // Tambahan: Saldo rata kanan + format titik ribuan tanpa prefix Rp (mis. 47.000)
         clmSaldo.setCellValueFactory(new PropertyValueFactory<>("saldo"));
+        clmSaldo.setStyle("-fx-alignment: CENTER-RIGHT;");
+        clmSaldo.setCellFactory(col -> new TableCell<MasterNasabah, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty || item == null || item.isEmpty() ? null : formatRibuan(item));
+            }
+        });
+
+        // Tambahan: Status rata tengah
         clmStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+        clmStatus.setStyle("-fx-alignment: CENTER;");
+    }
+
+    // Tambahan: format angka mentah/berprefix menjadi format ribuan Indonesia (titik), tanpa prefix Rp
+    private String formatRibuan(String rawValue) {
+        try {
+            String onlyDigits = rawValue.replaceAll("[^0-9]", "");
+            if (onlyDigits.isEmpty()) return "0";
+            BigDecimal value = new BigDecimal(onlyDigits);
+            DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("in", "ID"));
+            symbols.setGroupingSeparator('.');
+            DecimalFormat df = new DecimalFormat("#,##0", symbols);
+            return df.format(value);
+        } catch (NumberFormatException e) {
+            return rawValue;
+        }
     }
 
     private void setupInputRestrictions() {
@@ -176,6 +230,8 @@ public class MasterNasabahController implements Initializable {
         txtStatus.setText(data.getStatus());
 
         currentKodeBank = KODE_BANK.getOrDefault(data.getBank(), "000");
+        // Tambahan: sinkronkan batas maksimal digit No. Rekening sesuai bank nasabah yang dipilih
+        currentMaxNoRekLen = MAX_DIGIT_BANK.getOrDefault(data.getBank(), MAX_NOREK_LEN);
         isUpdatingNoRek = true;
         txtNoRek.setText(data.getNoRekening());
         isUpdatingNoRek = false;
@@ -199,11 +255,14 @@ public class MasterNasabahController implements Initializable {
     private void generateNoRekening(String bank) {
         if (bank == null || bank.isEmpty()) {
             currentKodeBank = "";
+            currentMaxNoRekLen = MAX_NOREK_LEN;
             setNoRekText("");
             return;
         }
 
         currentKodeBank = KODE_BANK.getOrDefault(bank, "000");
+        // Tambahan: sinkronkan batas maksimal digit No. Rekening sesuai bank yang dipilih
+        currentMaxNoRekLen = MAX_DIGIT_BANK.getOrDefault(bank, MAX_NOREK_LEN);
 
         setNoRekText(currentKodeBank);
     }
@@ -236,8 +295,8 @@ public class MasterNasabahController implements Initializable {
 
     private String sanitizeNoRekening(String rawInput) {
         String onlyDigits = rawInput.replaceAll("[^0-9]", "");
-        if (onlyDigits.length() > MAX_NOREK_LEN) {
-            onlyDigits = onlyDigits.substring(0, MAX_NOREK_LEN);
+        if (onlyDigits.length() > currentMaxNoRekLen) {
+            onlyDigits = onlyDigits.substring(0, currentMaxNoRekLen);
         }
 
         if (!onlyDigits.startsWith(currentKodeBank)) {
@@ -245,8 +304,8 @@ public class MasterNasabahController implements Initializable {
                     ? onlyDigits.substring(currentKodeBank.length())
                     : "";
             onlyDigits = currentKodeBank + sisaAngka;
-            if (onlyDigits.length() > MAX_NOREK_LEN) {
-                onlyDigits = onlyDigits.substring(0, MAX_NOREK_LEN);
+            if (onlyDigits.length() > currentMaxNoRekLen) {
+                onlyDigits = onlyDigits.substring(0, currentMaxNoRekLen);
             }
         }
 
@@ -566,7 +625,62 @@ public class MasterNasabahController implements Initializable {
             showAlert(Alert.AlertType.WARNING, "Validasi", "Semua data harus diisi!");
             return false;
         }
+
+        // Tambahan: tentukan apakah sedang mode Ubah (ada baris tabel yang dipilih)
+        // atau mode Tambah baru. Pada mode Ubah, data milik nasabah yang sedang
+        // diedit sendiri dikecualikan dari pengecekan duplikat.
+        MasterNasabah nasabahDipilih = tbNasabah.getSelectionModel().getSelectedItem();
+        String idDikecualikan = nasabahDipilih != null ? nasabahDipilih.getIdNasabah() : null;
+
+        // Tambahan: validasi No. HP tidak boleh sama dengan nasabah lain
+        if (noHpSudahAda(txtHP.getText(), idDikecualikan)) {
+            showAlert(Alert.AlertType.WARNING, "Validasi", "No. HP sudah digunakan oleh nasabah lain.");
+            return false;
+        }
+
+        // Tambahan: validasi No. Rekening tidak boleh sama dengan nasabah lain
+        if (noRekSudahAda(txtNoRek.getText(), idDikecualikan)) {
+            showAlert(Alert.AlertType.WARNING, "Validasi", "No. Rekening sudah digunakan oleh nasabah lain.");
+            return false;
+        }
+
         return true;
+    }
+
+    /**
+     * Tambahan: mengecek apakah No. HP sudah dipakai nasabah lain.
+     * @param noHp No. HP yang akan disimpan/diubah
+     * @param idDikecualikan ID nasabah yang sedang diedit (diabaikan dari pengecekan), null jika mode tambah baru
+     */
+    private boolean noHpSudahAda(String noHp, String idDikecualikan) {
+        String noHpBaru = noHp.trim();
+        for (MasterNasabah n : dataList) {
+            if (idDikecualikan != null && n.getIdNasabah().equals(idDikecualikan)) {
+                continue; // lewati data nasabah yang sedang diedit
+            }
+            if (n.getNoHp() != null && n.getNoHp().trim().equals(noHpBaru)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Tambahan: mengecek apakah No. Rekening sudah dipakai nasabah lain.
+     * @param noRek No. Rekening yang akan disimpan/diubah
+     * @param idDikecualikan ID nasabah yang sedang diedit (diabaikan dari pengecekan), null jika mode tambah baru
+     */
+    private boolean noRekSudahAda(String noRek, String idDikecualikan) {
+        String noRekBaru = noRek.trim();
+        for (MasterNasabah n : dataList) {
+            if (idDikecualikan != null && n.getIdNasabah().equals(idDikecualikan)) {
+                continue; // lewati data nasabah yang sedang diedit
+            }
+            if (n.getNoRekening() != null && n.getNoRekening().trim().equals(noRekBaru)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void clearForm() {

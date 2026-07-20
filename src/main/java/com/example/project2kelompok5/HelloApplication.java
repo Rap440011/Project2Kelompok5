@@ -10,14 +10,12 @@ import java.io.IOException;
 public class HelloApplication extends Application {
     @Override
     public void start(Stage stage) throws IOException {
-//        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/Master/MasterKaryawan.fxml"));
-//        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/Master/MasterNasabah.fxml"));
-//        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/Master/MasterProduk.fxml"));
+
 //        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/Dashboard/DashboardAdmin.fxml"));
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/Dashboard/DashboardKasir.fxml"));
-//        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/Transaksi/TransaksiSetorLimbah.fxml"));
-//        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/Transaksi/TransaksiPengolahanLimbah.fxml"));
-//        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/Transaksi/TransaksiPenjualan.fxml"));
+//        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/Dashboard/DashboardKasir.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/Dashboard/DashboardManager.fxml"));
+//        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("/Login/LoginView.fxml"));
+
         Scene scene = new Scene(fxmlLoader.load(), 320, 240);
         stage.setTitle("Bumi Makmur");
         stage.setMaximized(true);

@@ -1,14 +1,361 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.embed.swing.SwingNode?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.BarChart?>
+<?import javafx.scene.chart.CategoryAxis?>
+<?import javafx.scene.chart.NumberAxis?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ProgressIndicator?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Priority?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="CONTROLLER_NAME"
-            prefHeight="400.0" prefWidth="600.0">
+<BorderPane fx:id="rootPane" prefHeight="700.0" prefWidth="1200.0"
+            stylesheets="@../Master/style.css"
+            xmlns="http://javafx.com/javafx/26"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="Dashboard.DashboardManagerController">
 
-</AnchorPane>
+    <!-- ===================== SIDEBAR ===================== -->
+    <left>
+        <VBox prefWidth="230.0" spacing="6" styleClass="sidebar"
+              BorderPane.alignment="CENTER">
+            <padding><Insets bottom="16" left="14" right="14" top="20"/></padding>
+
+            <Label styleClass="sidebar-title" text="DASHBOARD MANAGER">
+                <font><Font size="18.0"/></font>
+            </Label>
+            <Label styleClass="sidebar-title" text="Bumi Makmur" textFill="#C8E6C9">
+                <font><Font size="12.0"/></font>
+                <VBox.margin><Insets bottom="20"/></VBox.margin>
+            </Label>
+
+            <Separator styleClass="sidebar-separator"/>
+
+            <!-- ===== Menu sidebar bertingkat (section header + item), murni teks,
+                 tidak memakai ikon/emoji — struktur & style disamakan persis
+                 dengan DashboardKasir.fxml (styleClass="sidebar-btn"). ===== -->
+            <VBox spacing="6" VBox.vgrow="ALWAYS">
+                <VBox.margin><Insets top="14"/></VBox.margin>
+
+                <!-- Grup: Laporan -->
+                <Label text="LAPORAN"
+                       style="-fx-text-fill:#A5D6A7;-fx-font-size:10px;
+                              -fx-font-weight:bold;-fx-padding:4 0 2 4;"/>
+
+                <Button fx:id="btnLihatLaporan"
+                        mnemonicParsing="false"
+                        onAction="#handleLihatLaporan"
+                        prefHeight="40.0"
+                        styleClass="sidebar-btn"
+                        text="Lihat Laporan Transaksi"/>
+
+                <Button fx:id="btnLihatPenarikan"
+                        mnemonicParsing="false"
+                        onAction="#handleLihatPenarikan"
+                        prefHeight="40.0"
+                        styleClass="sidebar-btn"
+                        text="Lihat Penarikan Saldo"/>
+            </VBox>
+
+            <Separator styleClass="sidebar-separator"/>
+
+            <Button fx:id="btnLogout"
+                    mnemonicParsing="false"
+                    onAction="#handleLogout"
+                    prefHeight="40.0"
+                    styleClass="sidebar-logout"
+                    text="Logout">
+                <VBox.margin><Insets top="10"/></VBox.margin>
+            </Button>
+        </VBox>
+    </left>
+
+    <!-- ===================== CONTENT AREA ===================== -->
+    <center>
+        <StackPane fx:id="stackCenterContent" BorderPane.alignment="CENTER">
+        <children>
+
+        <!-- ══ LAYER 1: Dashboard normal (default tampil) ══ -->
+        <ScrollPane fx:id="scrollDashboard" fitToWidth="true" style="-fx-background-color:transparent; -fx-border-color:transparent;">
+        <content>
+        <VBox spacing="0" styleClass="content-area">
+            <padding><Insets bottom="16" left="16" right="16" top="16"/></padding>
+
+            <!-- Header dengan Icon & Judul -->
+            <HBox spacing="12" alignment="CENTER_LEFT" VBox.vgrow="NEVER">
+                <padding><Insets bottom="8"/></padding>
+                
+                <!-- Icon User (Avatar) -->
+                <Label text="👤" style="-fx-font-size:32px;">
+                    <HBox.margin><Insets right="8"/></HBox.margin>
+                </Label>
+                
+                <!-- Judul & Subtitle -->
+                <VBox spacing="2">
+                    <Label text="Dashboard Manager" 
+                           style="-fx-font-size:22px; -fx-text-fill:#424242; -fx-font-weight:bold;"/>
+                    <Label text="Lihat Laporan dan Pantau Bisnis" 
+                           style="-fx-font-size:12px; -fx-text-fill:#999999; -fx-font-weight:normal;"/>
+                </VBox>
+
+                <Region HBox.hgrow="ALWAYS"/>
+            </HBox>
+
+            <Separator VBox.vgrow="NEVER">
+                <VBox.margin><Insets bottom="24"/></VBox.margin>
+            </Separator>
+
+            <!-- Stat Cards Grid - Rata Kiri dengan Border -->
+            <HBox fx:id="rowStatCards" spacing="16" alignment="TOP_LEFT" VBox.vgrow="NEVER">
+                <padding><Insets bottom="40"/></padding>
+
+                <!-- Card 1: Jumlah Karyawan Aktif -->
+                <VBox fx:id="cardKaryawan" prefHeight="140.0" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color:#FFFFFF; -fx-border-radius:12; -fx-background-radius:12; -fx-border-color:#2E7D32; -fx-border-width:2; -fx-padding:24; -fx-cursor:hand;">
+                    <alignment>CENTER</alignment>
+                    <Label text="Jumlah Karyawan Aktif"
+                           style="-fx-font-size:13px; -fx-text-fill:#1B5E20; -fx-font-weight:bold;"
+                           VBox.vgrow="NEVER">
+                        <VBox.margin><Insets bottom="10"/></VBox.margin>
+                    </Label>
+                    <Label fx:id="lblJumlahKaryawan" text="0"
+                           style="-fx-font-size:48px; -fx-text-fill:#1B5E20; -fx-font-weight:bold;"
+                           VBox.vgrow="NEVER">
+                    </Label>
+                </VBox>
+
+                <!-- Card 2: Jumlah Produk Tersedia -->
+                <VBox fx:id="cardProduk" prefHeight="140.0" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color:#FFFFFF; -fx-border-radius:12; -fx-background-radius:12; -fx-border-color:#2E7D32; -fx-border-width:2; -fx-padding:24; -fx-cursor:hand;">
+                    <alignment>CENTER</alignment>
+                    <Label text="Jumlah Produk Tersedia"
+                           style="-fx-font-size:13px; -fx-text-fill:#1B5E20; -fx-font-weight:bold;"
+                           VBox.vgrow="NEVER">
+                        <VBox.margin><Insets bottom="10"/></VBox.margin>
+                    </Label>
+                    <Label fx:id="lblJumlahProduk" text="0"
+                           style="-fx-font-size:48px; -fx-text-fill:#1B5E20; -fx-font-weight:bold;"
+                           VBox.vgrow="NEVER">
+                    </Label>
+                </VBox>
+
+                <!-- Card 3: Limbah Tersedia -->
+                <VBox fx:id="cardLimbah" prefHeight="140.0" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color:#FFFFFF; -fx-border-radius:12; -fx-background-radius:12; -fx-border-color:#2E7D32; -fx-border-width:2; -fx-padding:24; -fx-cursor:hand;">
+                    <alignment>CENTER</alignment>
+                    <Label text="Jumlah Limbah Aktif"
+                           style="-fx-font-size:13px; -fx-text-fill:#1B5E20; -fx-font-weight:bold;"
+                           VBox.vgrow="NEVER">
+                        <VBox.margin><Insets bottom="10"/></VBox.margin>
+                    </Label>
+                    <Label fx:id="lblJumlahLimbah" text="0"
+                           style="-fx-font-size:48px; -fx-text-fill:#1B5E20; -fx-font-weight:bold;"
+                           VBox.vgrow="NEVER">
+                    </Label>
+                </VBox>
+
+                <!-- Card 4: Jumlah Nasabah -->
+                <VBox fx:id="cardNasabah" prefHeight="140.0" maxWidth="Infinity" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color:#FFFFFF; -fx-border-radius:12; -fx-background-radius:12; -fx-border-color:#2E7D32; -fx-border-width:2; -fx-padding:24; -fx-cursor:hand;">
+                    <alignment>CENTER</alignment>
+                    <Label text="Jumlah Nasabah Aktif"
+                           style="-fx-font-size:13px; -fx-text-fill:#1B5E20; -fx-font-weight:bold;"
+                           VBox.vgrow="NEVER">
+                        <VBox.margin><Insets bottom="10"/></VBox.margin>
+                    </Label>
+                    <Label fx:id="lblJumlahNasabah" text="0"
+                           style="-fx-font-size:48px; -fx-text-fill:#1B5E20; -fx-font-weight:bold;"
+                           VBox.vgrow="NEVER">
+                    </Label>
+                </VBox>
+            </HBox>
+
+            <!-- ===================== SECTION DATA (Tabel Master + Produk) ===================== -->
+            <!-- Placeholder: tampil selama belum ada card statistik yang diklik -->
+            <VBox fx:id="placeholderData" alignment="CENTER" spacing="8"
+                  prefHeight="180" style="-fx-background-color:#FFFFFF; -fx-border-color:#E8E8E8; -fx-border-radius:10; -fx-background-radius:10;">
+                <Label text="👆" style="-fx-font-size:28px;"/>
+                <Label text="Klik salah satu kartu statistik di atas untuk menampilkan datanya di sini"
+                       style="-fx-font-size:13px; -fx-text-fill:#999999;"/>
+            </VBox>
+
+            <HBox fx:id="dataSectionRow" spacing="16" prefHeight="320" maxHeight="320" VBox.vgrow="NEVER"
+                  visible="false" managed="false">
+
+                <!-- ═ Kolom 1: Tabel Karyawan ═══════════════════════════════════════════════ -->
+                <VBox fx:id="colKaryawan" spacing="10" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color:#FFFFFF; -fx-border-color:#E8E8E8; -fx-border-radius:10; -fx-background-radius:10;">
+                    <padding><Insets top="14" right="12" bottom="14" left="12"/></padding>
+
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <Region prefWidth="3" prefHeight="14" style="-fx-background-color:#1565C0; -fx-background-radius:2;"/>
+                        <Label text="Data Karyawan" style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#333;"/>
+                    </HBox>
+
+                    <TableView fx:id="tbDashKaryawan" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="clmDashKaryawanNama" text="Nama" prefWidth="120"/>
+                            <TableColumn fx:id="clmDashKaryawanJabatan" text="Jabatan" prefWidth="90"/>
+                            <TableColumn fx:id="clmDashKaryawanStatus" text="Status" prefWidth="80"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="Belum ada data karyawan" style="-fx-text-fill:#CCC; -fx-font-size:11px; -fx-font-style:italic;"/>
+                        </placeholder>
+                    </TableView>
+                </VBox>
+
+                <!-- ═ Kolom 2: Daftar Produk (kartu bergambar, scrollable) ═══════════════════ -->
+                <VBox fx:id="colProduk" spacing="10" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color:#FFFFFF; -fx-border-color:#E8E8E8; -fx-border-radius:10; -fx-background-radius:10;">
+                    <padding><Insets top="14" right="12" bottom="14" left="12"/></padding>
+
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <Region prefWidth="3" prefHeight="14" style="-fx-background-color:#2E7D32; -fx-background-radius:2;"/>
+                        <Label text="Daftar Produk" style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#333;"/>
+                    </HBox>
+
+                    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS"
+                                style="-fx-background-color:transparent; -fx-border-color:transparent;">
+                        <content>
+                            <VBox fx:id="vbDaftarProduk" spacing="10">
+                                <padding><Insets top="2" bottom="2"/></padding>
+                            </VBox>
+                        </content>
+                    </ScrollPane>
+                </VBox>
+
+                <!-- ═ Kolom 3: Tabel Limbah ═════════════════════════════════════════════════ -->
+                <VBox fx:id="colLimbah" spacing="10" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color:#FFFFFF; -fx-border-color:#E8E8E8; -fx-border-radius:10; -fx-background-radius:10;">
+                    <padding><Insets top="14" right="12" bottom="14" left="12"/></padding>
+
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <Region prefWidth="3" prefHeight="14" style="-fx-background-color:#E65100; -fx-background-radius:2;"/>
+                        <Label text="Data Limbah" style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#333;"/>
+                    </HBox>
+
+                    <TableView fx:id="tbDashLimbah" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="clmDashLimbahNama" text="Nama" prefWidth="110"/>
+                            <TableColumn fx:id="clmDashLimbahKategori" text="Kategori" prefWidth="80"/>
+                            <TableColumn fx:id="clmDashLimbahHarga" text="Harga" prefWidth="80"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="Belum ada data limbah" style="-fx-text-fill:#CCC; -fx-font-size:11px; -fx-font-style:italic;"/>
+                        </placeholder>
+                    </TableView>
+                </VBox>
+
+                <!-- ═ Kolom 4: Tabel Nasabah ════════════════════════════════════════════════ -->
+                <VBox fx:id="colNasabah" spacing="10" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color:#FFFFFF; -fx-border-color:#E8E8E8; -fx-border-radius:10; -fx-background-radius:10;">
+                    <padding><Insets top="14" right="12" bottom="14" left="12"/></padding>
+
+                    <HBox alignment="CENTER_LEFT" spacing="8">
+                        <Region prefWidth="3" prefHeight="14" style="-fx-background-color:#6A1B9A; -fx-background-radius:2;"/>
+                        <Label text="Data Nasabah" style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#333;"/>
+                    </HBox>
+
+                    <TableView fx:id="tbDashNasabah" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="clmDashNasabahNama" text="Nama" prefWidth="110"/>
+                            <TableColumn fx:id="clmDashNasabahHP" text="No. HP" prefWidth="100"/>
+                            <TableColumn fx:id="clmDashNasabahStatus" text="Status" prefWidth="80"/>
+                        </columns>
+                        <placeholder>
+                            <Label text="Belum ada data nasabah" style="-fx-text-fill:#CCC; -fx-font-size:11px; -fx-font-style:italic;"/>
+                        </placeholder>
+                    </TableView>
+                </VBox>
+            </HBox>
+
+            <!-- ===================== SECTION RINGKASAN STATISTIK (selalu tampil) ===================== -->
+            <HBox fx:id="rowRingkasanLabel" alignment="CENTER_LEFT" spacing="8" VBox.vgrow="NEVER">
+                <padding><Insets top="28" bottom="10"/></padding>
+                <Region prefWidth="3" prefHeight="14" style="-fx-background-color:#2E7D32; -fx-background-radius:2;"/>
+                <Label text="Ringkasan Statistik" style="-fx-font-size:14px; -fx-font-weight:bold; -fx-text-fill:#333;"/>
+            </HBox>
+
+            <HBox fx:id="rowRingkasanCharts" spacing="16" prefHeight="260" maxHeight="260" VBox.vgrow="NEVER">
+
+                <!-- Chart 1: Limbah per Kategori -->
+                <VBox spacing="6" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color:#FFFFFF; -fx-border-color:#E8E8E8; -fx-border-radius:10; -fx-background-radius:10;">
+                    <padding><Insets top="10" right="10" bottom="6" left="10"/></padding>
+                    <Label text="Limbah per Kategori" style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"/>
+                    <BarChart fx:id="chartLimbahKategori" legendVisible="false" animated="false" VBox.vgrow="ALWAYS">
+                        <xAxis><CategoryAxis label="Kategori"/></xAxis>
+                        <yAxis><NumberAxis label="Jumlah"/></yAxis>
+                    </BarChart>
+                </VBox>
+
+                <!-- Chart 2: Karyawan per Jabatan -->
+                <VBox spacing="6" HBox.hgrow="ALWAYS"
+                      style="-fx-background-color:#FFFFFF; -fx-border-color:#E8E8E8; -fx-border-radius:10; -fx-background-radius:10;">
+                    <padding><Insets top="10" right="10" bottom="6" left="10"/></padding>
+                    <Label text="Karyawan per Jabatan" style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"/>
+                    <BarChart fx:id="chartKaryawanJabatan" legendVisible="false" animated="false" VBox.vgrow="ALWAYS">
+                        <xAxis><CategoryAxis label="Jabatan"/></xAxis>
+                        <yAxis><NumberAxis label="Jumlah"/></yAxis>
+                    </BarChart>
+                </VBox>
+
+                <!-- Chart 3: Distribusi Status Nasabah -->
+                <VBox spacing="6" prefWidth="280" HBox.hgrow="NEVER"
+                      style="-fx-background-color:#FFFFFF; -fx-border-color:#E8E8E8; -fx-border-radius:10; -fx-background-radius:10;">
+                    <padding><Insets top="10" right="10" bottom="6" left="10"/></padding>
+                    <Label text="Distribusi Status Nasabah" style="-fx-font-size:12px; -fx-font-weight:bold; -fx-text-fill:#555;"/>
+                    <PieChart fx:id="chartNasabahStatus" legendVisible="true" labelsVisible="true" VBox.vgrow="ALWAYS"/>
+                </VBox>
+            </HBox>
+
+            <!-- Spacer untuk mendorong konten ke atas -->
+            <Region prefHeight="20"/>
+        </VBox>
+        </content>
+        </ScrollPane>
+
+        <!-- ══ LAYER 2: Panel Laporan Jasper — full-screen menutupi seluruh area putih ══ -->
+        <VBox fx:id="panelLaporan" visible="false" managed="false"
+              style="-fx-background-color:#FFFFFF;">
+
+            <!-- Header panel: tombol kembali + judul -->
+            <HBox alignment="CENTER_LEFT" spacing="8" style="-fx-background-color:#2E7D32;">
+                <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+                <Button fx:id="btnTutupLaporan"
+                        mnemonicParsing="false"
+                        onAction="#handleTutupLaporan"
+                        text="←  Kembali ke Dashboard"
+                        style="-fx-background-color:transparent; -fx-text-fill:#FFFFFF; -fx-font-weight:bold; -fx-font-size:12px; -fx-cursor:hand;"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label fx:id="lblJudulLaporan" text="📄 Laporan Transaksi Setor Limbah"
+                       style="-fx-font-size:13px; -fx-font-weight:bold; -fx-text-fill:#FFFFFF;"/>
+            </HBox>
+
+            <!-- Area konten laporan: indikator loading + viewer Jasper (SwingNode), full ukuran -->
+            <StackPane VBox.vgrow="ALWAYS">
+                <ProgressIndicator fx:id="progressLaporan" visible="false" managed="false" prefWidth="48" prefHeight="48"/>
+                <SwingNode fx:id="swingNodeLaporan"/>
+            </StackPane>
+        </VBox>
+
+        </children>
+        </StackPane>
+    </center>
+
+</BorderPane>

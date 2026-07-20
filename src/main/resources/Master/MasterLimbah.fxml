@@ -36,73 +36,10 @@
         </VBox>
 
         <Region HBox.hgrow="ALWAYS" />
-
-        <TextField fx:id="txtCari"
-                   prefHeight="36.0" prefWidth="240.0"
-                   promptText="🔍  Cari limbah..."
-                   style="-fx-background-radius:8; -fx-border-radius:8; -fx-border-color:#E0E0E0; -fx-font-size:12px;" />
-        <Button fx:id="btnCari"
-                mnemonicParsing="false" onAction="#handleCari"
-                text="Cari"
-                prefHeight="36" prefWidth="80"
-                styleClass="btn,btn-cari" />
     </HBox>
 
-    <!-- ══════════════════════════════════════════════════════════════════
-         TABEL
-    ═══════════════════════════════════════════════════════════════════ -->
-    <VBox VBox.vgrow="ALWAYS"
-          style="-fx-background-color:#FAFAFA;">
-        <padding><Insets top="16" right="24" bottom="16" left="24" /></padding>
-
-        <TableView fx:id="tbLimbah"
-                   VBox.vgrow="ALWAYS"
-                   style="-fx-background-color:white; -fx-border-color:#E8E8E8; -fx-border-radius:10; -fx-background-radius:10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 6, 0, 0, 2);">
-            <columns>
-                <TableColumn fx:id="clmID"
-                             text="ID Limbah"
-                             prefWidth="90"
-                             style="-fx-alignment: CENTER"/>
-                <TableColumn fx:id="clmNama"
-                             text="Nama Limbah"
-                             prefWidth="160"
-                             style="-fx-alignment: CENTER"/>
-                <TableColumn fx:id="clmKategori"
-                             text="Kategori"
-                             prefWidth="100"
-                             style="-fx-alignment: CENTER"/>
-                <TableColumn fx:id="clmSatuan"
-                             text="Satuan"
-                             prefWidth="90"
-                             style="-fx-alignment: CENTER"/>
-                <TableColumn fx:id="clmJumlah"
-                             text="Jumlah"
-                             prefWidth="90"
-                             style="-fx-alignment: CENTER"/>
-                <TableColumn fx:id="clmHarga"
-                             text="Harga (Rp)"
-                             prefWidth="120"
-                             style="-fx-alignment: CENTER"/>
-                <TableColumn fx:id="clmKeterangan"
-                             text="Keterangan"
-                             prefWidth="260"
-                             style="-fx-alignment: CENTER"/>
-            </columns>
-        </TableView>
-    </VBox>
-
-    <!-- ══════════════════════════════════════════════════════════════════
-         PANEL FORM
-         Catatan: form ini SENGAJA tidak memakai GridPane. Setiap baris
-         adalah HBox berisi beberapa "field group" (VBox) yang lebarnya
-         dikunci penuh (minWidth = prefWidth = maxWidth) baik di FXML
-         maupun di controller (lihat lockWidth() pada initialize()).
-         Ini menghilangkan bug lama: saat dropdown ComboBox dibuka, form
-         ikut melebar/tergeser karena GridPane menghitung ulang lebar
-         kolom berdasarkan konten popup.
-    ═══════════════════════════════════════════════════════════════════ -->
     <VBox spacing="18"
-          style="-fx-background-color:#FFFFFF; -fx-border-color:#EBEBEB transparent transparent transparent; -fx-border-width:1 0 0 0;">
+          style="-fx-background-color:#FFFFFF; -fx-border-color:transparent transparent #EBEBEB transparent; -fx-border-width:0 0 1 0;">
         <padding><Insets top="20" right="24" bottom="20" left="24" /></padding>
 
         <HBox alignment="CENTER_LEFT" spacing="8">
@@ -118,8 +55,8 @@
                 <HBox spacing="2" alignment="CENTER_LEFT">
                     <Label text="ID Limbah"
                            style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
-                    <Label text="*"
-                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />
+<!--                    <Label text="*"-->
+<!--                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />-->
                 </HBox>
                 <TextField fx:id="txtID" editable="false"
                            minWidth="150" prefWidth="150" maxWidth="150"
@@ -160,8 +97,8 @@
                 <HBox spacing="2" alignment="CENTER_LEFT">
                     <Label text="Satuan"
                            style="-fx-font-size:12px; -fx-text-fill:#555555; -fx-font-weight:bold;" />
-                    <Label text="*"
-                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />
+<!--                    <Label text="*"-->
+<!--                           style="-fx-font-size:12px; -fx-text-fill:#E53935; -fx-font-weight:bold;" />-->
                 </HBox>
                 <TextField fx:id="txtJumlah" editable="false"
                            minWidth="150" prefWidth="150" maxWidth="150"
@@ -193,32 +130,92 @@
                       promptText="Tambahkan keterangan..."
                       style="-fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;" />
         </VBox>
+    </VBox>
 
-        <!-- ACTION BUTTONS -->
-        <HBox alignment="CENTER_RIGHT" spacing="10">
-            <Button fx:id="btnBatal"
-                    mnemonicParsing="false" onAction="#handleBatal"
-                    styleClass="btn,btn-batal"
-                    text="Batal"
-                    prefWidth="100" prefHeight="36" />
-            <Button fx:id="btnHapus"
-                    mnemonicParsing="false" onAction="#handleHapus"
-                    styleClass="btn,btn-hapus"
-                    text="Hapus"
-                    prefWidth="100" prefHeight="36"
-                    disable="true" />
-            <Button fx:id="btnUbah"
-                    mnemonicParsing="false" onAction="#handleUbah"
-                    styleClass="btn,btn-ubah"
-                    text="Ubah"
-                    prefWidth="100" prefHeight="36"
-                    disable="true" />
-            <Button fx:id="btnSimpan"
-                    mnemonicParsing="false" onAction="#handleSimpan"
-                    styleClass="btn,btn-simpan"
-                    text="Simpan"
-                    prefWidth="100" prefHeight="36"
-                    disable="true" />
-        </HBox>
+    <!-- ══════════════════════════════════════════════════════════════════
+         BARIS AKSI: tombol CRUD (kiri) & pencarian (kanan), tepat di atas tabel
+    ═══════════════════════════════════════════════════════════════════ -->
+    <HBox alignment="CENTER_LEFT" spacing="10"
+          style="-fx-background-color:#FFFFFF; -fx-border-color:transparent transparent #EBEBEB transparent; -fx-border-width:0 0 1 0;">
+        <padding><Insets top="14" right="24" bottom="14" left="24" /></padding>
+
+        <Button fx:id="btnBatal"
+                mnemonicParsing="false" onAction="#handleBatal"
+                styleClass="btn,btn-batal"
+                text="Batal"
+                prefWidth="100" prefHeight="36" />
+        <Button fx:id="btnHapus"
+                mnemonicParsing="false" onAction="#handleHapus"
+                styleClass="btn,btn-hapus"
+                text="Hapus"
+                prefWidth="100" prefHeight="36"
+                disable="true" />
+        <Button fx:id="btnUbah"
+                mnemonicParsing="false" onAction="#handleUbah"
+                styleClass="btn,btn-ubah"
+                text="Ubah"
+                prefWidth="100" prefHeight="36"
+                disable="true" />
+        <Button fx:id="btnSimpan"
+                mnemonicParsing="false" onAction="#handleSimpan"
+                styleClass="btn,btn-simpan"
+                text="Simpan"
+                prefWidth="100" prefHeight="36"
+                disable="true" />
+
+        <Region HBox.hgrow="ALWAYS" />
+
+        <TextField fx:id="txtCari"
+                   prefHeight="36.0" prefWidth="240.0"
+                   promptText="🔍  Cari limbah..."
+                   style="-fx-background-radius:8; -fx-border-radius:8; -fx-border-color:#E0E0E0; -fx-font-size:12px;" />
+        <Button fx:id="btnCari"
+                mnemonicParsing="false" onAction="#handleCari"
+                text="Cari"
+                prefHeight="36" prefWidth="80"
+                styleClass="btn,btn-cari" />
+    </HBox>
+
+    <!-- ══════════════════════════════════════════════════════════════════
+         TABEL (sekarang di BAWAH form & baris aksi)
+    ═══════════════════════════════════════════════════════════════════ -->
+    <VBox VBox.vgrow="ALWAYS"
+          style="-fx-background-color:#FAFAFA;">
+        <padding><Insets top="16" right="24" bottom="16" left="24" /></padding>
+
+        <TableView fx:id="tbLimbah"
+                   VBox.vgrow="ALWAYS"
+                   style="-fx-background-color:white; -fx-border-color:#E8E8E8; -fx-border-radius:10; -fx-background-radius:10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.05), 6, 0, 0, 2);">
+            <columns>
+                <TableColumn fx:id="clmID"
+                             text="ID Limbah"
+                             prefWidth="90"
+                             style="-fx-alignment: CENTER"/>
+                <TableColumn fx:id="clmNama"
+                             text="Nama Limbah"
+                             prefWidth="160"
+                             style="-fx-alignment: CENTER"/>
+                <TableColumn fx:id="clmKategori"
+                             text="Kategori"
+                             prefWidth="100"
+                             style="-fx-alignment: CENTER"/>
+                <TableColumn fx:id="clmSatuan"
+                             text="Satuan"
+                             prefWidth="90"
+                             style="-fx-alignment: CENTER"/>
+                <TableColumn fx:id="clmJumlah"
+                             text="Jumlah"
+                             prefWidth="90"
+                             style="-fx-alignment: CENTER"/>
+                <TableColumn fx:id="clmHarga"
+                             text="Harga (Rp)"
+                             prefWidth="120"
+                             style="-fx-alignment: CENTER"/>
+                <TableColumn fx:id="clmKeterangan"
+                             text="Keterangan"
+                             prefWidth="260"
+                             style="-fx-alignment: CENTER"/>
+            </columns>
+        </TableView>
     </VBox>
 </VBox>

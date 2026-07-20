@@ -3,7 +3,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
@@ -17,7 +16,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox prefHeight="720.0" prefWidth="1100.0" spacing="0" styleClass="content-card" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Transaksi.TransaksiSetorLimbahController">
+<VBox prefHeight="720.0" prefWidth="1100.0" spacing="0" styleClass="content-card" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="Transaksi.TransaksiSetorLimbahController">
     <padding><Insets bottom="20" left="24" right="24" top="20" /></padding>
 
     <!-- JUDUL HALAMAN -->
@@ -43,7 +42,6 @@
                     <RowConstraints minHeight="32" />
                     <RowConstraints minHeight="32" />
                     <RowConstraints minHeight="32" />
-                    <RowConstraints minHeight="32" />
                 </rowConstraints>
 
                 <Label styleClass="field-label" text="ID Transaksi" GridPane.columnIndex="0" GridPane.rowIndex="0" />
@@ -56,16 +54,15 @@
                            style="-fx-background-color:#F5F5F5; -fx-opacity:1; -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
                            GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                <Label styleClass="field-label" text="ID Karyawan" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                <TextField fx:id="txtIDKaryawan" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <Label styleClass="field-label" text="Tanggal" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <TextField fx:id="txtTanggal" editable="false" maxWidth="Infinity"
+                           style="-fx-background-color:#F5F5F5; -fx-opacity:1; -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
+                           GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-                <Label styleClass="field-label" text="Tanggal" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                <DatePicker fx:id="dpTanggal" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-
-                <Label styleClass="field-label" text="Total (Rp)" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                <Label styleClass="field-label" text="Total (Rp)" GridPane.columnIndex="0" GridPane.rowIndex="3" />
                 <TextField fx:id="txtTotal" editable="false" maxWidth="Infinity"
                            style="-fx-background-color:#F5F5F5; -fx-opacity:1; -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px; -fx-font-weight:bold;-fx-text-fill:#1B5E20;"
-                           GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                           GridPane.columnIndex="1" GridPane.rowIndex="3" />
             </GridPane>
         </VBox>
 
@@ -81,10 +78,13 @@
             </HBox>
 
             <TableView fx:id="tbNasabah" prefHeight="190" VBox.vgrow="ALWAYS">
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
                 <columns>
-                    <TableColumn fx:id="clmNasabahNama" prefWidth="175" text="Nama Nasabah" />
-                    <TableColumn fx:id="clmNasabahHP" prefWidth="115" text="No. HP" />
-                    <TableColumn fx:id="clmNasabahSaldo" prefWidth="110" text="Saldo (Rp)" />
+                    <TableColumn fx:id="clmNasabahNama" text="Nama Nasabah" style="-fx-alignment:CENTER-RIGHT;" />
+                    <TableColumn fx:id="clmNasabahHP" text="No. HP" style="-fx-alignment:CENTER-RIGHT;" />
+                    <TableColumn fx:id="clmNasabahSaldo" text="Saldo (Rp)" style="-fx-alignment:CENTER-RIGHT;" />
                 </columns>
                 <placeholder><Label text="Belum ada data nasabah aktif" /></placeholder>
             </TableView>
@@ -110,40 +110,34 @@
                     <RowConstraints minHeight="32" />
                     <RowConstraints minHeight="32" />
                     <RowConstraints minHeight="32" />
-                    <RowConstraints minHeight="32" />
                     <RowConstraints minHeight="72" />
                     <RowConstraints minHeight="32" />
                 </rowConstraints>
 
-                <Label styleClass="field-label" text="ID Detail" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                <TextField fx:id="txtIDDetail" editable="false" maxWidth="Infinity"
+                <Label styleClass="field-label" text="ID Setor Limbah" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                <TextField fx:id="txtIDSetorLimbahDetail" editable="false" maxWidth="Infinity"
                            style="-fx-background-color:#F5F5F5; -fx-opacity:1; -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
                            GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
-                <Label styleClass="field-label" text="ID Setor Limbah" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                <TextField fx:id="txtIDSetorLimbahDetail" editable="false" maxWidth="Infinity"
-                           style="-fx-background-color:#F5F5F5; -fx-opacity:1; -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px;"
-                           GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <Label styleClass="field-label" text="Kategori" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                <ComboBox fx:id="cmbJenis" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
-                <Label styleClass="field-label" text="Kategori" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                <ComboBox fx:id="cmbJenis" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                <Label styleClass="field-label" text="Nama Limbah" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                <ComboBox fx:id="cmbJenisLimbah" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
-                <Label styleClass="field-label" text="Nama Limbah" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                <ComboBox fx:id="cmbJenisLimbah" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-
-                <Label styleClass="field-label" text="Jumlah" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                <Label styleClass="field-label" text="Jumlah" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                <HBox alignment="CENTER_LEFT" spacing="8" GridPane.columnIndex="1" GridPane.rowIndex="3">
                     <TextField fx:id="txtJumlah" prefWidth="307.0" HBox.hgrow="ALWAYS" />
                     <Label fx:id="lblSatuan" minWidth="36" style="-fx-font-weight:bold;-fx-text-fill:#2E7D32;" styleClass="field-label" text="Kg" />
                 </HBox>
 
-                <Label styleClass="field-label" text="Keterangan" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                <TextArea fx:id="txtKeteranganDetail" maxWidth="Infinity" prefHeight="68" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                <Label styleClass="field-label" text="Keterangan" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                <TextArea fx:id="txtKeteranganDetail" maxWidth="Infinity" prefHeight="68" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
-                <Label styleClass="field-label" text="Sub Total (Rp)" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                <Label styleClass="field-label" text="Sub Total (Rp)" GridPane.columnIndex="0" GridPane.rowIndex="5" />
                 <TextField fx:id="txtSubTotal" editable="false" maxWidth="Infinity"
                            style="-fx-background-color:#F5F5F5; -fx-opacity:1; -fx-border-color:#E0E0E0; -fx-border-radius:6; -fx-background-radius:6; -fx-font-size:12px; -fx-font-weight:bold;-fx-text-fill:#1565C0;"
-                           GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                           GridPane.columnIndex="1" GridPane.rowIndex="5" />
             </GridPane>
 
             <Region VBox.vgrow="ALWAYS" />
@@ -157,14 +151,16 @@
         <VBox spacing="8" HBox.hgrow="ALWAYS">
             <Label style="-fx-font-weight:bold;-fx-font-size:13px;" styleClass="field-label" text="Daftar Detail Limbah" />
 
-            <TableView fx:id="tbDetail" prefHeight="312.0" prefWidth="784.0" VBox.vgrow="ALWAYS">
+            <TableView fx:id="tbDetail" prefHeight="192.0" prefWidth="784.0" fixedCellSize="32" VBox.vgrow="ALWAYS">
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                </columnResizePolicy>
                 <columns>
-                    <TableColumn fx:id="clmDetailID" prefWidth="120" text="ID Detail" />
-                    <TableColumn fx:id="clmDetailJenis" prefWidth="120" text="Nama Limbah" />
-                    <TableColumn fx:id="clmDetailJumlah" prefWidth="75" text="Jumlah" />
-                    <TableColumn fx:id="clmDetailSatuan" prefWidth="65" text="Satuan" />
-                    <TableColumn fx:id="clmDetailKeterangan" prefWidth="150" text="Keterangan" />
-                    <TableColumn fx:id="clmDetailSubTotal" prefWidth="120" text="Sub Total (Rp)" />
+                    <TableColumn fx:id="clmDetailJenis" text="Nama Limbah" style="-fx-alignment:CENTER-RIGHT;" />
+                    <TableColumn fx:id="clmDetailJumlah" text="Jumlah" style="-fx-alignment:CENTER-RIGHT;" />
+                    <TableColumn fx:id="clmDetailSatuan" text="Satuan" style="-fx-alignment:CENTER-RIGHT;" />
+                    <TableColumn fx:id="clmDetailKeterangan" text="Keterangan" style="-fx-alignment:CENTER-RIGHT;" />
+                    <TableColumn fx:id="clmDetailSubTotal" text="Sub Total (Rp)" style="-fx-alignment:CENTER-RIGHT;" />
                 </columns>
                 <placeholder>
                     <Label style="-fx-text-fill:#9E9E9E;" text="Belum ada item — pilih nasabah lalu tambahkan detail limbah" />
