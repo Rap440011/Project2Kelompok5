@@ -69,6 +69,8 @@ public class DashboardManagerController implements Initializable {
     @FXML private BorderPane rootPane;
     @FXML private Button btnLihatLaporan;
     @FXML private Button btnLihatPenarikan;
+    @FXML private Button btnLihatPenjualan;
+    @FXML private Button btnLihatPengolahan;
     @FXML private Button btnTutupLaporan;
     @FXML private VBox panelLaporan;
     @FXML private Label lblJudulLaporan;
@@ -88,6 +90,8 @@ public class DashboardManagerController implements Initializable {
      *  saat run adalah root project (default IntelliJ run config). */
     private static final String JASPER_REPORT_PATH_SETOR = "src/main/java/Laporan/TransaksiSetorLimbah.jasper";
     private static final String JASPER_REPORT_PATH_PENARIKAN = "src/main/java/Laporan/PenarikanSaldo.jasper";
+    private static final String JASPER_REPORT_PATH_PENJUALAN = "src/main/java/Laporan/LaporanPenjualan.jasper";
+    private static final String JASPER_REPORT_PATH_PENGOLAHAN = "src/main/java/Laporan/PengolahLimbah.jasper";
 
     // Cache per laporan (key = path .jasper) supaya klik ulang tombol tidak perlu query database lagi
     private final Map<String, JasperPrint> jasperPrintCache = new HashMap<>();
@@ -170,6 +174,8 @@ public class DashboardManagerController implements Initializable {
     private void setMenuSidebarAktif(Button menuAktif) {
         btnLihatLaporan.setStyle(menuAktif == btnLihatLaporan ? MENU_ITEM_STYLE_AKTIF : "");
         btnLihatPenarikan.setStyle(menuAktif == btnLihatPenarikan ? MENU_ITEM_STYLE_AKTIF : "");
+        btnLihatPenjualan.setStyle(menuAktif == btnLihatPenjualan ? MENU_ITEM_STYLE_AKTIF : "");
+        btnLihatPengolahan.setStyle(menuAktif == btnLihatPengolahan ? MENU_ITEM_STYLE_AKTIF : "");
     }
 
 
@@ -693,6 +699,30 @@ public class DashboardManagerController implements Initializable {
         if (panelLaporan.isVisible() && menuLaporanAktif == btnLihatPenarikan) return;
 
         tampilkanPanelLaporan(btnLihatPenarikan, "📄 Laporan Penarikan Saldo", JASPER_REPORT_PATH_PENARIKAN);
+    }
+
+    /**
+     * Handle tombol "Lihat Penjualan Produk".
+     * Logika pemanggilannya sama persis dengan Lihat Laporan Transaksi (Setor Limbah)
+     * dan Lihat Penarikan Saldo, hanya beda file .jasper, judul panel, dan cache-nya.
+     */
+    @FXML
+    private void handleLihatPenjualan() {
+        if (panelLaporan.isVisible() && menuLaporanAktif == btnLihatPenjualan) return;
+
+        tampilkanPanelLaporan(btnLihatPenjualan, "📄 Laporan Penjualan Produk", JASPER_REPORT_PATH_PENJUALAN);
+    }
+
+    /**
+     * Handle tombol "Lihat Transaksi Pengolahan".
+     * Logika pemanggilannya sama persis dengan laporan lain di atas,
+     * hanya beda file .jasper, judul panel, dan cache-nya.
+     */
+    @FXML
+    private void handleLihatPengolahan() {
+        if (panelLaporan.isVisible() && menuLaporanAktif == btnLihatPengolahan) return;
+
+        tampilkanPanelLaporan(btnLihatPengolahan, "📄 Laporan Transaksi Pengolahan Limbah", JASPER_REPORT_PATH_PENGOLAHAN);
     }
 
     /** Handle tombol "← Kembali ke Dashboard" di header panel laporan. */

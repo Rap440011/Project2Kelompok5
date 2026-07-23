@@ -1,0 +1,118 @@
+/* ============================================
+   LOGIN STYLE SHEET - BUMI MAKMUR
+   (Tema hijau sesuai referensi logo & desain)
+   ============================================ */
+
+/* ROOT */
+.root {
+    -fx-background-color: #FFFFFF;
+}
+
+/* TEXT FIELD STYLING */
+.text-field,
+.password-field {
+    -fx-font-size: 14px;
+    -fx-padding: 10px;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-border-color: #D1D5DB;
+    -fx-border-width: 1;
+    -fx-text-fill: #333333;
+}
+
+.text-field:focused,
+.password-field:focused {
+    -fx-border-color: #2E7D32;
+    -fx-border-width: 2;
+    -fx-border-radius: 6;
+}
+
+/* BUTTON STYLING */
+.button {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+    -fx-background-color: #1B5E20;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-cursor: hand;
+    -fx-padding: 10px 20px;
+}
+
+.button:hover {
+    -fx-background-color: #256029;
+}
+
+.button:pressed {
+    -fx-background-color: #14431A;
+}
+
+/* LABEL STYLING */
+.label {
+    -fx-font-size: 13px;
+    -fx-text-fill: #6B7280;
+}
+
+/* LOGIN TITLE */
+.login-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1B5E20;
+}
+
+/* ERROR LABEL */
+.error-label {
+    -fx-text-fill: #DC2626;
+    -fx-font-size: 12px;
+}
+
+/* PASSWORD FIELD: beri ruang di kanan untuk ikon toggle mata */
+.password-input {
+    -fx-padding: 10px 34px 10px 10px;
+}
+
+/* TOMBOL TOGGLE SHOW/HIDE PASSWORD */
+.password-toggle-button {
+    -fx-background-color: transparent;
+    -fx-padding: 4px;
+    -fx-cursor: hand;
+    -fx-min-width: 24px;
+    -fx-min-height: 24px;
+}
+
+.password-toggle-button:hover {
+    -fx-opacity: 0.7;
+}
+
+/* TOMBOL CLOSE CUSTOM (window tanpa title bar) */
+.close-button {
+    -fx-background-color: transparent;
+    -fx-text-fill: #6B7280;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-padding: 4px 8px;
+}
+
+.close-button:hover {
+    -fx-text-fill: #1A1A1A;
+}
+
+/* VBOX CONTENT */
+.content-box {
+    -fx-spacing: 20;
+    -fx-padding: 40;
+}
+
+/* HBOX CONTAINER */
+.login-container {
+    -fx-spacing: 0;
+    -fx-background-color: #FFFFFF;
+}
+
+.login-left {
+    -fx-background-color: #FFFFFF;
+}
+
+.login-right {
+    -fx-background-color: #F1F8F2;
+}

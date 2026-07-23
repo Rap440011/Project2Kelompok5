@@ -70,6 +70,20 @@
                         prefHeight="40.0"
                         styleClass="sidebar-btn"
                         text="Lihat Penarikan Saldo"/>
+
+                <Button fx:id="btnLihatPenjualan"
+                        mnemonicParsing="false"
+                        onAction="#handleLihatPenjualan"
+                        prefHeight="40.0"
+                        styleClass="sidebar-btn"
+                        text="Lihat Penjualan Produk"/>
+
+                <Button fx:id="btnLihatPengolahan"
+                        mnemonicParsing="false"
+                        onAction="#handleLihatPengolahan"
+                        prefHeight="40.0"
+                        styleClass="sidebar-btn"
+                        text="Lihat Transaksi Pengolahan"/>
             </VBox>
 
             <Separator styleClass="sidebar-separator"/>

@@ -1,0 +1,123 @@
+<!-- Created with Jaspersoft Studio version 7.0.6.final using JasperReports Library version 7.0.6-5d2a603fdc6b3db8f842a83383e594f41891534d  -->
+<jasperReport name="LaporanPenjualan" language="java" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="9f7734cb-89f7-48eb-97eb-55e34ece8ac3">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="LaporanPenjualan.jrdax"/>
+	<query language="SQL"><![CDATA[select * from tr_Penjualan_Produk]]></query>
+	<field name="ID_Penjualan" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ID_Penjualan"/>
+		<property name="com.jaspersoft.studio.field.label" value="ID_Penjualan"/>
+	</field>
+	<field name="ID_Karyawan" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="ID_Karyawan"/>
+		<property name="com.jaspersoft.studio.field.label" value="ID_Karyawan"/>
+	</field>
+	<field name="Tanggal_Penjualan" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="Tanggal_Penjualan"/>
+		<property name="com.jaspersoft.studio.field.label" value="Tanggal_Penjualan"/>
+	</field>
+	<field name="Total" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="Total"/>
+		<property name="com.jaspersoft.studio.field.label" value="Total"/>
+	</field>
+	<variable name="Total_SUM" calculation="Sum" class="java.math.BigDecimal">
+		<expression><![CDATA[$F{Total}]]></expression>
+	</variable>
+	<variable name="Jumlah_Transaksi" calculation="Count" class="java.lang.Integer">
+		<expression><![CDATA[$F{ID_Penjualan}]]></expression>
+	</variable>
+	<background splitType="Stretch"/>
+	<title height="90" splitType="Stretch">
+		<element kind="rectangle" uuid="3c4d5e6f-0001-4000-8000-000000000001" mode="Opaque" x="0" y="0" width="802" height="72" backcolor="#1F5E3D" radius="0">
+			<pen lineWidth="0.0"/>
+		</element>
+		<element kind="staticText" uuid="3c4d5e6f-0002-4000-8000-000000000002" x="0" y="10" width="802" height="32" forecolor="#FFFFFF" fontSize="20.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[LAPORAN PENJUALAN PRODUK]]></text>
+		</element>
+		<element kind="staticText" uuid="3c4d5e6f-0003-4000-8000-000000000003" x="0" y="42" width="802" height="20" forecolor="#D9F0E1" fontSize="11.0" italic="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Bumi Makmur - Rekapitulasi Data Transaksi Penjualan Produk]]></text>
+		</element>
+		<element kind="line" uuid="3c4d5e6f-0004-4000-8000-000000000004" x="0" y="80" width="802" height="1">
+			<pen lineWidth="1.0" lineColor="#1F5E3D"/>
+		</element>
+	</title>
+	<pageHeader height="26" splitType="Stretch">
+		<element kind="staticText" uuid="3c4d5e6f-0005-4000-8000-000000000005" x="0" y="4" width="90" height="18" fontSize="9.0" bold="true">
+			<text><![CDATA[Tanggal Cetak:]]></text>
+		</element>
+		<element kind="textField" uuid="3c4d5e6f-0006-4000-8000-000000000006" x="90" y="4" width="180" height="18" fontSize="9.0">
+			<expression><![CDATA[new java.text.SimpleDateFormat("dd MMMM yyyy", new java.util.Locale("id", "ID")).format(new java.util.Date())]]></expression>
+		</element>
+	</pageHeader>
+	<columnHeader height="30" splitType="Stretch">
+		<element kind="rectangle" uuid="3c4d5e6f-0007-4000-8000-000000000007" mode="Opaque" x="0" y="0" width="802" height="30" backcolor="#2E8B57" radius="0">
+			<pen lineWidth="0.0"/>
+		</element>
+		<element kind="staticText" uuid="3c4d5e6f-0008-4000-8000-000000000008" x="0" y="0" width="160" height="30" forecolor="#FFFFFF" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[ID Penjualan]]></text>
+		</element>
+		<element kind="staticText" uuid="3c4d5e6f-0009-4000-8000-000000000009" x="160" y="0" width="160" height="30" forecolor="#FFFFFF" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[ID Karyawan]]></text>
+		</element>
+		<element kind="staticText" uuid="3c4d5e6f-000a-4000-8000-00000000000a" x="320" y="0" width="160" height="30" forecolor="#FFFFFF" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Tanggal Penjualan]]></text>
+		</element>
+		<element kind="staticText" uuid="3c4d5e6f-000b-4000-8000-00000000000b" x="480" y="0" width="322" height="30" forecolor="#FFFFFF" fontSize="10.0" bold="true" hTextAlign="Center" vTextAlign="Middle">
+			<text><![CDATA[Total (Rp)]]></text>
+		</element>
+	</columnHeader>
+	<detail>
+		<band height="24" splitType="Stretch">
+			<element kind="rectangle" uuid="3c4d5e6f-000c-4000-8000-00000000000c" mode="Opaque" x="0" y="0" width="802" height="24" backcolor="#F0F7F2" radius="0">
+				<printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></printWhenExpression>
+				<pen lineWidth="0.0"/>
+			</element>
+			<element kind="textField" uuid="3c4d5e6f-000d-4000-8000-00000000000d" x="0" y="0" width="160" height="24" fontSize="9.0" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{ID_Penjualan}]]></expression>
+			</element>
+			<element kind="textField" uuid="3c4d5e6f-000e-4000-8000-00000000000e" x="160" y="0" width="160" height="24" fontSize="9.0" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[$F{ID_Karyawan}]]></expression>
+			</element>
+			<element kind="textField" uuid="3c4d5e6f-000f-4000-8000-00000000000f" x="320" y="0" width="160" height="24" fontSize="9.0" hTextAlign="Center" vTextAlign="Middle">
+				<expression><![CDATA[new java.text.SimpleDateFormat("dd MMMM yyyy", new java.util.Locale("id", "ID")).format($F{Tanggal_Penjualan})]]></expression>
+			</element>
+			<element kind="textField" uuid="3c4d5e6f-0010-4000-8000-000000000010" x="480" y="0" width="322" height="24" fontSize="9.0" pattern="#,##0" hTextAlign="Right" vTextAlign="Middle">
+				<expression><![CDATA[$F{Total}]]></expression>
+			</element>
+			<element kind="line" uuid="3c4d5e6f-0011-4000-8000-000000000011" x="0" y="23" width="802" height="1">
+				<pen lineWidth="0.25" lineColor="#C7E3D2"/>
+			</element>
+		</band>
+	</detail>
+	<columnFooter height="10" splitType="Stretch"/>
+	<pageFooter height="30" splitType="Stretch">
+		<element kind="line" uuid="3c4d5e6f-0012-4000-8000-000000000012" x="0" y="0" width="802" height="1">
+			<pen lineWidth="0.5" lineColor="#1F5E3D"/>
+		</element>
+		<element kind="staticText" uuid="3c4d5e6f-0013-4000-8000-000000000013" x="0" y="6" width="400" height="18" forecolor="#666666" fontSize="8.0" italic="true">
+			<text><![CDATA[Dicetak otomatis oleh Sistem Bumi Makmur]]></text>
+		</element>
+		<element kind="textField" uuid="3c4d5e6f-0014-4000-8000-000000000014" x="522" y="6" width="140" height="18" fontSize="8.0" evaluationTime="Report" hTextAlign="Right" vTextAlign="Middle">
+			<expression><![CDATA["Halaman " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+		<element kind="textField" uuid="3c4d5e6f-0015-4000-8000-000000000015" x="662" y="6" width="140" height="18" fontSize="8.0" hTextAlign="Left" vTextAlign="Middle">
+			<expression><![CDATA[" dari " + $V{PAGE_NUMBER}]]></expression>
+		</element>
+	</pageFooter>
+	<summary height="50" splitType="Stretch">
+		<element kind="line" uuid="3c4d5e6f-0016-4000-8000-000000000016" x="0" y="0" width="802" height="1">
+			<pen lineWidth="0.75" lineColor="#1F5E3D"/>
+		</element>
+		<element kind="staticText" uuid="3c4d5e6f-0017-4000-8000-000000000017" x="0" y="12" width="200" height="24" fontSize="10.0" bold="true">
+			<text><![CDATA[Jumlah Transaksi:]]></text>
+		</element>
+		<element kind="textField" uuid="3c4d5e6f-0018-4000-8000-000000000018" x="200" y="12" width="120" height="24" fontSize="10.0" bold="true">
+			<expression><![CDATA[$V{Jumlah_Transaksi}]]></expression>
+		</element>
+		<element kind="staticText" uuid="3c4d5e6f-0019-4000-8000-000000000019" x="320" y="12" width="160" height="24" fontSize="11.0" bold="true" hTextAlign="Right" vTextAlign="Middle">
+			<text><![CDATA[Total Penjualan:]]></text>
+		</element>
+		<element kind="textField" uuid="3c4d5e6f-001a-4000-8000-00000000001a" x="480" y="12" width="322" height="24" forecolor="#1F5E3D" fontSize="11.0" pattern="'Rp' #,##0" bold="true" hTextAlign="Right" vTextAlign="Middle">
+			<expression><![CDATA[$V{Total_SUM}]]></expression>
+		</element>
+	</summary>
+</jasperReport>
